@@ -1,0 +1,202 @@
+<?php
+function get_text($data=array(),$type='text',$only_control=false) {
+
+    $id = $data['id'];
+    $name = (isset($data['name']) && $data['name'])?$data['name']:$data['id'];
+    $name = str_replace('-','_',$name);
+    $title = $data['title'];
+    $value = (isset($data['value']))?$data['value']:'';
+    $label_title = (isset($data['label_title']))?$data['label_title']:$data['title'];
+
+    $class = "form-control";
+    if(isset($data['class']) && $data['class']){
+        $class .= ' ' . $data['class'];
+    }
+
+    $placeholder = "Enter $title";
+    if(isset($data['placeholder']) && $data['placeholder']) {
+        $placeholder = $data['placeholder'];
+    }
+    $placeholder='';
+
+    $attribute = '';
+    $required = false;
+    if(isset($data['attribute']) && $data['attribute']) {
+        $attribute = $data['attribute'];
+        if (strpos($attribute, 'required') !== false || strpos($attribute, ' required') !== false || strpos($attribute, 'required ') !== false) {
+            $required = true;
+            $string = (isset($data['placeholder']) && $data['placeholder'])?$data['placeholder']:$title;
+            $attribute .= ' data-parsley-required-message="'.$string.' is mandatory."';
+        }
+    }
+
+    $html = '';
+    if(!$only_control) {
+        $html = '<div class="form-group">';
+        $html .= '<label for="' . $id . '"';
+        if($required) {
+            $html .= ' class="text-danger"';
+        }
+        $html .= '>' . $label_title;
+        if($required) {
+            $html .= '*';
+        }
+        $html .= '</label>';
+    }
+    $html .= '<input type="'.$type.'" name="'.$name.'" class="'.$class.'" '.$attribute.' id="'.$id.'" placeholder="'.$placeholder.'" value="'.stripslashes($value).'" />';
+    if(!$only_control) {
+        $html .= '</div>';
+    }
+
+    return $html;
+}
+function get_textarea($data,$only_control=false) {
+    $id = $data['id'];
+    $name = (isset($data['name']) && $data['name'])?$data['name']:$data['id'];
+    $name = str_replace('-','_',$name);
+    $title = $data['title'];
+    $value = (isset($data['value']))?$data['value']:'';
+
+    $class = "form-control";
+    if(isset($data['class']) && $data['class']){
+        $class = $class . ' ' . $data['class'];
+    }
+
+    $attribute = '';
+    if(isset($data['attribute']) && $data['attribute']){
+        $attribute = $data['attribute'];
+    }
+
+    $placeholder = "Enter $title";
+    if(isset($data['placeholder']) && $data['placeholder']){
+        $placeholder = $data['placeholder'];
+    }
+
+    $html = '';
+    if(!$only_control) {
+        $html = '<div class="form-group">';
+        $html .= '<label for="' . $id . '">' . $title . '</label>';
+    }
+    $html .= '<textarea name="'.$name.'"  class="'.$class.'" '.$attribute.' id="'.$id.'" placeholder="'.$placeholder.'">'.stripslashes($value).'</textarea>';
+    if(!$only_control) {
+        $html .= '</div>';
+    }
+
+    return $html;
+}
+function get_hidden($data=array()) {
+    $id = (isset($data['id']) && $data['id'])?$data['id']:$data['name'];
+    $name = $data['name'];
+    $name = str_replace('-','_',$name);
+    $value = (isset($data['value']))?$data['value']:'';
+
+    $class = "form-control";
+    if(isset($data['class']) && $data['class']){
+        $class = $class . ' ' . $data['class'];
+    }
+
+    $attribute = '';
+    if(isset($data['attribute']) && $data['attribute']){
+        $attribute = $data['attribute'];
+    }
+
+    $html = '<input type="hidden" name="'.$name.'" id="'.$id.'" value="'.$value.'" class="'.$class.'" '.$attribute.' />';
+
+    return $html;
+}
+function get_button($data=array(),$type='button') {
+    $id = $data['id'];
+    //$name = (isset($data['name']) && $data['name'])?$data['name']:$data['id'];
+    $title = $data['title'];
+    $value = (isset($data['value']))?$data['value']:'';
+
+    $class = "form-control";
+    if(isset($data['class']) && $data['class']){
+        $class = $data['class'];
+    }
+
+    $attribute = '';
+    if(isset($data['attribute']) && $data['attribute']){
+        $attribute = $data['attribute'];
+    }
+
+    $html = '<button id="'.$id.'" type="'.$type.'" class="'.$class.'" '.$attribute.' '.$value.'>'.$title.'</button>';
+
+    return $html;
+}
+function get_anchor($data=array()) {
+    $id = $data['id'];
+    $name = (isset($data['name']) && $data['name'])?$data['name']:$data['id'];
+    $title = $data['title'];
+    $href = $data['href'];
+
+    $class = "form-control";
+    if(isset($data['class']) && $data['class']){
+        $class = $data['class'];
+    }
+
+    $attribute = '';
+    if(isset($data['attribute']) && $data['attribute']){
+        $attribute = $data['attribute'];
+    }
+
+    $html = '<a href="'.$href.'" id="'.$id.'" class="'.$class.'" '.$attribute.'>'.$title.'</a>';
+
+    return $html;
+}
+function get_select($data=array(),$populate=array(),$default_value='Select',$default_id='',$only_control=false) {
+
+    $id = $data['id'];
+    $name = (isset($data['name']) && $data['name'])?$data['name']:$data['id'];
+    $name = str_replace('-','_',$name);
+    $title = $data['title'];
+    $value = (isset($data['value']))?$data['value']:'';
+    $label_title = (isset($data['label_title']))?$data['label_title']:$data['title'];
+
+    $class = "form-control";
+    if(isset($data['class']) && $data['class']){
+        $class = $class . ' ' . $data['class'];
+    }
+
+    $attribute = '';
+    $required = false;
+    if(isset($data['attribute']) && $data['attribute']) {
+        $attribute = $data['attribute'];
+        if (strpos($attribute, 'required') !== false || strpos($attribute, ' required') !== false || strpos($attribute, 'required ') !== false) {
+            $required = true;
+            $string = (isset($data['placeholder']) && $data['placeholder'])?$data['placeholder']:$title;
+            $attribute .= ' data-parsley-required-message="'.$string.' is mandatory."';
+        }
+    }
+
+    $html = '';
+    if(!$only_control) {
+        $html = '<div class="form-group">';
+        $html .= '<label for="' . $id . '"';
+        if($required) {
+            $html .= ' class="text-danger"';
+        }
+        $html .= '>' . $label_title;
+        if($required) {
+            $html .= '*';
+        }
+        $html .= '</label>';
+    }
+    $html .= '<select name="'.$name.'" class="'.$class.'" '.$attribute.' id="'.$id.'">';
+    if($default_value) {
+        $html .= '<option value="' . $default_id . '">' . $default_value . '</option>';
+    }
+    if($populate){
+        foreach($populate as $row){
+            $selected = ($row['id']==$value)?' selected':'';
+            $html .= '<option value="'.$row['id'].'"'.$selected.'>'.$row['value'].'</option>';
+        }
+    }
+    $html .= '</select>';
+    if(!$only_control) {
+        $html .= '</div>';
+    }
+
+    return $html;
+}
+?>

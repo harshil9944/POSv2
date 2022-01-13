@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+	<code>kitchens</code>
+	<title>Kitchens</title>
+	<description>Kitchens module for Restaurant</description>
+	<version>0.0.1</version>
+	<developer>Chintan Bagdawala</developer>
+</module>

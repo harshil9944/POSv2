@@ -1,0 +1,30 @@
+{
+	"description": "The CodeIgniter framework",
+	"name": "codeigniter/framework",
+	"type": "project",
+	"homepage": "https://codeigniter.com",
+	"license": "MIT",
+	"config": {
+		"vendor-dir": "core/vendor"
+	},
+	"support": {
+		"forum": "http://forum.codeigniter.com/",
+		"wiki": "https://github.com/bcit-ci/CodeIgniter/wiki",
+		"slack": "https://codeigniterchat.slack.com",
+		"source": "https://github.com/bcit-ci/CodeIgniter"
+	},
+	"require": {
+		"php": "^7.2",
+		"sendgrid/sendgrid": "~7",
+		"phpmailer/phpmailer": "~6.0",
+		"mpdf/mpdf": ">=7.1.9",
+		"phpoffice/phpspreadsheet": "^1.10",
+		"stefangabos/zebra_image": "^2.3",
+		"ext-json": "*",
+		"firebase/php-jwt": "^5.1",
+		"minishlink/web-push": "^5.2.4",
+		"fzaninotto/faker": "^1.9"
+	},
+	"suggest": {},
+	"require-dev": {}
+}

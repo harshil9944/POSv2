@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+	<code>contacts</code>
+	<title>Contacts</title>
+	<description>Contact module for Divaa Back Office 2.0</description>
+	<version>0.0.1</version>
+	<developer>Chintan Bagdawala</developer>
+</module>

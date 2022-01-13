@@ -1,0 +1,1 @@
+<warehouse-form></warehouse-form>

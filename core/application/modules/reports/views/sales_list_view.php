@@ -1,0 +1,1 @@
+<report-sales></report-sales>

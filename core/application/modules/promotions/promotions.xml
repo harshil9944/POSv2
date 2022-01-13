@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+	<code>promotions</code>
+	<title>Promotions</title>
+	<description>Promotions module for Restaurant</description>
+	<version>0.0.1</version>
+	<developer>Chintan Bagdawala</developer>
+</module>

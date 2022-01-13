@@ -1,0 +1,13 @@
+.idea
+core/vendor
+core/projects
+/001-delhi86/uploads/**/*
+/002-bombaychaat/uploads/**/*
+/003-bombaytadka/uploads/**/*
+/004-mulani/uploads/**/*
+/005-bollywood/uploads/**/*
+/006-saffron/uploads/**/*
+/999-cs1-us/uploads/**/*
+/live.inntechpos.com/uploads/**/*
+/dev.bombay-tadka.pos/uploads/**/*
+/stage.inntechpos.com/uploads/**/*
