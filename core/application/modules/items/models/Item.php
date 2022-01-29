@@ -14,20 +14,19 @@ class Item extends MY_Model
             'id'=>'id',
             'code'=>'code',
             'type'=>'type',
+            'parent'=>'parent',
+            'outletId'=>'outlet_id',
             'categoryId'=>'category_id',
-            'name'=>'title',
+            'title'=>'title',
             'taxable'=>'taxable',
             'printLocation'=>'print_location',
-            'unit'=>'unit_id',
-            'purchaseUnit'=>'purchase_unit_id',
-            'saleUnit'=>'sale_unit_id',
-            'manufacturer'=>'manufacturer',
-            'preferredVendor'=>'vendor_id',
+            'unitId'=>'unit_id',
             'image'=>'image',
             'icon'=>'icon',
             'hasSpiceLevel'=>'has_spice_level',
             'isAddon'=>'is_addon',
-            'status'=>'status',
+            'isVeg'=>'is_veg',
+            'rate'=>'rate',
             'posStatus'=>'pos_status',
             'webStatus'=>'web_status',
             'appStatus'=>'app_status',
@@ -81,12 +80,8 @@ class Item extends MY_Model
                 $this->order_by($order['order_by'],$order['order']);
             }
         }
-        $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
-        if($search_by_vendors) {
-            $this->left_join(CONTACT_VENDOR_TABLE,ITEM_TABLE.'.vendor_id='.CONTACT_VENDOR_TABLE.'.id');
-        }
-        //$this->left_join(ITEM_STOCK_TABLE, ITEM_TABLE.'.id='.ITEM_STOCK_TABLE.'.item_id');
-        $this->select('*,'. ITEM_TABLE.'.title as title,'. ITEM_SKU_TABLE.'.id as sku_id,'. ITEM_TABLE.'.id as id,(SELECT SUM(`is`.on_hand) FROM itm_stock `is` WHERE `is`.item_id=`itm_item`.id AND `is`.sku_id=`itm_item_sku`.id) AS `on_hand`');
+       // $this->select('*,'. ITEM_TABLE.'.title as title,'. ITEM_SKU_TABLE.'.id as sku_id,'. ITEM_TABLE.'.id as id,(SELECT SUM(`is`.on_hand) FROM itm_stock `is` WHERE `is`.item_id=`itm_item`.id AND `is`.sku_id=`itm_item_sku`.id) AS `on_hand`');
+       $this->select('*,(SELECT COUNT(*) FROM itm_item `ii1` WHERE `ii1`.parent=`itm_item`.id AND `ii1`.type="variant") AS `variant_count`');
 
         return $this->search($filter,$limit,$offset);
 
@@ -114,10 +109,10 @@ class Item extends MY_Model
             }
         }
 
-        $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
+     /*    $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
         if($search_by_vendors) {
             $this->left_join(CONTACT_VENDOR_TABLE,ITEM_TABLE.'.vendor_id='.CONTACT_VENDOR_TABLE.'.id');
-        }
+        } */
         //$this->left_join(ITEM_STOCK_TABLE, ITEM_TABLE.'.id='.ITEM_STOCK_TABLE.'.item_id');
         $this->select('COUNT(*) as total_rows');
 
@@ -139,5 +134,26 @@ class Item extends MY_Model
         return $result;
 
     }
+    public function getVariants($itemId){
+        return $this->search(['parent'=>$itemId,'type'=>'variant'])??[];
+    }
 
+    public function hasVariants($itemId){
+      return count($this->getVariants($itemId)) > 0 ? true:false;
+    }
+
+    public function getItemTypeAttribute($itemId){
+        return $this->hasVariants($itemId) ? 'With Variants':'Single';
+    }
+
+    public function getParentItem($itemId){
+        return $this->single(['id'=>$itemId,'type'=>'product']);
+    }
+
+    public function getOptionalVariants($itemId){
+        return $this->search(['parent'=>$itemId,'type'=>'optional','is_addon'=>1])??[];
+    }
+    public function hasOptionalVariants($itemId){
+      return count($this->getVariants($itemId)) > 0 ? true:false;
+    }
 }

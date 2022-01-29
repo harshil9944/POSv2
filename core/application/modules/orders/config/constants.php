@@ -7,6 +7,7 @@ defined('ORDER_TABLE')                  OR  define('ORDER_TABLE', 'ord_order');
 defined('ORDER_ITEM_TABLE')             OR  define('ORDER_ITEM_TABLE', 'ord_order_item');
 defined('ORDER_ITEM_ADDON_TABLE')       OR  define('ORDER_ITEM_ADDON_TABLE', 'ord_order_item_addon');
 defined('ORDER_ITEM_NOTES_TABLE')       OR  define('ORDER_ITEM_NOTES_TABLE', 'ord_order_item_note');
+defined('ORDER_ADDRESS_TABLE')          OR  define('ORDER_ADDRESS_TABLE', 'ord_address');
 
 //Split
 defined('ORDER_SPLIT_TABLE')            OR  define('ORDER_SPLIT_TABLE', 'ord_split');

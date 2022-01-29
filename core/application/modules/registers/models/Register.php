@@ -13,8 +13,12 @@ class Register extends MY_Model
         $this->keys = [
             'id'=>'id',
             'code'=>'code',
-            'warehouseId'=>'warehouse_id',
+            'outletId'=>'outlet_id',
             'title'=>'title',
+            'primary'=>'primary',
+            'key'=>'key',
+            'type'=>'type',
+            'status'=>'status',
             'added'=>'added'
         ];
         $this->exclude_keys = ['added'];

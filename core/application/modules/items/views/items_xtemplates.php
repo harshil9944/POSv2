@@ -2,8 +2,8 @@
     <div class="col-12">
         <div class="block-header block-header-default">
             <div class="block-content block-content-full d-inline-block py-0">
-                <button @click="handleImport" class="float-right btn btn-primary ml-3">Import</button>
-                <a :href="exportUrl" target="_blank" class="float-right btn btn-primary">Export</a>
+                <!-- <button @click="handleImport" class="float-right btn btn-primary ml-3">Import</button>
+                <a :href="exportUrl" target="_blank" class="float-right btn btn-primary">Export</a> -->
                 <items-import></items-import>
             </div>
         </div>

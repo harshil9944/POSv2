@@ -32,7 +32,7 @@ class Addon_items extends MY_Controller {
         $searchFields = [$table.'.title'];
 
         $filters = [];
-        $filters['filter'] = ['type'=>'single'];
+        $filters['filter'] = ['is_addon'=>1];
         if($filter_dropdown_value) {
             $filters['filter']['category_id'] = $filter_dropdown_value;
         }

@@ -17,6 +17,10 @@ class Migration_orders_core extends CI_Migration {
                     'type' => 'ENUM("d","p","dine")',
                     'default' => 'd'
                 ],
+                'split_type' => [
+                    'type' => 'ENUM("none","equal","item")', 
+                    'default'=>'none'
+                ],
                 'order_no' => [
                     'type' => 'VARCHAR',
                     'constraint' => 50
@@ -26,15 +30,19 @@ class Migration_orders_core extends CI_Migration {
                     'constraint' => 11,
                     'unique' => true
                 ],
+                'ext_order_no' => [
+                    'type' => 'VARCHAR(50)',
+                    'default'=>''
+                ],
                 'source_id' => [
                     'type' => 'INT',
                     'constraint' => 11
                 ],
-                'reference_no' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50
-                ],
                 'customer_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11
+                ],
+                'outlet_id' => [
                     'type' => 'INT',
                     'constraint' => 11
                 ],
@@ -42,59 +50,15 @@ class Migration_orders_core extends CI_Migration {
                     'type' => 'VARCHAR',
                     'constraint' => 100,
                 ],
-                'billing_address1' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 100,
-                ],
-                'billing_address2' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 100,
-                ],
-                'billing_city' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50,
-                ],
-                'billing_state' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50,
-                ],
-                'billing_zip_code' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 10,
-                ],
-                'billing_country' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50,
-                ],
-                'shipping_address1' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 100,
-                ],
-                'shipping_address2' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 100,
-                ],
-                'shipping_city' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50,
-                ],
-                'shipping_state' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50,
-                ],
-                'shipping_zip_code' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 10,
-                ],
-                'shipping_country' => [
-                    'type' => 'VARCHAR',
-                    'constraint' => 50,
-                ],
-                'warehouse_id' => [
+                'register_session_id' => [
                     'type' => 'INT',
                     'constraint' => 11
                 ],
-                'register_id' => [
+                'opening_register_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11
+                ],
+                'close_register_id' => [
                     'type' => 'INT',
                     'constraint' => 11
                 ],
@@ -102,14 +66,11 @@ class Migration_orders_core extends CI_Migration {
                     'type' => 'INT',
                     'constraint' => 11
                 ],
-                'salesperson_id' => [
+                'employee_id' => [
                     'type' => 'INT',
                     'constraint' => 11
                 ],
                 'order_date' => [
-                    'type' => 'DATETIME'
-                ],
-                'expected_delivery_date' => [
                     'type' => 'DATETIME'
                 ],
                 'discount_type' => [
@@ -118,11 +79,23 @@ class Migration_orders_core extends CI_Migration {
                 ],
                 'duty_total' => [
                     'type' => 'DECIMAL',
-                    'constraint' => '16,4'
+                    'constraint' => '16,2'
                 ],
                 'freight_total' => [
                     'type' => 'DECIMAL',
-                    'constraint' => '16,4'
+                    'constraint' => '16,2'
+                ],
+                'gratuity_rate' => [
+                    'type' => 'DECIMAL',
+                    'constraint' =>10
+                ],
+                'gratuity_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'seat_used' => [
+                    'type' => 'DECIMAL',
+                    'constraint' =>10
                 ],
                 'tax_rate' => [
                     'type' => 'VARCHAR',
@@ -148,6 +121,11 @@ class Migration_orders_core extends CI_Migration {
                     'null' => TRUE,
                     'default' => 0.00
                 ],
+                'promotion_total' => [
+                    'type' => 'DECIMAL', 
+                    'constraint' => '16,2',
+                    'default'=>0
+                ],
                 'discount' => [
                     'type' => 'DECIMAL',
                     'constraint' => '16,2',
@@ -171,7 +149,7 @@ class Migration_orders_core extends CI_Migration {
                     'constraint' => '16,2',
                 ],
                 'order_status' => [
-                    'type' => "ENUM('Draft','Confirmed','Preparing','Ready','Closed','Cancelled')"
+                    'type' => "ENUM('Draft','Confirmed','Preparing','Ready','Closed','Cancelled','Refunded','Partial_refunded','Deleted')"
                 ],
                 'cancelled' => [
                     'type' => 'TINYINT',
@@ -201,8 +179,24 @@ class Migration_orders_core extends CI_Migration {
                 'auto_increment' => TRUE
             ],
             'type' => [
-                'type' => 'ENUM("single","group")',
-                'default' => 'single'
+                'type' => 'VARCHAR',
+                'constraint' => 10
+            ],
+            'part_no' => [
+                'type' => 'TINYINT(4)',
+                'default'=>1
+            ],
+            'print_location' => [
+                'type' => 'VARCHAR(20)',
+                'default'=>'default'
+            ],
+            'printed_qty' => [
+                'type' => 'TINYINT(4)',
+                 'default'=>0
+            ],
+            'print_kitchen' => [
+                'type' => 'TINYINT(1)',
+                 'default'=>1
             ],
             'order_id' => [
                 'type' => 'INT',
@@ -212,7 +206,7 @@ class Migration_orders_core extends CI_Migration {
                 'type' => 'INT',
                 'constraint' => 11
             ],
-            'sku_id' => [
+            'parent_id' => [
                 'type' => 'INT',
                 'constraint' => 11
             ],
@@ -220,41 +214,13 @@ class Migration_orders_core extends CI_Migration {
                 'type' => 'INT',
                 'constraint' => 11
             ],
-            'sale_unit_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'unit' => [
-                'type' => 'VARCHAR',
-                'constraint' => 10
-            ],
-            'sale_unit' => [
-                'type' => 'VARCHAR',
-                'constraint' => 10
-            ],
             'title' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100
             ],
-            'sku' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50
-            ],
-            'freight_total' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
-            ],
-            'duty_total' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
-            ],
-            'unit_quantity' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
-            ],
-            'unit_rate' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
+            'taxable' => [
+                'type' => 'TINYINT(1)', 
+                'default'=>'1'
             ],
             'quantity' => [
                 'type' => 'DECIMAL',
@@ -274,8 +240,8 @@ class Migration_orders_core extends CI_Migration {
                 'default' => 0
             ],
             'spice_level' => [
-                'type' => ORDER_SPICE_LEVELS,
-                'default' => ORDER_SPICE_LEVEL_DEFAULT
+                'type'      => 'VARCHAR(20)',
+                'default'   => 'medium'
             ],
             'notes' => [
                 'type' => 'TEXT'
@@ -341,6 +307,50 @@ class Migration_orders_core extends CI_Migration {
         $this->dbforge->create_table(ORDER_PAYMENT_TABLE, TRUE);
         //Order Payment Table End
 
+         //Order Address Table Start
+         $order_address_fields = [
+            'id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                'auto_increment' => TRUE
+            ],
+            'order_id' => [
+                'type' => 'INT',
+                'constraint' => 11
+            ],
+            'address1' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+            ],
+            'address2' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+            ],
+            'city' => [
+                'type' => 'VARCHAR',
+                'constraint' => 50,
+            ],
+            'state' => [
+                'type' => 'VARCHAR',
+                'constraint' => 50,
+            ],
+            'zip_code' => [
+                'type' => 'VARCHAR',
+                'constraint' => 10,
+            ],
+            'country' => [
+                'type' => 'VARCHAR',
+                'constraint' => 50,
+            ],
+            'added' => [
+                'type' => 'DATETIME'
+            ],
+        ];
+        $this->dbforge->add_field($order_address_fields);
+        $this->dbforge->add_key('id', TRUE);
+        $this->dbforge->create_table(ORDER_ADDRESS_TABLE, TRUE);
+        //Order Address Table End
+
         //SO Source Table Start
         $fields = [
             'id' => [
@@ -351,6 +361,14 @@ class Migration_orders_core extends CI_Migration {
             'title' => [
                 'type' => 'VARCHAR',
                 'constraint' => '255'
+            ],
+            'print_label' => [
+                'type' => 'VARCHAR',
+                'constraint' => '50'
+            ],
+            'show_in_summary' => [
+                'type' => 'TINYINT(1)',
+                'default'=>'1'
             ],
             'added' => [
                 'type' => 'DATETIME'
@@ -380,6 +398,360 @@ class Migration_orders_core extends CI_Migration {
             $this->db->insert_batch(ORDER_SOURCE_TABLE, $data);
         }
         //SO Source Table End
+
+        if (!$this->db->table_exists(ORDER_PAYMENT_DESC_TABLE)) {
+            //Order Payment Description Table Start
+            $order_payment_desc_fields = [
+                'id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                    'auto_increment' => TRUE
+                ],
+                'payment_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11
+                ],
+                'transaction_id' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 255
+                ],
+                'source_data' => [
+                    'type' => 'BLOB'
+                ],
+                'added' => [
+                    'type' => 'DATETIME'
+                ],
+            ];
+            $this->dbforge->add_field($order_payment_desc_fields);
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->create_table(ORDER_PAYMENT_DESC_TABLE, TRUE);
+            //Order Payment Description Table End
+        }
+        if (!$this->db->table_exists(ORDER_PRINT_QUEUE_TABLE)) {
+            $fields = [
+                'id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                    'auto_increment' => TRUE
+                ],
+                'order_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11
+                ],
+                'added' => [
+                    'type' => 'DATETIME'
+                ]
+            ];
+
+            $this->dbforge->add_field($fields);
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->create_table(ORDER_PRINT_QUEUE_TABLE, TRUE);
+        }
+        if (!$this->db->table_exists(ORDER_ITEM_ADDON_TABLE)) {
+            //Item Addon Table Start
+            $fields = [
+                'id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                    'auto_increment' => true
+                ],
+                'order_item_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'item_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'type' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 100,
+                ],
+                'title' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 100,
+                ],
+                'quantity'  => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,0'
+                ],
+                'rate' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'added' => [
+                    'type' => 'DATETIME'
+                ]
+            ];
+
+            $this->dbforge->add_field($fields);
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->create_table(ORDER_ITEM_ADDON_TABLE, TRUE);
+            //Item Addon Table End
+        }
+         //Item Table Start
+         $fields = [
+            'id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                'auto_increment' => true
+            ],
+            'order_item_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+            ],
+            'item_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+            ],
+            'title' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+            ],
+            'added' => [
+                'type' => 'DATETIME'
+            ]
+        ];
+
+        $this->dbforge->add_field($fields);
+        $this->dbforge->add_key('id', TRUE);
+        $this->dbforge->create_table(ORDER_ITEM_NOTES_TABLE, TRUE);
+        //Item Table End
+
+         //Split Table Start
+         if (!$this->db->table_exists(ORDER_SPLIT_TABLE)) {
+            $split_fields = [
+                'id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                    'auto_increment' => TRUE
+                ],
+                'title' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 50
+                ],
+                'order_no' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 50
+                ],
+                'order_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'customer_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11
+                ],
+                'billing_name' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 100,
+                ],
+                'discount_type' => [
+                    'type' => 'ENUM("f","p")',
+                    'default' => 'f'
+                ],
+                'duty_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'freight_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'gratuity_rate' => [
+                    'type' => 'DECIMAL',
+                    'constraint' =>10
+                ],
+                'gratuity_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'tax_rate' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 10
+                ],
+                'sub_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'tax_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'change' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2',
+                    'null' => TRUE,
+                    'default' => 0.00
+                ],
+                'tip' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2',
+                    'null' => TRUE,
+                    'default' => 0.00
+                ],
+                'promotion_total' => [
+                    'type' => 'DECIMAL', 
+                    'constraint' => '16,2',
+                    'default'=>0
+                ],
+                'discount' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2',
+                    'null' => TRUE,
+                    'default' => 0.00
+                ],
+                'discount_value' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2',
+                    'null' => TRUE,
+                    'default' => 0.00
+                ],
+                'adjustment' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2',
+                    'null' => TRUE,
+                    'default' => 0.00
+                ],
+                'grand_total' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2',
+                ],
+                'added' => [
+                    'type' => 'DATETIME'
+                ]
+            ];
+            $this->dbforge->add_field($split_fields);
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->create_table(ORDER_SPLIT_TABLE, TRUE);
+        }
+        //Split Table End
+
+        //Split Item Table Start
+        if (!$this->db->table_exists(ORDER_SPLIT_ITEM_TABLE)) {
+            $split_fields = [
+                'id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                    'auto_increment' => TRUE
+                ],
+                'split_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'order_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'order_item_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'taxable' => [
+                    'type' => 'TINYINT',
+                    'constraint' => '1',
+                    'default'=>1
+                ],
+                'quantity' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'rate' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'amount' => [
+                    'type' => 'DECIMAL',
+                    'constraint' => '16,2'
+                ],
+                'added' => [
+                    'type' => 'DATETIME'
+                ]
+            ];
+            $this->dbforge->add_field($split_fields);
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->create_table(ORDER_SPLIT_ITEM_TABLE, TRUE);
+        }
+        //Split Item Table End
+
+        //Split Payment Table Start
+        if (!$this->db->table_exists(ORDER_SPLIT_PAYMENT_TABLE)) {
+            $split_fields = [
+                'id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                    'auto_increment' => TRUE
+                ],
+                'split_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'order_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+                'payment_id' => [
+                    'type' => 'INT',
+                    'constraint' => 11,
+                ],
+            ];
+            $this->dbforge->add_field($split_fields);
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->create_table(ORDER_SPLIT_PAYMENT_TABLE, TRUE);
+        }
+        //Split Payment Table End
+
+        $fields = [
+            'id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                'auto_increment' => TRUE
+            ],
+            'order_id' => [
+                'type' => 'INT',
+                'constraint' => 11
+            ],
+            'promotion_id' => [
+                'type' => 'INT',
+                'constraint' => 11
+            ]
+        ];
+        $this->dbforge->add_field($fields);
+        $this->dbforge->add_key('id', TRUE);
+        $this->dbforge->create_table(ORDER_PROMOTION_TABLE, TRUE);
+
+        $fields = [
+            'id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                'auto_increment' => TRUE
+            ],
+            'order_id' => [
+                'type' => 'INT',
+                'constraint' => 11
+            ],
+            'payment_id' => [
+                'type' => 'INT',
+                'constraint' => 11
+            ],
+            'payment_method_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                
+            ],
+            'amount' => [
+                'type' => 'DECIMAL',
+                'constraint' => '16,2'
+            ],
+            'added' => [
+                'type' => 'DATETIME'
+            ]
+        ];
+
+        $this->dbforge->add_field($fields);
+        $this->dbforge->add_key('id', TRUE);
+        $this->dbforge->create_table(ORDER_PAYMENT_REFUND_TABLE, TRUE);
+
 
     }
 

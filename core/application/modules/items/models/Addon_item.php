@@ -76,12 +76,12 @@ class Addon_item extends MY_Model
                 $this->order_by($order['order_by'],$order['order']);
             }
         }
-        $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
+       /*  $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
         if($search_by_vendors) {
             $this->left_join(CONTACT_VENDOR_TABLE,ITEM_TABLE.'.vendor_id='.CONTACT_VENDOR_TABLE.'.id');
         }
         //$this->left_join(ITEM_STOCK_TABLE, ITEM_TABLE.'.id='.ITEM_STOCK_TABLE.'.item_id');
-        $this->select('*,'. ITEM_TABLE.'.title as title,'. ITEM_TABLE.'.id as id,(SELECT SUM(`is`.on_hand) FROM itm_stock `is` WHERE `is`.item_id=`itm_item`.id AND `is`.sku_id=`itm_item_sku`.id) AS `on_hand`');
+        $this->select('*,'. ITEM_TABLE.'.title as title,'. ITEM_TABLE.'.id as id,(SELECT SUM(`is`.on_hand) FROM itm_stock `is` WHERE `is`.item_id=`itm_item`.id AND `is`.sku_id=`itm_item_sku`.id) AS `on_hand`'); */
 
         return $this->search($filter,$limit,$offset);
 
@@ -109,10 +109,10 @@ class Addon_item extends MY_Model
             }
         }
 
-        $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
+       /*  $this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
         if($search_by_vendors) {
             $this->left_join(CONTACT_VENDOR_TABLE,ITEM_TABLE.'.vendor_id='.CONTACT_VENDOR_TABLE.'.id');
-        }
+        } */
         //$this->left_join(ITEM_STOCK_TABLE, ITEM_TABLE.'.id='.ITEM_STOCK_TABLE.'.item_id');
         $this->select('COUNT(*) as total_rows');
 

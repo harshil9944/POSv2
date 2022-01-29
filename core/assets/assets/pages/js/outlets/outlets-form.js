@@ -1,4 +1,4 @@
-Vue.component('outlet-form',{
+Vue.component('outlet-form', {
     template: '#outlet-form-template',
     data: function() {
         return {
@@ -15,8 +15,8 @@ Vue.component('outlet-form',{
     },
     watch: {
         'outlet.countryId': {
-            handler: function (after, before) {
-                if(after!=='') {
+            handler: function(after, before) {
+                if (after !== '') {
                     this.populateStates(after);
                 }
             },
@@ -30,9 +30,9 @@ Vue.component('outlet-form',{
                 module: 'outlets',
                 method: 'populate'
             };
-            var request = submitRequest(data,'get');
-            request.then(function(response){
-                if(response.status==='ok') {
+            var request = submitRequest(data, 'get');
+            request.then(function(response) {
+                if (response.status === 'ok') {
                     self.outlet.code = response.code;
                     self.masters.countries = response.countries;
                     self.masters.vendors = response.vendors;
@@ -41,7 +41,7 @@ Vue.component('outlet-form',{
             });
         },
         populateStates: function(id) {
-            if(!this.initialLoad) {
+            if (!this.initialLoad) {
                 this.outlet.stateId = '';
             }
             this.initialLoad = false;
@@ -52,7 +52,7 @@ Vue.component('outlet-form',{
                 method: 'select_data'
             };
             var request = submitRequest(data, 'get');
-            request.then(function (response) {
+            request.then(function(response) {
                 if (response.status === 'ok') {
                     self.masters.states = response.states;
                 }
@@ -62,13 +62,13 @@ Vue.component('outlet-form',{
             var self = this;
             var method = 'get';
             var data = {
-                module  :   'outlets',
-                method  :   'single',
-                id      :   _s('id')
+                module: 'outlets',
+                method: 'single',
+                id: _s('id')
             };
-            if(method) {
+            if (method) {
                 var request = submitRequest(data, method);
-                request.then(function (response) {
+                request.then(function(response) {
                     if (response.status === 'ok') {
                         var obj = response.obj;
                         self.outlet = obj;
@@ -78,27 +78,27 @@ Vue.component('outlet-form',{
         },
         handleSubmit: function() {
             var form = $('#frm-outlet');
-            if(form.parsley().validate()) {
+            if (form.parsley().validate()) {
 
                 var method = '';
-                if(this.mode==='add') {
+                if (this.mode === 'add') {
                     method = 'put';
-                }else if(this.mode==='edit') {
+                } else if (this.mode === 'edit') {
                     method = 'post';
                 }
 
                 var data = {
-                    module  :   'outlets',
-                    obj     :   this.outlet
+                    module: 'outlets',
+                    obj: this.outlet
                 };
-                if(method) {
+                if (method) {
                     var request = submitRequest(data, method);
-                    request.then(function (response) {
+                    request.then(function(response) {
                         if (response.status === 'ok') {
                             window.location = response.redirect;
                         }
                     });
-                }else{
+                } else {
                     alert('Something went wrong!');
                 }
 
@@ -127,7 +127,7 @@ Vue.component('outlet-form',{
             status: 1
         };
         this.populateMeta();
-        if(this.mode==='edit') {
+        if (this.mode === 'edit') {
             this.initialLoad = true;
             this.populateSingle();
         }

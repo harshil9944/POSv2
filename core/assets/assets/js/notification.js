@@ -36,7 +36,7 @@ if(_s('loggedIn')) {
         return outputArray;
     }
 
-    var reg;
+    /* var reg;
     navigator.serviceWorker.ready
         .then(function(swreg) {
             reg = swreg;
@@ -63,7 +63,7 @@ if(_s('loggedIn')) {
         })
         .catch(function(err) {
             console.log(err);
-        });
+        }); */
 
     function unsubscribeUser(swRegistration) {
         swRegistration.pushManager.getSubscription()

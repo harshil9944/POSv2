@@ -75,28 +75,18 @@ class Imports extends MY_Controller {
     private function _import_item($file){
         _model('item');
         _model('item_category','category');
-        _model('item_sku','sku');
-        _model('item_price','price');
-        _model('item_addon','addon');
         _model('item_note','note');
-        _model('item_feature','feature');
-        _model('item_feature_value','fvalue');
         if($file){
             $excel_data = _excel_to_array($file);
             $items = (isset($excel_data['basic'])) ? $excel_data['basic'] : [];
-            $variants = (isset($excel_data['variants'])) ? $excel_data['variants'] : [];
-            $prices = (isset($excel_data['prices'])) ? $excel_data['prices'] : [];
-            $stocks = (isset($excel_data['stock'])) ? $excel_data['stock'] : [];
-            $features = (isset($excel_data['features'])) ? $excel_data['features'] : [];
-
-            $addons = (@$excel_data['addons']) ? $excel_data['addons'] : [];
+          
             $notes = (@$excel_data['notes']) ? $excel_data['notes'] : [];
-
-            if ($items && $variants && $prices && $stocks) {
-
+            $db_items = $this->item->search([],9999);
+            if ($items) {
                 $wh_filter = [];
                 $warehouses = _get_module('warehouses', '_search', ['filter' => $wh_filter]);
-
+                array_multisort(array_column($items, 'type'), SORT_ASC, $items);
+                dd($items);
                 foreach ($items as $item) {
 
                     $code = $item['item_code'];
@@ -118,18 +108,13 @@ class Imports extends MY_Controller {
                     $this->_clear_item_addons($item_id);
                     $this->_clear_item_notes($item_id);
 
-                    $item_features = array_filter($features, function ($single) use ($code) {
-                        return $single['item_code'] === $code;
-                    });
+                   
 
                     $item_notes = array_values(array_filter($notes, function ($single) use ($code) {
                         return $single['item_code'] === $code;
                     }));
 
-                    $item_variants = array_filter($variants, function ($single) use ($code) {
-                        return $single['item_code'] === $code;
-                    });
-
+                  
                     $ignore_variant_ids = [];
                     if ($item_variants) {
                         foreach ($item_variants as $variant) {
@@ -142,40 +127,9 @@ class Imports extends MY_Controller {
                                 return $single['item_code'] === $code && $single['sku'] === $sku;
                             });
 
-                            if ($item_prices) {
-                                $first = $item['type']==='single';
-                                foreach ($item_prices as $price) {
-                                    unset($price['item_code']);
-                                    $this->_update_item_price($price, $item_id, $sku_id, $first);
-                                    $first = false;
-                                }
-                            }
-
-                            if ($warehouses) {
-                                foreach ($warehouses as $single) {
-                                    $warehouse = $single['code'];
-
-                                    $item_stocks = array_filter($stocks, function ($stock) use ($code, $sku, $warehouse) {
-                                        return $stock['item_code'] === $code && $stock['sku'] === $sku && $stock['warehouse'] === $warehouse;
-                                    });
-
-                                    if ($item_stocks) {
-                                        foreach ($item_stocks as $item_stock) {
-                                            $this->_update_opening_stock($item_stock, $item_id, $sku_id);
-                                        }
-                                    }
-
-                                }
-                            }
                         }
                     }
                     $this->_clear_item_variants($item_id,$ignore_variant_ids);
-
-                    if ($item_features) {
-                        foreach ($item_features as $feature) {
-                            $this->_update_item_feature($feature, $item_id);
-                        }
-                    }
 
                     if ($item_notes) {
                         foreach ($item_notes as $note) {
@@ -184,7 +138,6 @@ class Imports extends MY_Controller {
                     }
 
                 }
-
                 if($addons) {
                     $addon_filters = [];
                     foreach ($addons as $addon) {
@@ -251,17 +204,11 @@ class Imports extends MY_Controller {
                     }
                 }
 
-                $last_si_reference = $this->item->get_query('SELECT MAX(code) as max_code from ' . ITEM_TABLE . ' WHERE code LIKE "SI%"', true);
-                $last_gi_reference = $this->item->get_query('SELECT MAX(code) as max_code from ' . ITEM_TABLE . ' WHERE code LIKE "GI%"', true);
+                $last_itm_reference = $this->item->get_query('SELECT MAX(code) as max_code from ' . ITEM_TABLE . ' WHERE code LIKE "ITM%"', true);
 
-                if ($last_si_reference['max_code']) {
-                    $last_si_number = ltrim(str_replace('SI', '', $last_si_reference['max_code']), '0');
-                    _update_ref('si', (int)$last_si_number + 1);
-                }
-
-                if ($last_gi_reference['max_code']) {
-                    $last_gi_number = ltrim(str_replace('GI', '', $last_gi_reference['max_code']), '0');
-                    _update_ref('gi', (int)$last_gi_number + 1);
+                if ($last_itm_reference['max_code']) {
+                    $last_si_number = ltrim(str_replace('ITM', '', $last_si_reference['max_code']), '0');
+                    _update_ref('atm', (int)$last_si_number + 1);
                 }
                 unlink($file);
             }
@@ -275,19 +222,7 @@ class Imports extends MY_Controller {
         $category_id = $this->_get_category_id($item['category']);
 
         $base_unit_id = $this->_get_unit_id($item['unit']);
-        $purchase_unit_id = $this->_get_unit_id($item['purchase_unit']);
-        $sale_unit_id = $this->_get_unit_id($item['sale_unit']);
-
-        $vendor_id = '';
-        if(@$item['vendor']) {
-            $vendor_id = $this->_get_vendor_id($item['vendor']);
-        }
-        if(!$vendor_id) {
-            if(@$item['manufacturer']) {
-                $vendor_id = $this->_query_vendor_id($item['manufacturer']);
-            }
-        }
-
+       
         $existing_item = [];
         if($code) {
             $existing_item = $this->item->single(['code'=>$code,'type'=>$item['type']]);
@@ -336,164 +271,13 @@ class Imports extends MY_Controller {
         }
         return $item_id;
     }
-
-    private function _update_item_feature($feature,$item_id) {
-
-        $title = trim($feature['feature']);
-        $value = trim($feature['value']);
-
-        $existing_feature = $this->feature->single(['title'=>$title]);
-
-        if(!$existing_feature) {
-            $insert = [
-                'title' =>  $title,
-                'added' =>  sql_now_datetime()
-            ];
-            if($this->feature->insert($insert)){
-                $feature_id = $this->feature->insert_id();
-            }else{
-                $feature_id = false;
-            }
-        }else{
-            $feature_id = $existing_feature['id'];
-        }
-
-        if($feature_id) {
-            $filter = ['item_id'=>$item_id,'feature_id'=>$feature_id];
-            $existing_value = $this->fvalue->single($filter);
-
-            if($existing_value) {
-                $this->fvalue->update(['title'=>$value],array_merge($filter,['id'=>$existing_value['id']]));
-            }else{
-                $this->fvalue->insert(array_merge(['title'=>$value],$filter));
-            }
-        }
-        return false;
-    }
-
-    private function _update_item_variant($variant,$item_id) {
-
-        $variant['item_id'] = $item_id;
-
-        $filter = [
-            'item_id'   =>  $item_id,
-            'sku'       =>  trim($variant['sku'])
-        ];
-        $existing = $this->sku->single($filter);
-
-        if($existing) {
-            $this->sku->update($variant,array_merge(['id'=>$existing['id']],$filter));
-            $sku_id = $existing['id'];
-        }else{
-            $this->sku->insert($variant);
-            $sku_id = $this->sku->insert_id();
-        }
-        return $sku_id;
-    }
-
-    private function _update_item_price($price,$item_id,$sku_id,$first=false) {
-
-        if($first) {
-            $this->price->delete(['item_id'=>$item_id]);
-        }
-
-        $price['item_id'] = $item_id;
-        $price['sku_id'] = $sku_id;
-        $price['purchase_currency'] = _get_setting('currency_code','INR');
-        $price['sale_currency'] = _get_setting('currency_code','INR');
-
-        $unit_id = $this->_get_unit_id(trim($price['unit']));
-        $price['unit_id'] = $unit_id;
-
-        unset($price['unit']);
-        unset($price['sku']);
-
-        $filter = [
-            'item_id'   =>  $item_id,
-            'sku_id'    =>  $sku_id,
-            'unit_id'   =>  $unit_id
-        ];
-        $existing = $this->price->single($filter);
-
-        if($existing) {
-            $this->price->update($price,array_merge($filter));
-        }else{
-            $price['added'] = sql_now_datetime();
-            $this->price->insert($price);
-        }
-        return true;
-    }
-
-    private function _update_opening_stock($stock,$item_id,$sku_id) {
-
-        $warehouse_id = $this->_get_warehouse_id($stock['warehouse']);
-
-        $current_item = [
-            'item_id'       =>  $item_id,
-            'sku_id'        =>  $sku_id
-        ];
-        _get_module('items','_update_warehouse_opening',['item'=>$current_item]);
-
-        if($warehouse_id) {
-
-            $on_hand = $stock['opening_stock'];
-            $amount = $stock['opening_stock_value'];
-            $rate = ($amount && $on_hand)?(float)$amount/(float)$on_hand:0;
-
-            $item_inventory = [
-                'item_id' => $item_id,
-                'sku_id' => $sku_id,
-                'warehouse_id' => $warehouse_id,
-                'reason' => 'opening',
-                'date' => sql_now_datetime(),
-                'quantity' => $on_hand,
-                'rate' => $rate,
-                'amount' => $amount,
-                'created_by' => _get_user_id(),
-                'added' => sql_now_datetime()
-            ];
-            _get_module('items', '_update_opening_inventory', ['inventory' => $item_inventory]);
-        }
-
-    }
-
-    private function _update_item_addon($addon) {
-
-        $addon['added'] = sql_now_datetime();
-        $this->addon->insert($addon);
-        $id = $this->addon->insert_id();
-        return $id;
-    }
-
+    
     private function _update_item_note($note,$item_id) {
-
         unset($note['item_code']);
         $note['added'] = sql_now_datetime();
         $note['item_id'] = $item_id;
         $this->note->insert($note);
         return $this->note->insert_id();
-
-    }
-
-    private function _clear_item_variants($item_id,$ignore_ids=[]) {
-        if($ignore_ids) {
-            $this->db->where_not_in('id',$ignore_ids);
-        }
-        return $this->sku->delete(['item_id'=>$item_id]);
-    }
-
-    private function _clear_item_openings($item_id) {
-
-        _model('items/item_inventory','inventory');
-        _model('items/item_stock','stock');
-
-        $this->inventory->delete(['item_id'=>$item_id,'reason'=>'opening']);
-        $this->stock->delete(['item_id'=>$item_id]);
-        return true;
-    }
-
-    private function _clear_item_features($item_id) {
-        return $this->fvalue->delete(['item_id'=>$item_id]);
     }
 
     private function _clear_item_addons($item_id) {
@@ -552,33 +336,6 @@ class Imports extends MY_Controller {
         }
     }
 
-    private function _get_vendor_id($code) {
-
-        $filter = [];
-        $filter['vendor_id'] = $code;
-        $vendor = _get_module('contacts/vendors','_find',['filter'=>$filter]);
-
-        if($vendor) {
-            return (int)$vendor['id'];
-        }else{
-            return 0;
-        }
-
-    }
-
-    private function _query_vendor_id($string,$field='company_name') {
-
-        $filter = [];
-        $filter[$field] = $string;
-        $vendor = _get_module('contacts/vendors','_find',['filter'=>$filter]);
-
-        if($vendor) {
-            return (int)$vendor['id'];
-        }else{
-            return 0;
-        }
-
-    }
 
     private function _get_warehouse_id($code) {
 

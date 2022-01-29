@@ -14,6 +14,7 @@ defined('ORDER_PAYMENT_TABLE')          OR  define('ORDER_PAYMENT_TABLE', 'ord_p
 defined('ORDER_SOURCE_TABLE')           OR  define('ORDER_SOURCE_TABLE', 'sys_order_source');
 
 defined('POS_SESSION_TABLE')            OR  define('POS_SESSION_TABLE', 'pos_session');
+defined('POS_REGISTER_SESSION_TABLE')   OR  define('POS_REGISTER_SESSION_TABLE', 'pos_register_session');
 
 defined('POS_THUMB_WIDTH')              OR  define('POS_THUMB_WIDTH', 250);
 defined('POS_THUMB_HEIGHT')             OR  define('POS_THUMB_HEIGHT', 250);

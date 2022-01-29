@@ -16,13 +16,26 @@ class Migration_registers_core extends CI_Migration {
                 'type' => 'VARCHAR',
                 'constraint' => 7,
             ],
-            'warehouse_id' => [
+            'outlet_id' => [
                 'type' => 'INT',
                 'constraint' => 11,
             ],
             'title' => [
-                'type' => 'VARCHAR',
+                'type' => 'TEXT',
                 'constraint' => 100,
+            ],
+            'primary' => [
+                'type' => 'TINYINT',
+                'constraint' => 1,
+                'null' => FALSE,
+                'default' => 0
+            ],
+            'key' => [
+                'type' => 'TEXT',
+            ],
+            'type' => [
+                'type' => 'ENUM("Register","Tablet")',
+                'default' => 'Register'
             ],
             'status' => [
                 'type' => 'TINYINT',

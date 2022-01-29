@@ -63,14 +63,14 @@ defined('NOTIFICATION_PUBLIC_KEY')      OR  define('NOTIFICATION_PUBLIC_KEY', 'B
 defined('NOTIFICATION_PRIVATE_KEY')     OR  define('NOTIFICATION_PRIVATE_KEY', '8dUPbof2NZDNmYbUx5oj69wWfl95z8jJ5sAYIWgXSEg');
 
 //Development Settings
-defined('DEV_BASE_URL')                 OR  define('DEV_BASE_URL', 'http://dev.inntech.pos/');
+defined('DEV_BASE_URL')                 OR  define('DEV_BASE_URL', 'http://inntechpos2.ci/');
 defined('DEV_GLOBAL_UPLOAD_PATH')       OR  define('DEV_GLOBAL_UPLOAD_PATH', 'C:/Users/Sandip/Documents/projects/InnTechPOS-Master/stage.inntechpos.com/uploads/');
 defined('DEV_PRINT_SERVER_URL')         OR  define('DEV_PRINT_SERVER_URL', 'http://print-server.ci/');
 
 defined('DEV_DB_HOSTNAME')              OR  define('DEV_DB_HOSTNAME', 'localhost');
 defined('DEV_DB_USERNAME')              OR  define('DEV_DB_USERNAME', 'root');
 defined('DEV_DB_PASSWORD')              OR  define('DEV_DB_PASSWORD', '');
-defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'inntech_pos_db');
+defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'inntech_pos_v2_db');
 
 //Production Settings
 defined('LIVE_BASE_URL')                OR  define('LIVE_BASE_URL', 'https://stage.inntechpos.com/');

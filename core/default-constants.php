@@ -3,7 +3,7 @@
 defined('DEV_APPLICATION_DIR')          OR  define('DEV_APPLICATION_DIR', '../core/application');
 defined('DEV_SYSTEM_DIR')               OR  define('DEV_SYSTEM_DIR', '../core/system');
 defined('DEV_VIEW_DIR')                 OR  define('DEV_VIEW_DIR', '');
-defined('DEV_ASSET_URL')                OR  define('DEV_ASSET_URL', 'http://assets.inntech.pos/');
+defined('DEV_ASSET_URL')                OR  define('DEV_ASSET_URL', 'http://assests.inntechpos2.ci/');
 
 defined('DEV_DEFAULT_TIMEZONE')         OR  define('DEV_DEFAULT_TIMEZONE', 'Asia/Kolkata');
 defined('DEV_DEFAULT_TIMEZONE_VALUE')   OR  define('DEV_DEFAULT_TIMEZONE_VALUE', '+05:30');
@@ -72,6 +72,17 @@ defined('DEFAULT_CITY_ID')              OR  define('DEFAULT_CITY_ID', 31);
 //Summary
 defined('ALLOW_DISCOUNT_IN_SUMMARY')              OR  define('ALLOW_DISCOUNT_IN_SUMMARY', false);
 defined('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT')  OR  define('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT', false);
+defined('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT')  OR  define('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT', true);
 
 //Payment
 defined('ALLOW_CARD_PAYMENT_CHANGE')    OR  define('ALLOW_CARD_PAYMENT_CHANGE', false);
+
+//Items
+defined('ITEM_TYPE_VARIANT')    OR  define('ITEM_TYPE_VARIANT', 'variant');
+defined('ITEM_TYPE_VARIANT_OPTIONAL')    OR  define('ITEM_TYPE_VARIANT_OPTIONAL', 'optional');
+
+//Register or Session(Summary)
+
+defined('SUMMARY_TYPE_REGISTER')    OR  define('SUMMARY_TYPE_REGISTER', 'register');
+defined('SUMMARY_TYPE_SESSION')    OR  define('SUMMARY_TYPE_SESSION', 'session');
+defined('SUMMARY_TYPE_EMPLOYEE')    OR  define('SUMMARY_TYPE_EMPLOYEE', 'employee');

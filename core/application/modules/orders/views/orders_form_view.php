@@ -77,9 +77,9 @@ $code = 'salesorder';
                                         <div class="col-md-6"><?php echo get_select(['id'=>$code.'-warehouse-id','title'=>'Warehouse','attribute'=>'required','vue_model'=>$code.'.warehouseId','vue_for'=>'masters.warehouses']); ?></div>
                                         <div class="col-md-6">
                                             <div class="form-group row">
-                                                <label for="salesorder-salesperson-id" class="col-sm-3 col-form-label">Salesperson&nbsp;<b-button v-b-modal.add-salesperson-modal size="xs" class="p-0" variant="link"><i class="fa fa-plus"></i> </b-button></label>
+                                                <label for="salesorder-employee-id" class="col-sm-3 col-form-label">Salesperson&nbsp;<b-button v-b-modal.add-salesperson-modal size="xs" class="p-0" variant="link"><i class="fa fa-plus"></i> </b-button></label>
                                                 <div class="col-sm-9">
-                                                    <select name="salesorder_salesperson_id" id="salesorder-salesperson-id" class="form-control" v-model="<?php echo $code.'.salesPersonId'; ?>">
+                                                    <select name="salesorder_employee_id" id="salesorder-employee-id" class="form-control" v-model="<?php echo $code.'.salesPersonId'; ?>">
                                                         <option v-for="single in masters.salespersons" :value="single.id">{{ single.value }}</option>
                                                     </select>
                                                 </div>
