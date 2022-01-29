@@ -56,13 +56,13 @@
                                     <div v-if="obj.addons.length" class="row overflow-y-auto mh-300">
                                         <div v-for="(addon,index) in getGroupedAddons" class="col-md-12">
                                             <label class="css-control css-control css-control-primary css-checkbox">
-                                                <input type="checkbox" class="css-control-input" :id="addon.id" @change="updateAddonSelection" :data-addon-item-id="addon.addonItemId" :value="addon.id" v-model="addon.enabled">
-                                                <span class="css-control-indicator"></span>&nbsp;{{ addon.title }}&nbsp;(+{{ addon.salePrice }})
+                                                <input type="checkbox" class="css-control-input" :id="addon.itemId" @change="updateAddonSelection" :data-item-id="addon.itemId" :value="addon.itemId" v-model="addon.enabled">
+                                                <span class="css-control-indicator"></span>&nbsp;{{ addon.title }}&nbsp;(+{{ addon.rate }})
                                             </label>
                                             <div v-if="addon.enabled" class="btn-group pull-right" data-toggle="buttons" role="group" aria-label="Second group">
-                                                <button type="button" class="btn btn-primary" @click="handleDecrement(addon.addonItemId)">-</button>
+                                                <button type="button" class="btn btn-primary" @click="handleDecrement(addon.itemId)">-</button>
                                                 <button type="button" class="btn btn-secondary" disabled>{{ addon.quantity }}</button>
-                                                <button type="button" class="btn btn-primary" @click="handleIncrement(addon.addonItemId)">+</button>
+                                                <button type="button" class="btn btn-primary" @click="handleIncrement(addon.itemId)">+</button>
                                             </div>
                                         </div>
                                     </div>
@@ -550,13 +550,13 @@
                                     <div v-if="item.addons.length" class="row overflow-y-auto mh-300">
                                         <div v-for="(addon,index) in getGroupedAddons" class="col-md-12">
                                             <label class="css-control css-control css-control-primary css-checkbox">
-                                                <input type="checkbox" class="css-control-input" :id="addon.id" @change="updateAddonSelection" :data-addon-item-id="addon.addonItemId" :value="addon.id" v-model="addon.enabled">
-                                                <span class="css-control-indicator"></span>&nbsp;{{ addon.title }}&nbsp;(+{{ addon.salePrice }})
+                                                <input type="checkbox" class="css-control-input" :id="addon.itemId" @change="updateAddonSelection" :data-item-id="addon.itemId" :value="addon.itemId" v-model="addon.enabled">
+                                                <span class="css-control-indicator"></span>&nbsp;{{ addon.title }}&nbsp;(+{{ addon.rate }})
                                             </label>
                                             <div v-if="addon.enabled" class="btn-group pull-right" data-toggle="buttons" role="group" aria-label="Second group">
-                                                <button type="button" class="btn btn-primary" @click="handleDecrement(addon.addonItemId)">-</button>
+                                                <button type="button" class="btn btn-primary" @click="handleDecrement(addon.itemId)">-</button>
                                                 <button type="button" class="btn btn-secondary" disabled>{{ addon.quantity }}</button>
-                                                <button type="button" class="btn btn-primary" @click="handleIncrement(addon.addonItemId)">+</button>
+                                                <button type="button" class="btn btn-primary" @click="handleIncrement(addon.itemId)">+</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1188,6 +1188,9 @@
                                         <template slot="grandTotal" slot-scope="row">
                                             {{ row.value | beautifyCurrency }}
                                         </template>
+                                        <template slot="orderStatus" slot-scope="row">
+                                            {{ row.value ==='Closed'?"Closed":"Partial Refunded"  }}
+                                        </template>
                                     </b-table>
                                 </b-tab>
                                 <b-tab title="Cancelled">
@@ -1223,7 +1226,7 @@
         <b-modal no-fade centered id="session-summary-modal" size="xl" hide-header hide-footer body-class="p-0">
             <div id="session-summary-block" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
-                    <h3 class="block-title">Close Register</h3>
+                    <h3 class="block-title">Close {{ type ==='employee'?'Shift': 'Register'}}</h3>
                     <div class="block-options">
                         <button type="button" class="btn-block-option" @click="$bvModal.hide('session-summary-modal');" aria-label="Close">
                             <i class="si si-close"></i>
@@ -1233,7 +1236,7 @@
                 <div class="block-content bg-gray-light">
                     <div class="row d-flex">
                         <div class="col-md-12">
-                            <div class="block">
+                            <div v-if="!isEmployeeType" class="block">
                                 <div class="block-content">
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
@@ -1284,7 +1287,7 @@
                                                 </table>
                                                 <h6 v-if="allowDiscountInSummary" class="mb-2">Specific Discounts</h6>
                                                 <table  v-if="allowDiscountInSummary" class="table table-bordered table-sm">
-						                                <tr v-if="session.source" v-for="single in session.source">
+						                            <tr v-if="session.source" v-for="single in session.source">
                                                         <td>{{ single.amountLabel }}</td>
                                                         <td class="text-right">{{ single.discount | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>
@@ -1295,17 +1298,37 @@
                                             <div class="table-responsive">
                                                 <h6 class="mb-2">Specific Payments</h6>
                                                 <table class="table table-bordered table-sm">
-						                                <tr v-if="session.payments" v-for="single in session.payments">
+                                                    <tr v-if="session.payments" v-for="single in session.payments">
                                                         <td>{{ single.label }}</td>
                                                         <td class="text-right">{{ single.amount | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>
                                                 </table>
                                                 <h6 class="mb-2">Specific Amounts</h6>
                                                 <table class="table table-bordered table-sm">
-						                                <tr v-if="session.source" v-for="single in session.source">
+                                                    <tr v-if="session.source" v-for="single in session.source">
                                                         <td>{{ single.amountLabel }}</td>
                                                         <td class="text-right">{{ single.amount | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>
+                                                </table>
+                                                <h6 v-if="isEmployeeType" class="mb-2">Specific Registers</h6>
+                                                <table v-if="isEmployeeType" class="table table-bordered table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Register</th>
+                                                            <th class="text-right">Tip</th>
+                                                            <th class="text-right">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-if="session.registersDetail" v-for="single in session.registersDetail">
+                                                            <td>{{ single.registerTitle }}</td>
+                                                            <td class="text-right">{{ single.tip | toTwoDecimal | beautifyCurrency }}</td>
+                                                            <td class="text-right">{{ single.grandTotal | toTwoDecimal | beautifyCurrency }}</td>
+                                                        </tr>
+                                                        <tr else-if="session.registersDetail">
+                                                            <td colspan="3" class="text-center">No orders</td>
+                                                        </tr>
+                                                    </tbody>
                                                 </table>
                                             </div>
                                         </div>
@@ -1313,7 +1336,7 @@
                                             <div class="table-responsive">
                                                 <h6 class="mb-2">Total Amounts</h6>
                                                 <table class="table table-bordered table-sm">
-                                                    <tr>
+                                                    <tr v-if="!isEmployeeType">
                                                         <td>Opening Cash</td>
                                                         <td class="text-right">{{ session.openingCash | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>
@@ -1353,7 +1376,11 @@
                                                         <td>Expected Closing Cash</td>
                                                         <td class="text-right">{{ session.expectedClosingCash | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>
-                                                    <tr class="alert-success">
+                                                    <tr v-if="isRegisterType && Number(session.registerToEmpTotal) > 0 " class="alert-info">
+                                                        <th>Give Employee Total</th>
+                                                        <th class="text-right">{{ session.registerToEmpTotal | toTwoDecimal | beautifyCurrency }}</th>
+                                                    </tr>
+                                                    <tr v-if="!isEmployeeType" class="alert-success">
                                                         <th>Take Out Cash</th>
                                                         <th class="text-right">{{ session.takeOut | toTwoDecimal | beautifyCurrency }}</th>
                                                     </tr>
@@ -1371,20 +1398,22 @@
                                         <h3 class="alert-heading font-size-h4 font-w400 mb-0 text-center">Open Orders Found</h3>
                                         <p class="mb-0 text-center">In order to close register, please close existing orders.</p>
                                     </div>
-                                    <div v-if="session.openOrdersCount===0" class="form-group row">
-                                        <label class="col-12" for="closing-cash">Cash to Keep in Register</label>
-                                        <div class="col-md-12">
-                                            <input :readonly="session.openOrdersCount!==0" type="text" class="form-control" id="closing-cash" placeholder="Enter closing amount" v-model="session.closingCash">
+                                    <div v-if="!isEmployeeType">
+                                        <div  v-if="session.openOrdersCount===0" class="form-group row">
+                                            <label class="col-12" for="closing-cash">Cash to Keep in Register</label>
+                                            <div class="col-md-12">
+                                                <input :readonly="session.openOrdersCount!==0" type="text" class="form-control" id="closing-cash" placeholder="Enter closing amount" v-model="session.closingCash">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div v-if="session.openOrdersCount===0" class="form-group row">
-                                        <label class="col-12" for="closing-note">Note</label>
-                                        <div class="col-md-12">
-                                            <textarea :readonly="session.openOrdersCount!==0" class="form-control" rows="3" id="closing-note" placeholder="Note..." v-model="session.closingNote"></textarea>
+                                        <div v-if="session.openOrdersCount===0" class="form-group row">
+                                            <label class="col-12" for="closing-note">Note</label>
+                                            <div class="col-md-12">
+                                                <textarea :readonly="session.openOrdersCount!==0" class="form-control" rows="3" id="closing-note" placeholder="Note..." v-model="session.closingNote"></textarea>
+                                            </div>
                                         </div>
                                     </div>
                                     <div v-if="session.openOrdersCount===0" class="form-group text-center">
-                                        <button :disabled="session.openOrdersCount!==0" type="button" class="btn btn-alt-danger" @click="handleCloseRegister">Close Register</button>
+                                        <button :disabled="session.openOrdersCount!==0" type="button" class="btn btn-alt-danger" @click="handleCloseRegister">Close {{ type ==='employee'?'Shift': 'Register'}}</button>
                                     </div>
                                 </div>
                             </div>
@@ -1392,6 +1421,7 @@
                     </div>
                 </div>
             </div>
+            <user-login></user-login>
         </b-modal>
     </div>
 </script>
@@ -2657,22 +2687,93 @@
         </div>
     </b-modal>
 </script>
+<script type="text/x-template" id="employee-login-template">
+    <b-modal id="employee-login-modal" size="md"   hide-header hide-footer body-class="p-0" v-cloak>
+        <div class="block block-themed block-transparent mb-0">
+            <div class="block-header bg-primary-dark">
+                <h3 class="block-title">{{ employee.name }}</h3>
+                <div class="block-options">
+                    <button type="button" class="btn-block-option" @click="handleCancel" aria-label="Close">
+                        <i class="si si-close"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="block block-content">
+                <div class="row">
+                    <div class="col-md-12 mb-10">
+                        <div class="form-group row">
+                            <label class="col-12" for="code">Code</label>
+                            <div class="col-md-12">
+                                <input type="number" class="form-control" id="code" placeholder="Enter code" v-model="employee.code"/>
+                                <p v-if="showError" class="text-danger">{{ errorMessage }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 text-center">
+                        <button  @click="handleSubmit" class="btn btn-danger mr-2">Login</button>
+                        <button  @click="handleCancel" class="btn btn-primary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </b-modal>
+</script>
+<script type="text/x-template" id="user-login-template">
+     <b-modal id="user-login-modal" size="md"   hide-header hide-footer body-class="p-0" v-cloak>
+        <div class="block block-themed block-transparent mb-0">
+            <div class="block-header bg-primary-dark">
+                <h3 class="block-title">Manager Login</h3>
+                <div class="block-options">
+                    <button type="button" class="btn-block-option" @click="handleCancel" aria-label="Close">
+                        <i class="si si-close"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="block block-content">
+                <form id="frm-login" @submit.prevent="handleSubmit" class="js-validation-signin px-30" data-parsley-validate="true">
+                    <div style="display: none;" class="form-group row ">
+                        <div class="col-12">
+                            <div class="form-material floating">
+                                <input id="login-email" class="form-control" type="email" v-model="login.email" required data-parsley-required-message="Email Address is required.">
+                                <label for="login-email">Email Address</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <div class="form-material floating">
+                                <input id="login-password" class="form-control" type="password" v-model="login.password" required data-parsley-required-message="Password is required">
+                                <label for="login-password">Password</label>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-if="showMessage" class="text-danger">{{ errorMessage }}</p>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-sm btn-hero btn-alt-primary" :disabled="sendingRequest">
+                            <i class="si si-login mr-10"></i>Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </b-modal>
+</script>
 <script type="text/x-template" id="pos-template">
     <div id="brahma-pos" v-cloak>
-        <div v-if="session==null && sessionChecked==true && !isTabletMode" class="row" v-cloak>
+        <div v-if="canShowSession" class="row" v-cloak>
             <div class="col-md-12">
                 <div class="d-flex align-items-center justify-content-center">
                     <div class="block block-rounded block-themed w-400p">
                         <div class="block-header bg-flat">
-                            <h3 class="block-title">Open Register</h3>
+                            <h3 class="block-title">Open Session</h3>
                         </div>
                         <div class="block-content">
-                            <div class="form-group row">
+                           <!--  <div class="form-group row">
                                 <label class="col-12" for="opening-cash">Opening Amount</label>
                                 <div class="col-md-12">
                                     <input type="text" class="form-control" id="opening-cash" placeholder="Enter opening amount" v-model="newSession.openingCash">
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="form-group row">
                                 <label class="col-12" for="opening-note">Note</label>
                                 <div class="col-md-12">
@@ -2680,12 +2781,13 @@
                                 </div>
                             </div>
                             <div class="form-group text-center">
-                                <button type="button" class="btn btn-alt-primary" @click="handleOpenRegister">Open Register</button>
+                                <button type="button" class="btn btn-alt-primary" @click="handleOpenSession">Open Session</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <user-login></user-login>
         </div>
         <div v-if="session==null && isTabletMode">
             <div class="col-md-12">
@@ -2701,7 +2803,82 @@
                 </div>
             </div>
         </div>
-        <div v-if="session!=null" class="row font-13">
+        <div v-if="sessionOpen">
+            <div v-if="registerCheckLogin">
+                <div v-if="showRegisterSession">
+                    <div class="col-md-12">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="block block-rounded block-themed w-400p">
+                                <div class="block-header bg-flat">
+                                    <h3 class="block-title">Open {{ registerTitle }}</h3>
+                                    <!-- <button type="button" class="btn btn-alt-primary" :disabled="!canCloseSession" @click="handleSessionSummary">Open Register {{ registerTitle }}</button> -->
+                                </div>
+                                <div class="block-content">
+                                    <div class="form-group row">
+                                        <label class="col-12" for="opening-cash">Opening Amount</label>
+                                        <div class="col-md-12">
+                                            <input type="text" class="form-control" id="opening-cash" placeholder="Enter opening amount" v-model="newRegisterSession.openingCash">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-12" for="opening-note">Note</label>
+                                        <div class="col-md-12">
+                                            <textarea class="form-control" rows="5" id="opening-note" placeholder="Note..." v-model="newRegisterSession.openingNote"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group text-center">
+                                        <button type="button" class="btn btn-alt-primary" @click="handleOpenRegister">Open {{ registerTitle }}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                    </div>
+                </div>
+                <div v-if="canShowEmpLogin">
+                    <div class="col-md-12">
+                        <div class="d-flex align-items-center justify-content-center mt-100" v-cloak>
+                            <div class="block block-rounded block-themed w-50">
+                                <div class="block-header bg-secondary">
+                                    <h3 class="block-title">Employee Login</h3>
+                                </div>
+                                <div class="block-content">
+                                    <div class="row">
+                                        <div  v-for="e in employees" class="col-md-4 col-12">
+                                            <a class="block block-link-pop text-center bg-info-light" @click.prevent="handleEmployee(e)" href="javascript:void(0)">
+                                                <div class="block-content block-content-full">
+                                                    <img class="img-avatar" src="<?php _easset_url("assets/img/employee.jpg"); ?>" alt="">
+                                                </div>
+                                                <div class="block-content block-content-full bg-info">
+                                                    <div class="font-w600 mb-5 text-white">{{ e.name }}</div>
+                                                    <div class="font-size-sm" :class="e.shiftOpen ? 'text-white':'text-warning'">{{ getShiftTitle(e.shiftOpen) }}</div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <employee-login></employee-login>
+                </div>
+            </div>
+            <div v-if="!registerCheckLogin">
+                <div class="col-md-12">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="block block-rounded block-themed w-400p">
+                            <div class="block-header bg-danger">
+                                <h3 class="block-title">Open Register</h3>
+                            </div>
+                            <div class="block-content">
+                            <p>Please inform Admin/Manager to open a register first.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if="canShowPos" class="row font-13">
             <div v-if="topWarning.show" class="col-12"><p class="p-10 bg-danger text-white text-center">{{ topWarning.message }}</p></div>
             <div class="col-xl-8 col-lg-6">
                 <item-list :cart="order.cart" :is-editable="isEditable"></item-list>
@@ -2719,13 +2896,15 @@
                         <span v-if="order.type=='dine'" class="ml-2">Table: <a href="javascript:void(0)" @click="handleChangeTable" title="Change Table" class="text-danger">{{ getTableName() }}</a></span>
                         <div class="btn-group pull-right" role="group">
                             <button type="button" class="btn btn-primary" @click="onOrderHistory">Orders</button>
-                            <div v-if="!isTabletMode" class="btn-group float-right d-block" role="group">
+                            <div v-if="" class="btn-group float-right d-block" role="group">
                                 <button type="button" class="btn btn-danger dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-fw fa-cog mr-5"></i>Options</button>
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
-                                    <a v-if="enableSourceSwitch" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
-                                    <div v-if="enableSourceSwitch" class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleSessionSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a>
-                                    <a v-if="allowOpenCashDrawer()" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOpenDrawer"><i class="fa fa-fw fa-bell mr-5"></i>Cash Drawer</a>
+                                    <a v-if="enableSourceSwitch && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
+                                    <div v-if="enableSourceSwitch && !isTabletMode" class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a>
+                                    <a v-if="allowOpenCashDrawer() && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOpenDrawer"><i class="fa fa-fw fa-bell mr-5"></i>Cash Drawer</a>
+                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeLogout"><i class="si si-logout mr-5"></i>Lock Terminal</a>
+                                    <a v-if="!isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeSummary"><i class="si si-logout mr-5"></i>Close Shift</a>
                                 </div>
                             </div>
                         </div>
@@ -2736,11 +2915,11 @@
                 <table-dialog></table-dialog>
                 <discount-dialog :cart="order.cart" :is-editable="isEditable"></discount-dialog>
                 <gratuity-dialog :cart="order.cart" :is-editable="isEditable"></gratuity-dialog>
-                <order-history :session="session.id"></order-history>
+                <order-history :session="session.id" :isTabletMode="isTabletMode"></order-history>
                 <order-details :session="session.id"></order-details>
                 <online-order-history :orders="unacceptedOrders"></online-order-history>
                 <online-order-detail :session="session.id" :register="register"></online-order-detail>
-                <session-summary :id="session.id"></session-summary>
+                <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                 <print-server-dialog></print-server-dialog>
                 <div class="block">
                     <div class="block-content block-content-full py-10">
@@ -2754,7 +2933,7 @@
                         <div class="row mb-2">
                             <div class="col-md-12">
                                 <order-note :order="order"></order-note>
-                                <cart :cart="order.cart" :order-type="order.type" :is-editable="isEditable" :order="order" :is-payment-allowed="paymentAllowed" :allow-gratuity="allowGratuity"></cart>
+                                <cart :isTabletMode="isTabletMode" :cart="order.cart" :order-type="order.type" :is-editable="isEditable" :order="order" :is-payment-allowed="paymentAllowed" :allow-gratuity="allowGratuity"></cart>
                                 <promotion-dialog :order="order"></promotion-dialog>
                                 <split-order :order="order" :allow-gratuity="allowGratuity"></split-order>
                                 <cart-edit-item :items="order.cart.items" :is-editable="isEditable"></cart-edit-item>

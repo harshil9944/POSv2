@@ -121,6 +121,9 @@ class Pos extends MY_Controller {
         _set_js_var('allowCustomerNotes',ALLOW_CUSTOMER_NOTES,'b');
 
         _set_js_var('allowCardPaymentChange',ALLOW_CARD_PAYMENT_CHANGE,'b');
+      
+        _set_js_var('managerEmail',_get_session('userEmail'),'s');
+        _set_js_var('allowSummaryCashEmployeeTakeOut',ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT,'b');
         $page = [
             'singular'      =>  $this->singular,
             'plural'        =>  $this->plural,
@@ -136,23 +139,36 @@ class Pos extends MY_Controller {
 
     }
 
-    private function setupValues() {
-
-    }
-
     public function _populate_get() {
 
         _model('pos_session');
+        _model('pos_register_session','prs');
 
         $register_id = _input('register_id');
+        $deviceRegisterId = _input('deviceRegisterId');
 
         $tables = _get_module('areas/tables','_search',[]);
 
         $session = $this->pos_session->get_open($register_id);
         $session_opening_cash = false;
+        $register_session_opening_cash = false;
+        $registerSession = false;
         if($session) {
             $this->_exclude_keys($session,$this->pos_session->exclude_keys);
             $this->_sql_to_vue($session,$this->pos_session->keys);
+            $params = ['session_id'=>$session['id'],'register_id'=>$deviceRegisterId];
+            $registerSession = $this->prs->get_open($params);
+            if($registerSession){
+                $this->_exclude_keys($registerSession,$this->prs->exclude_keys);
+                $this->_sql_to_vue($registerSession,$this->prs->keys);
+            }else{
+                $this->prs->order_by('closing_date','DESC');
+                $last_register_session = $this->prs->single(['session_id'=>$session['id'],'register_id'=>$deviceRegisterId,'status'=>'Close']);
+                $register_session_opening_cash = (@$last_register_session['closing_cash'])?round($last_register_session['closing_cash'],2):false;
+                if($register_session_opening_cash === false){
+                    $register_session_opening_cash = _get_setting('pos_default_opening_cash',0);
+                }
+            }
         }else{
             $this->pos_session->order_by('closing_date','DESC');
             $last_session = $this->pos_session->single(['register_id'=>$register_id,'status'=>'Close']);
@@ -164,6 +180,15 @@ class Pos extends MY_Controller {
         _response_data('sessionOpeningCash',$session_opening_cash);
         _response_data('tables',($tables)?$tables:[]);
         _response_data('session',($session)?$session:null);
+        _response_data('registerSession',($registerSession)?$registerSession:null);
+        _response_data('registerSessionOpeningCash',$register_session_opening_cash);
+        return true;
+    }
+
+    public function _pos_employees_post(){
+        $session_id = _input('session_id');
+        $employees = _get_module('employees','_employees_pos',['session_id'=>$session_id]);
+        _response_data('employees',$employees);
         return true;
     }
 
@@ -188,12 +213,10 @@ class Pos extends MY_Controller {
             $icons = _get_module('items/icons','_search',[]);
             _set_cache('pos_icons',$icons);
         }
-
-        $items = _get_cache('pos_pre_items');
-
+        $items =_get_cache('pos_pre_items');
         if(!$items) {
             $item_params = [];
-            $item_params['filter'] = ['pos_status'=>1];
+            $item_params['filter'] = ['pos_status'=>1,'type'=>'product','parent'=>0];
             $load_addon_items = _get_setting('pos_load_addon_items',POS_LOAD_ADDON_ITEMS);
             if(!$load_addon_items) {
                 $item_params['filter']['is_addon'] = 0;
@@ -203,27 +226,28 @@ class Pos extends MY_Controller {
             $item_params['exclude'] = true;
             $item_params['convert'] = true;
             $items = _get_module('items','_search',$item_params);
-
+           
             if($items) {
                 $temp = [];
                 foreach ($items as $item) {
 
                     $tags = [];
-                    $tags[] = $item['name'];
+                    $tags[] = $item['title'];
 
-                    $sku_params = [
+                    $variant_params = [
                         'filter'    =>  [
-                            'item_id'   =>  $item['id']
+                            'parent'   =>  $item['id'],
+                            'type'=>ITEM_TYPE_VARIANT,
                         ],
                         'exclude'   =>  true,
                         'convert'   =>  true
                     ];
 
-                    $variations = _get_module('items','_get_item_skus',$sku_params);
+                    $variations = _get_module('items','_get_item_variations',$variant_params);
 
                     if($variations) {
                         foreach ($variations as $variation) {
-                            $tags[] = $variation['name'];
+                            $tags[] = $variation['title'];
                         }
                     }
 
@@ -252,7 +276,7 @@ class Pos extends MY_Controller {
                     $temp[] = [
                         'id'        =>  $item['id'],
                         'type'      =>  $item['type'],
-                        'title'     =>  $item['name'],
+                        'title'     =>  $item['title'],
                         'tags'      =>  implode(' ',$tags),
                         'categoryId'=>  $item['categoryId'],
                         'image'     =>  $image_file_name,
@@ -263,13 +287,11 @@ class Pos extends MY_Controller {
                 _set_cache('pos_pre_items',$items);
             }
         }
-
         _response_data('categories',$categories);
         _response_data('items',$items);
         _response_data('units',$units);
         _response_data('icons',($icons)?$icons:[]);
         return true;
-
     }
 
     public function _populate_payment_get() {
@@ -384,14 +406,68 @@ class Pos extends MY_Controller {
         return true;
     }
 
+    public function _open_register_session_post() {
+
+        _model('pos_register_session','prs');
+
+        $obj = _input('obj');
+
+        $this->_vue_to_sql($obj,$this->prs->keys);
+
+        $session_id = $obj['session_id'];
+        $register_id = $obj['register_id'];
+
+        $params = [
+            'session_id'=>$session_id,
+            'register_id'=>$register_id,
+        ];
+
+        $registerSession = $this->prs->get_open($params);
+
+        if(!$registerSession) {
+            $obj['opening_user_id'] = _get_user_id();
+            $obj['opening_date'] = $obj['added'] = sql_now_datetime();
+            $obj['status'] = 'Open';
+
+            if($this->prs->insert($obj)){
+                $registerSession = $this->prs->get_open($params);
+            }
+        }
+        $this->_sql_to_vue($registerSession,$this->prs->keys);
+        _response_data('registerSession',$registerSession);
+        return true;
+    }
+
     public function _close_session_summary_get() {
 
-            $session_id = _input('session_id');
+            $obj = _input('obj');
 
-            $session = $this->_close_session_summary(['session_id'=>$session_id,'enableRefunded'=>ALLOW_REFUND]);
+            $session_id = $obj['sessionId'];
+            $register_id = $obj['registerId'];
+            $register_session_id = $obj['registerSessionId'];
+            $employee_id = $obj['employeeId'];
+            $type = $obj['type'];
 
+
+            if($type === SUMMARY_TYPE_SESSION){
+                    $session = $this->_close_session_summary(['session_id'=>$session_id,'enableRefunded'=>ALLOW_REFUND,'register_id'=>$register_id]);
+            }elseif($type === SUMMARY_TYPE_REGISTER){
+                $session = $this->_close_register_summary(['session_id'=>$session_id,'enableRefunded'=>ALLOW_REFUND,'register_id'=>$register_id]);
+            }elseif($type === SUMMARY_TYPE_EMPLOYEE){
+                    $session = $this->_close_employee_summary(['session_id'=>$session_id,'enableRefunded'=>ALLOW_REFUND,'employee_id'=>$employee_id]);
+            }
             _response_data('summary',$session);
             return true;
+    }
+
+    private function _close_employee_summary($params){
+        $result = $this->_get_session_summary($params);
+        $register_session = [];
+        $session = $this->_prep_summary($register_session,$result,SUMMARY_TYPE_EMPLOYEE);
+        $session_id = $params['session_id'];
+        $employee_id = $params['employee_id'];
+        $session['registersDetail'] =_db_get_query("SELECT sr.title as registerTitle,SUM(oo.grand_total) as grandTotal,SUM(oo.tip) as tip FROm ord_order oo LEFT JOIN sys_register sr ON oo.close_register_id = sr.id  WHERE oo.employee_id= $employee_id AND oo.session_id = $session_id AND oo.order_status IN('closed','partial_refund')GROUP BY oo.close_register_id;");
+        return $session;
     }
 
     public function _close_session_summary($params) {
@@ -405,122 +481,167 @@ class Pos extends MY_Controller {
 
         if($session) {
 
-            $result = $this->_get_session_summary(['session_id'=>$session_id]);
-            $session['ordersCount'] = ($result)?$result['orders_count']:0;
-            $session['openOrdersCount'] = ($result)?(int)$result['open_orders_count']:0;
-            $session['cancelledOrdersCount'] = ($result)?$result['cancelled_orders_count']:0;
-            $session['transactionsTotal'] = ($result)?dsRound($result['transactions_total']):0;
-            $session['cancelledTransactionsTotal'] = ($result)?dsRound($result['cancelled_transactions_total']):0;
-            //$session['cashTransactionsTotal'] = (@$result)?$result['cash_transactions_total']:0;
-            //$session['cardTransactionsTotal'] = ($result)?$result['card_transactions_total']:0;
-            $session['changeTotal'] = ($result)?dsRound($result['change_total']):0;
-            $session['discountTotal'] = ($result)?dsRound($result['discount_total']):0;
-            $session['tipTotal'] = ($result)?dsRound($result['tip_total']):0;
-            $session['taxTotal'] = ($result)?dsRound($result['tax_total']):0;
-            $session['gratuityTotal'] = ($result)?dsRound($result['gratuity_total']):0;
-            $session['refundedTransactionsTotal'] = ($result)?dsRound($result['refunded_transactions_total']):0;
-            $session['refundedOrdersCount'] = ($result)?$result['refunded_orders_count']:0;
-            $session['partialRefundCount'] = ($result)?$result['partial_refund_count']:0;
-            $session['partialRefundTotal'] = ($result)?$result['partial_refund_total']:0;
-            $session['cashRefundTransactionsTotal'] = ($result)?dsRound($result['cash_refund_transactions_total']):0;
-            $session['cashGratuityTotal'] = ($result)?dsRound($result['cash_gratuity_total']):0;
-            $ignore_print_payment_ids = (array)IGNORE_PRINT_PAYMENT_IDS;
-            $payment_methods = _get_module('core/payment_methods','_search',[]);
-            $cash_transactions_total = 0;
-            $session['payments'] = [];
-            if($payment_methods) {
-                foreach ($payment_methods as $method) {
-                    if(in_array($method['id'],$ignore_print_payment_ids)) {
-                        continue;
-                    }
-                    $code = $method['code'];
-                    $var = $code.'_transactions_total';
-                    $title = $method['title'];
-                    $result_var = "$title";
-                    $amount = (@$result[$var])?$result[$var]:0;
-                    $session['payments'][] = [
-                        'label' =>  $result_var,
-                        'amount'=>  $amount
-                    ];
-                    if($code=='cash') {
-                        $cash_transactions_total = $amount;
-                    }
-                }
-            }
-            $order_source = _get_module('orders/order_sources','_search',['filter'=>['show_in_summary'=>1]]);
-            $session['source'] = [];
-            if($order_source) {
-                foreach ($order_source as $source) {
-                    $id = $source['id'];
-                    $title = $source['title'];
-                    $var = "source_{$id}_orders_count";
-                    $total = "source_{$id}_amount";
-                    $discount = "source_{$id}_discount";
-                    $total_label = "$title";
-                    $amount_label = "$title";
-                    $order = (@$result[$var])?$result[$var]:0;
-                    $amount = (@$result[$total])?$result[$total]:0;
-                    $discount = (@$result[$discount])?$result[$discount]:0;
-                    $session['source'][] = [
-                        'label' =>  $total_label,
-                        'amountLabel' => $amount_label,
-                        'order'=>  $order,
-                        'amount'=> $amount,
-                        'discount'=> $discount,
-                    ];
+            $result = $this->_get_session_summary($params);
 
-                }
-            }
+            $session = $this->_prep_summary($session,$result,SUMMARY_TYPE_SESSION);
+            return $session;
+        }
+        return false;
+    }
+     public function _close_register_summary($params) {
 
+        _model('pos_register_session','prs');
+        _model('users/user','user');
 
-            if(@$params['recalculate_cash']!==false || $session['status'] == 'Open') {
-                $default_opening = (float)_get_setting('pos_default_opening_cash',0);
+        $session_id = $params['session_id'];
+        $register_id = $params['register_id'];
 
-                $closing_cash = ((float)$cash_transactions_total - (float)$session['changeTotal']) + (float)$session['opening_cash'];
-                $session['expectedClosingCash'] = round($closing_cash,2);
+        $params = [
+            'session_id'=>$session_id,
+            'register_id'=>$register_id
+        ];
 
-                $session['take_out'] = ($default_opening<$session['expectedClosingCash'])?$session['expectedClosingCash']-$default_opening:0;
+        $register_session = $this->prs->get_open($params);
 
-                $session['closing_cash'] = ($default_opening<$session['expectedClosingCash'])?$default_opening:$session['expectedClosingCash'];
-            }
+        if($register_session) {
 
-            $opening_user = $this->user->single(['id'=>$session['opening_user_id']]);
-                $closing_user = false;
-                if($session['opening_user_id']==$session['closing_user_id']) {
-                    $closing_user = $opening_user;
-                }else {
-                    if($session['closing_user_id']) {
-                        $closing_user = $this->user->single(['id' => $session['opening_user_id']]);
-                    }
-                }
+            $result = $this->_get_session_summary($params);
 
-                $session['openingEmployee'] = ($opening_user)?$opening_user['first_name'].' '.$opening_user['last_name']:'';
-                $session['closingEmployee'] = ($closing_user)?$closing_user['first_name'].' '.$closing_user['last_name']:'';
-
-            $this->_exclude_keys($session,$this->pos_session->exclude_keys);
-            $this->_sql_to_vue($session,$this->pos_session->keys);
-            if(@$params['enableRefunded']!==false || @$params['recalculate_cash']!==false){
-                $session['refundTotal'] = $session['refundedTransactionsTotal'] + $session['partialRefundTotal'];
-                $session['transactionsTotal'] = $session['transactionsTotal'] - $session['partialRefundTotal'];
-                $session['takeOut'] = $session['takeOut'] - $session['cashRefundTransactionsTotal'];
-                if(@$session['expectedClosingCash']){
-                    $session['expectedClosingCash'] = $session['expectedClosingCash'] - $session['cashRefundTransactionsTotal'];
-                }
-            }
-            if(ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT){
-                $session['transactionsTotal'] =  $session['transactionsTotal'] - $session['gratuityTotal'];
-                if(@ $session['expectedClosingCash']){
-                    $session['expectedClosingCash'] =  $session['expectedClosingCash'] - $session['cashGratuityTotal'];
-                }
-            }
+            $session = $this->_prep_summary($register_session,$result,SUMMARY_TYPE_REGISTER);
             return $session;
         }
         return false;
     }
 
+    private function _prep_summary(&$session,&$result,$type = ''){
+        _model('users/user','user');
+        $session['ordersCount'] = ($result)?$result['orders_count']:0;
+        $session['openOrdersCount'] = ($result)?(int)$result['open_orders_count']:0;
+        $session['cancelledOrdersCount'] = ($result)?$result['cancelled_orders_count']:0;
+        $session['transactionsTotal'] = ($result)?dsRound($result['transactions_total']):0;
+        $session['cancelledTransactionsTotal'] = ($result)?dsRound($result['cancelled_transactions_total']):0;
+        $session['changeTotal'] = ($result)?dsRound($result['change_total']):0;
+        $session['discountTotal'] = ($result)?dsRound($result['discount_total']):0;
+        $session['tipTotal'] = ($result)?dsRound($result['tip_total']):0;
+        $session['taxTotal'] = ($result)?dsRound($result['tax_total']):0;
+        $session['gratuityTotal'] = ($result)?dsRound($result['gratuity_total']):0;
+        $session['refundedTransactionsTotal'] = ($result)?dsRound($result['refunded_transactions_total']):0;
+        $session['refundedOrdersCount'] = ($result)?$result['refunded_orders_count']:0;
+        $session['partialRefundCount'] = ($result)?$result['partial_refund_count']:0;
+        $session['partialRefundTotal'] = ($result)?$result['partial_refund_total']:0;
+        $session['cashRefundTransactionsTotal'] = ($result)?dsRound($result['cash_refund_transactions_total']):0;
+        $session['cashGratuityTotal'] = ($result)?dsRound($result['cash_gratuity_total']):0;
+        $session['registerToEmpTotal'] = (@$result['register_to_emp_total'])?dsRound($result['register_to_emp_total']):0;
+        $ignore_print_payment_ids = (array)IGNORE_PRINT_PAYMENT_IDS;
+        $payment_methods = _get_module('core/payment_methods','_search',[]);
+        $cash_transactions_total = 0;
+        $session['payments'] = [];
+        if($payment_methods) {
+            foreach ($payment_methods as $method) {
+                if(in_array($method['id'],$ignore_print_payment_ids)) {
+                    continue;
+                }
+                $code = $method['code'];
+                $var = $code.'_transactions_total';
+                $title = $method['title'];
+                $result_var = "$title";
+                $amount = (@$result[$var])?$result[$var]:0;
+                $session['payments'][] = [
+                    'label' =>  $result_var,
+                    'amount'=>  $amount
+                ];
+                if($code=='cash') {
+                    $cash_transactions_total = $amount;
+                }
+            }
+        }
+        $order_source = _get_module('orders/order_sources','_search',['filter'=>['show_in_summary'=>1]]);
+        $session['source'] = [];
+        if($order_source) {
+            foreach ($order_source as $source) {
+                $id = $source['id'];
+                $title = $source['title'];
+                $var = "source_{$id}_orders_count";
+                $total = "source_{$id}_amount";
+                $discount = "source_{$id}_discount";
+                $total_label = "$title";
+                $amount_label = "$title";
+                $order = (@$result[$var])?$result[$var]:0;
+                $amount = (@$result[$total])?$result[$total]:0;
+                $discount = (@$result[$discount])?$result[$discount]:0;
+                $session['source'][] = [
+                    'label' =>  $total_label,
+                    'amountLabel' => $amount_label,
+                    'order'=>  $order,
+                    'amount'=> $amount,
+                    'discount'=> $discount,
+                ];
+
+            }
+        }
+        if($type === SUMMARY_TYPE_EMPLOYEE){
+            $session['openingCash'] = 0;
+        }
+    
+        if($type === SUMMARY_TYPE_REGISTER || $type === SUMMARY_TYPE_SESSION){
+            
+            $opening_user = $this->user->single(['id'=>$session['opening_user_id']]);
+            $closing_user = false;
+            if($session['opening_user_id']==$session['closing_user_id']) {
+                $closing_user = $opening_user;
+            }else {
+                if($session['closing_user_id']) {
+                    $closing_user = $this->user->single(['id' => $session['opening_user_id']]);
+                }
+            }
+    
+            $session['openingEmployee'] = ($opening_user)?$opening_user['first_name'].' '.$opening_user['last_name']:'';
+            $session['closingEmployee'] = ($closing_user)?$closing_user['first_name'].' '.$closing_user['last_name']:'';
+            if($type ===SUMMARY_TYPE_SESSION){
+                $this->_exclude_keys($session,$this->pos_session->exclude_keys);
+                $this->_sql_to_vue($session,$this->pos_session->keys);
+            }elseif($type ===SUMMARY_TYPE_REGISTER){
+                $this->_exclude_keys($session,$this->prs->exclude_keys);
+                $this->_sql_to_vue($session,$this->prs->keys);
+            }
+        }
+
+        if(@$params['recalculate_cash']!==false || $session['status'] == 'Open') {
+            $default_opening = (float)_get_setting('pos_default_opening_cash',0);
+
+            $closing_cash = ((float)$cash_transactions_total - (float)$session['changeTotal']) + (float)$session['openingCash'];
+            $session['expectedClosingCash'] = round($closing_cash,2);
+
+            $session['takeOut'] = ($default_opening<$session['expectedClosingCash'])?$session['expectedClosingCash']-$default_opening:0;
+
+            $session['closingCash'] = ($default_opening<$session['expectedClosingCash'])?$default_opening:$session['expectedClosingCash'];
+        }
+       
+        if(@$params['enableRefunded']!==false || @$params['recalculate_cash']!==false){
+            $session['refundTotal'] = $session['refundedTransactionsTotal'] + $session['partialRefundTotal'];
+            $session['transactionsTotal'] = $session['transactionsTotal'] - $session['partialRefundTotal'];
+            if(@$session['takeOut']){
+                $session['takeOut'] = $session['takeOut'] - $session['cashRefundTransactionsTotal'];
+            }
+            if(@$session['expectedClosingCash']){
+                $session['expectedClosingCash'] = $session['expectedClosingCash'] - $session['cashRefundTransactionsTotal'];
+            }
+        }
+        if(ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT){
+            $session['transactionsTotal'] =  $session['transactionsTotal'] - $session['gratuityTotal'];
+            if(@ $session['expectedClosingCash']){
+                $session['expectedClosingCash'] =  $session['expectedClosingCash'] - $session['cashGratuityTotal'];
+            }
+        }  
+        return $session;
+    }
+
     public function _get_session_summary($params) {
 
         $session_id = $params['session_id'];
+        $employee_id = @$params['employee_id']??false;
+        $register_id = @$params['register_id']??false;
+        $register_session_id = @$params['register_session_id']??false;
         $cash_payment_method_id = _get_setting('cash_payment_method_id',POS_CASH_PAYMENT_METHOD_ID);
         $card_payment_method_id = _get_setting('card_payment_method_id',POS_CARD_PAYMENT_METHOD_ID);
         $order_payment_table = ORDER_PAYMENT_TABLE;
@@ -528,44 +649,57 @@ class Pos extends MY_Controller {
 
         $payment_methods = _get_module('core/payment_methods','_search',[]);
         $order_source = _get_module('orders/order_sources','_search',[]);
+        $condition = '';
+        if($employee_id) {
+            $condition .= " AND so.employee_id = $employee_id ";
+        }
+        if($register_id) {
+            $condition .= " AND so.close_register_id = $register_id ";
+        }
+        if($register_session_id) {
+            $condition .= " AND so.register_session_id = $register_session_id ";
+        }
 
         $query = "SELECT 
-                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded' AND so.order_status!='Deleted')) AS orders_count,
-                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id AND so.cancelled=1 ) AS cancelled_orders_count,
-                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id AND so.order_status='Refunded' ) AS refunded_orders_count,
-                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id AND (so.order_status='Confirmed' OR so.order_status='Preparing' OR so.order_status='Ready') ) AS open_orders_count,
-                    ( SELECT SUM(so.grand_total) FROM $order_table so WHERE so.session_id=$session_id AND so.order_status='Cancelled') AS cancelled_transactions_total,
-                    ( SELECT SUM(so.grand_total) FROM $order_table so WHERE so.session_id=$session_id AND so.order_status='Refunded') AS refunded_transactions_total,
-                    ( SELECT SUM(opr.amount) FROM ord_order oo LEFT JOIN ord_payment_refund opr ON oo.id = opr.order_id WHERE oo.session_id =$session_id AND oo.order_status = 'Partial Refunded') AS partial_refund_total,
-                    ( SELECT COUNT(*) FROM ord_order oo  WHERE oo.session_id = $session_id AND oo.order_status = 'Partial Refunded' AND oo.id IN (SELECT opr.id FROM ord_payment_refund opr )) AS partial_refund_count,
-                    ( SELECT SUM(so.grand_total) FROM $order_table so WHERE so.session_id=$session_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded')) AS transactions_total,";
+                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status NOT IN ('cancelled','Refunded','Deleted')) AS orders_count,
+                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.cancelled=1 ) AS cancelled_orders_count,
+                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status IN ('Refunded')) AS refunded_orders_count,
+                    ( SELECT COUNT(*) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status IN ('Confirmed','Preparing','Ready')) AS open_orders_count,
+                    ( SELECT SUM(so.grand_total) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status='Cancelled') AS cancelled_transactions_total,
+                    ( SELECT SUM(so.grand_total) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status='Refunded') AS refunded_transactions_total,
+                    ( SELECT SUM(opr.amount) FROM ord_order so LEFT JOIN ord_payment_refund opr ON so.id = opr.order_id WHERE so.session_id =$session_id " . $condition . " AND so.order_status = 'Partial_refunded') AS partial_refund_total,
+                    ( SELECT COUNT(*) FROM ord_order so  WHERE so.session_id = $session_id " . $condition . " AND so.order_status = 'Partial_refunded' AND so.id IN (SELECT opr.id FROM ord_payment_refund opr )) AS partial_refund_count,
+                    ( SELECT SUM(so.grand_total) FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status NOT IN ('Cancelled','Refunded')) AS transactions_total,";
 
-                    //( SELECT SUM(sp.amount) FROM $order_payment_table sp WHERE sp.payment_method_id=$cash_payment_method_id AND sp.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id) ) AS cash_transactions_total,
-                    //( SELECT SUM(sp.amount) FROM $order_payment_table sp WHERE sp.payment_method_id=$card_payment_method_id AND sp.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id) ) AS card_transactions_total,";
         if($payment_methods) {
             foreach ($payment_methods as $method) {
                 $method_id = $method['id'];
                 $code = $method['code'];
-                $query .= "( SELECT SUM(sp.amount) FROM $order_payment_table sp WHERE sp.payment_method_id=$method_id AND sp.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id AND so.order_status!='Refunded') ) AS {$code}_transactions_total,";
+                $query .= "( SELECT SUM(sp.amount) FROM $order_payment_table sp WHERE sp.payment_method_id=$method_id AND sp.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status!='Refunded') ) AS {$code}_transactions_total,";
             }
         }
         if($order_source) {
             foreach ($order_source as $source) {
                 $source_id = $source['id'];
-                $query .= "( SELECT COUNT(*) FROM $order_table so  WHERE so.session_id=$session_id AND so.source_id=$source_id AND ( so.order_status!='Cancelled' AND so.order_status!='Refunded' AND so.order_status!='Deleted')) AS source_{$source_id}_orders_count,";
-                $query .= "( SELECT SUM(so.grand_total) FROM $order_table so  WHERE so.session_id=$session_id AND so.source_id=$source_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded' AND so.order_status!='Deleted')) AS source_{$source_id}_amount,";
-                $query .= "( SELECT SUM(so.discount) FROM $order_table so  WHERE so.session_id=$session_id AND so.source_id=$source_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded' AND so.order_status!='Deleted')) AS source_{$source_id}_discount,";
+                $query .= "( SELECT COUNT(*) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id AND so.order_status NOT IN ('Cancelled','Refunded','Deleted')) AS source_{$source_id}_orders_count,";
+                $query .= "( SELECT SUM(so.grand_total) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id AND so.order_status NOT IN ('Refunded','Deleted')) AS source_{$source_id}_amount,";
+                $query .= "( SELECT SUM(so.discount) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id  AND so.order_status NOT IN ('Refunded','Deleted')) AS source_{$source_id}_discount,";
             }
         }
 
-        $query .= "( SELECT SUM(opr.amount) FROM ord_payment_refund opr WHERE opr.payment_method_id = $cash_payment_method_id AND opr.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id AND so.order_status = 'Partial Refunded')) AS cash_refund_transactions_total,";
+        if($register_id){
+           
+            $query .= "( SELECT SUM(so.grand_total) FROM ord_order so  WHERE so.close_register_id = $register_id AND so.order_status NOT IN ('cancelled','Refunded','Deleted') AND so.session_id = $session_id AND so.employee_id IN(SELECT es.employee_id FROM emp_shift es WHERE es.session_id = $session_id AND es.close_register_id IS NULL AND es.end_shift IS NULL ) AND so.id IN (SELECT op.order_id FROM ord_payment op WHERE op.payment_method_id IN (SELECT spm.id FROM sys_payment_method spm WHERE spm.is_cash=1)) ) AS register_to_emp_total,";
+        }
 
-        $query .= "( SELECT SUM(so.discount) FROM $order_table so WHERE so.session_id=$session_id  AND (so.order_status!='Cancelled' AND so.order_status!='Refunded')) AS discount_total,
-                    ( SELECT SUM(so.change) FROM ord_order so WHERE so.session_id=$session_id AND so.id IN (SELECT op.order_id FROM ord_payment op WHERE op.payment_method_id IN (SELECT spm.id FROM sys_payment_method spm WHERE spm.is_cash=1))) AS change_total,
-                    ( SELECT SUM(so.tip) FROM ord_order so WHERE so.session_id=$session_id AND so.order_status!='Refunded' ) AS tip_total,
-                    ( SELECT SUM(so.tax_total) FROM ord_order so WHERE so.session_id=$session_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded')) AS tax_total,
-                    ( SELECT SUM(so.gratuity_total) FROM ord_order so WHERE so.session_id=$session_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded')) AS gratuity_total,
-                    ( SELECT SUM(so.gratuity_total) FROM ord_order so WHERE so.session_id=$session_id AND (so.order_status!='Cancelled' AND so.order_status!='Refunded') AND so.id IN (SELECT op.order_id FROM ord_payment op WHERE op.payment_method_id IN (SELECT spm.id FROM sys_payment_method spm WHERE spm.is_cash=1))) AS cash_gratuity_total
+        $query .= "( SELECT SUM(opr.amount) FROM ord_payment_refund opr WHERE opr.payment_method_id = $cash_payment_method_id AND opr.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status = 'Partial_refunded')) AS cash_refund_transactions_total,";
+
+        $query .= "( SELECT SUM(so.discount) FROM $order_table so WHERE so.session_id=$session_id " . $condition . "  AND so.order_status NOT IN ('Cancelled','Refunded')) AS discount_total,
+                    ( SELECT SUM(so.change) FROM ord_order so WHERE so.session_id=$session_id " . $condition ." AND so.id IN (SELECT op.order_id FROM ord_payment op WHERE op.payment_method_id IN (SELECT spm.id FROM sys_payment_method spm WHERE spm.is_cash=1))) AS change_total,
+                    ( SELECT SUM(so.tip) FROM ord_order so WHERE so.session_id=$session_id " . $condition . " AND so.order_status!='Refunded' ) AS tip_total,
+                    ( SELECT SUM(so.tax_total) FROM ord_order so WHERE so.session_id=$session_id " . $condition . " AND so.order_status NOT IN ('Cancelled','Refunded')) AS tax_total,
+                    ( SELECT SUM(so.gratuity_total) FROM ord_order so WHERE so.session_id=$session_id " . $condition . " AND so.order_status NOT IN ('Cancelled','Refunded')) AS gratuity_total,
+                    ( SELECT SUM(so.gratuity_total) FROM ord_order so WHERE so.session_id=$session_id " . $condition . " AND so.order_status NOT IN ('Cancelled','Refunded') AND so.id IN (SELECT op.order_id FROM ord_payment op WHERE op.payment_method_id IN (SELECT spm.id FROM sys_payment_method spm WHERE spm.is_cash=1))) AS cash_gratuity_total
                    
                     FROM dual";
         return _db_get_query($query, true);
@@ -577,6 +711,8 @@ class Pos extends MY_Controller {
         _model('pos_session');
 
         $obj = _input('obj');
+
+        unset($obj['type']);
 
         $this->_vue_to_sql($obj,$this->pos_session->keys);
 
@@ -597,75 +733,8 @@ class Pos extends MY_Controller {
 
                 $summary = $this->_close_session_summary(['session_id'=>$session_id,'recalculate_cash'=>false]);
                 if($summary) {
-                    $payments = [];
-                    if(@$summary['payments']) {
-                        $payments[] = ['title'=>'Specific Payments','value'=>'','line'=>true];
-                        foreach($summary['payments'] as $payment) {
-                            $payments[] = ['title'=>$payment['label'],'value'=>custom_money_format(is_numeric($payment['amount'])?$payment['amount']:0)];
-                        }
-                    }
 
-                    $specific_orders = [];
-                    $specific_amounts = [];
-                    $specific_discounts = [];
-                    if(@$summary['source']) {
-                        $specific_orders[] = ['title'=>'Specific Orders','value'=>'','line'=>true];
-                        $specific_amounts[] = ['title'=>'Specific Amounts','value'=>'','line'=>true];
-                        if(ALLOW_DISCOUNT_IN_SUMMARY){
-                          $specific_discounts[] = ['title'=>'Specific Discounts','value'=>'','line'=>true];
-                        }
-                        foreach($summary['source'] as $single) {
-                            $specific_orders[] = ['title'=>$single['label'],'value'=>$single['order']];
-                            $specific_amounts[] = ['title'=>$single['amountLabel'],'value'=>custom_money_format(is_numeric($single['amount'])?$single['amount']:0)];
-                            if(ALLOW_DISCOUNT_IN_SUMMARY){
-                                $specific_discounts[] = ['title'=>$single['amountLabel'],'value'=>custom_money_format(is_numeric($single['discount'])?$single['discount']:0)];
-
-                            }
-                        }
-                    }
-
-                    $total_orders = [
-                        ['title'=>'Overall Orders','value'=>'','line'=>true],
-                        ['title'=>'Placed','value'=>$summary['ordersCount']],
-                        ['title'=>'Cancelled','value'=>$summary['cancelledOrdersCount']],
-                    ];
-
-                    $employee = [
-                        ['title'=>'Opened','value'=>custom_date_format($summary['openingDate'])],
-                        ['title'=>'Opened by','value'=>$summary['openingEmployee']],
-                        ['title'=>'Closed','value'=>custom_date_format($summary['closingDate'])],
-                        ['title'=>'Closed by','value'=>$summary['closingEmployee']],
-                    ];
-                    $amount = [
-                        ['title'=>'Amounts','value'=>'','line'=>true],
-                        ['title'=>'Opening','value'=>custom_money_format(is_numeric($summary['openingCash'])?$summary['openingCash']:0)],
-                        //['title'=>'Cash','value'=>custom_money_format(is_numeric($summary['cash_transactions_total'])?$summary['cash_transactions_total']:0)],
-                       // ['title'=>'Card','value'=>custom_money_format(is_numeric($summary['card_transactions_total'])?$summary['card_transactions_total']:0)],
-                        ['title'=>'Discount','value'=>custom_money_format(is_numeric($summary['discountTotal'])?$summary['discountTotal']:0)],
-                        ['title'=>'Change','value'=>custom_money_format(is_numeric($summary['changeTotal'])?$summary['changeTotal']:0)],
-                        ['title'=>'Tip','value'=>custom_money_format(is_numeric($summary['tipTotal'])?$summary['tipTotal']:0)],
-                        ['title'=>'Tax Total','value'=>custom_money_format(is_numeric($summary['taxTotal'])?$summary['taxTotal']:0)],
-                    ];
-                    if(ALLOW_GRATUITY){
-                        $amount = array_merge($amount,[
-                        ['title'=>'Gratuity Total','value'=>custom_money_format(is_numeric($summary['gratuityTotal'])?$summary['gratuityTotal']:0)],
-                        ]);
-                    }
-                    $amount = array_merge($amount,[
-                        ['title'=>'Cancelled Orders','value'=>custom_money_format(is_numeric($summary['cancelledTransactionsTotal'])?$summary['cancelledTransactionsTotal']:0)],
-                        ['title'=>'Refunded Orders','value'=>custom_money_format(is_numeric($summary['refundedTransactionsTotal'])?$summary['refundedTransactionsTotal']:0)],
-                        ['title'=>'Orders','value'=>custom_money_format(is_numeric($summary['transactionsTotal'])?$summary['transactionsTotal']:0)],
-                        ['title'=>'Take Out','value'=>custom_money_format(is_numeric($summary['takeOut'])?$summary['takeOut']:0)],
-                        ['title'=>'Closing','value'=>custom_money_format(is_numeric($summary['closingCash'])?$summary['closingCash']:0)],
-                    ]);
-                    $items = array_merge($employee,$total_orders,$specific_orders,$specific_amounts,$specific_discounts,$payments,$amount);
-                    $obj = [
-                        'items' =>  $items
-                    ];
-                    /*_vars('summary', $obj);
-                    $print_format = _get_setting('session_print_format', '80mm_summary');
-                    $print_view = _view("print_templates/$print_format");*/
-
+                    $obj = $this->_prep_print_summary($summary);
                     _response_data('printData', $obj);
                 }
 
@@ -679,6 +748,119 @@ class Pos extends MY_Controller {
 
         return true;
 
+    }
+
+    private function _prep_print_summary(&$summary){
+        $payments = [];
+        if(@$summary['payments']) {
+            $payments[] = ['title'=>'Specific Payments','value'=>'','line'=>true];
+            foreach($summary['payments'] as $payment) {
+                $payments[] = ['title'=>$payment['label'],'value'=>custom_money_format(is_numeric($payment['amount'])?$payment['amount']:0)];
+            }
+        }
+
+        $specific_orders = [];
+        $specific_amounts = [];
+        $specific_discounts = [];
+        if(@$summary['source']) {
+            $specific_orders[] = ['title'=>'Specific Orders','value'=>'','line'=>true];
+            $specific_amounts[] = ['title'=>'Specific Amounts','value'=>'','line'=>true];
+            if(ALLOW_DISCOUNT_IN_SUMMARY){
+                $specific_discounts[] = ['title'=>'Specific Discounts','value'=>'','line'=>true];
+            }
+            foreach($summary['source'] as $single) {
+                $specific_orders[] = ['title'=>$single['label'],'value'=>$single['order']];
+                $specific_amounts[] = ['title'=>$single['amountLabel'],'value'=>custom_money_format(is_numeric($single['amount'])?$single['amount']:0)];
+                if(ALLOW_DISCOUNT_IN_SUMMARY){
+                    $specific_discounts[] = ['title'=>$single['amountLabel'],'value'=>custom_money_format(is_numeric($single['discount'])?$single['discount']:0)];
+
+                }
+            }
+        }
+
+        $total_orders = [
+            ['title'=>'Overall Orders','value'=>'','line'=>true],
+            ['title'=>'Placed','value'=>$summary['ordersCount']],
+            ['title'=>'Cancelled','value'=>$summary['cancelledOrdersCount']],
+        ];
+
+        $employee = [
+            ['title'=>'Opened','value'=>custom_date_format($summary['openingDate'])],
+            ['title'=>'Opened by','value'=>$summary['openingEmployee']],
+            ['title'=>'Closed','value'=>custom_date_format($summary['closingDate'])],
+            ['title'=>'Closed by','value'=>$summary['closingEmployee']],
+        ];
+        $amount = [
+            ['title'=>'Amounts','value'=>'','line'=>true],
+            ['title'=>'Opening','value'=>custom_money_format(is_numeric($summary['openingCash'])?$summary['openingCash']:0)],
+            //['title'=>'Cash','value'=>custom_money_format(is_numeric($summary['cash_transactions_total'])?$summary['cash_transactions_total']:0)],
+            // ['title'=>'Card','value'=>custom_money_format(is_numeric($summary['card_transactions_total'])?$summary['card_transactions_total']:0)],
+            ['title'=>'Discount','value'=>custom_money_format(is_numeric($summary['discountTotal'])?$summary['discountTotal']:0)],
+            ['title'=>'Change','value'=>custom_money_format(is_numeric($summary['changeTotal'])?$summary['changeTotal']:0)],
+            ['title'=>'Tip','value'=>custom_money_format(is_numeric($summary['tipTotal'])?$summary['tipTotal']:0)],
+            ['title'=>'Tax Total','value'=>custom_money_format(is_numeric($summary['taxTotal'])?$summary['taxTotal']:0)],
+        ];
+        if(ALLOW_GRATUITY){
+            $amount = array_merge($amount,[
+            ['title'=>'Gratuity Total','value'=>custom_money_format(is_numeric($summary['gratuityTotal'])?$summary['gratuityTotal']:0)],
+            ]);
+        }
+        $amount = array_merge($amount,[
+            ['title'=>'Cancelled Orders','value'=>custom_money_format(is_numeric($summary['cancelledTransactionsTotal'])?$summary['cancelledTransactionsTotal']:0)],
+            ['title'=>'Refunded Orders','value'=>custom_money_format(is_numeric($summary['refundedTransactionsTotal'])?$summary['refundedTransactionsTotal']:0)],
+            ['title'=>'Orders','value'=>custom_money_format(is_numeric($summary['transactionsTotal'])?$summary['transactionsTotal']:0)],
+            ['title'=>'Take Out','value'=>custom_money_format(is_numeric($summary['takeOut'])?$summary['takeOut']:0)],
+            ['title'=>'Closing','value'=>custom_money_format(is_numeric($summary['closingCash'])?$summary['closingCash']:0)],
+        ]);
+        $items = array_merge($employee,$total_orders,$specific_orders,$specific_amounts,$specific_discounts,$payments,$amount);
+        $obj = [
+            'items' =>  $items
+        ];
+        return $obj;
+    }
+
+    public function _close_register_post(){
+        _model('pos_register_session','prs');
+
+        $obj = _input('obj');
+
+        unset($obj['type']);
+
+        $this->_vue_to_sql($obj,$this->prs->keys);
+
+        $register_session_id = $obj['id'];
+        unset($obj['id']);
+        $register_session = $this->prs->single(['id'=>$register_session_id]);
+
+
+        if($register_session) {
+
+            $obj['closing_user_id'] = _get_user_id();
+            $obj['closing_date'] = sql_now_datetime();
+            $obj['status'] = 'Close';
+
+            $register_id = $register_session['register_id'];
+            $session_id = $register_session['session_id'];
+            if($this->prs->update($obj,['id'=>$register_session_id])){
+                $params = [
+                    'session_id'=>$session_id,
+                    'recalculate_cash'=>false,
+                    'register_id'=>$register_id,
+                ];
+
+                $result = $this->_get_session_summary($params);
+                if($result){
+                    $register_session = $this->_prep_summary($register_session,$result,SUMMARY_TYPE_REGISTER);
+                    $obj = $this->_prep_print_summary($register_session);
+                    _response_data('printData', $obj);
+                }
+            }
+            _response_data('message',['text'=>'Register was closed','type'=>'success']);
+        }else{
+            _response_data('message',['text'=>'There was a problem while closing current session. Please try again or contact your administrator','type'=>'error']);
+            return false;
+        }
+        return true;
     }
 
     public function _order_put() {
@@ -806,7 +988,7 @@ class Pos extends MY_Controller {
         if((float)$refundTotal === (float)$order['grandTotal']+(float)$order['tip']){
             $status = 'Refunded';
         }else{
-            $status = 'Partial Refunded';
+            $status = 'Partial_refunded';
         }
 
         if($refundPayments){
@@ -880,7 +1062,7 @@ class Pos extends MY_Controller {
         $status = $params['status'];
         $session_id = $params['session_id'];
         $order = false;
-        if($status == 'Cancelled' || $status == 'Closed' || $status == 'Refunded' || $status=="Partial Refunded") {
+        if($status == 'Cancelled' || $status == 'Closed' || $status == 'Refunded' || $status=="Partial_refunded") {
             $order = _get_module('orders', '_single', ['id' => $order_id]);
         }
 
@@ -1384,7 +1566,7 @@ class Pos extends MY_Controller {
     }
 
     private function _cache_items($ids) {
-        $items = _get_cache('pos_items');
+        $items =  _get_cache('pos_items');
         if(!$items) {
             _model('items/item','item');
             $items = [];
@@ -1437,71 +1619,102 @@ class Pos extends MY_Controller {
         }
 
         //TODO Remove this function in the future
-        if(!$item_type) {
+       /*  if(!$item_type) {
             $item_meta = _get_module('items', '_find', ['filter' => $filter_params]);
             $item_type = ($item_meta) ? $item_meta['type'] : null;
-        }
+        } */
+        $item = _get_module('items', '_single', $filter_params);
 
-        if($item_type === 'single') {
-            $item = _get_module('items', '_single', $filter_params);
-        }elseif ($item_type === 'group') {
-            $item = _get_module('items/item_groups', '_single', $filter_params);
-        }else{
-            return false;
-        }
         if($item){
-        $item['quantity']      =  1;
-        $item['rate']          =  0;
-        $item['unitRate']      =  0;
-        $item['unitQuantity']  =  1;
-        $item['isPriceEditable'] = (int)$item['id'] === (int)_get_setting('open_item_id',OPEN_ITEM_ID);
-        $item['orderItemNotes'] = '';
+            $item['quantity']      =  1;
+            $item['isPriceEditable'] = (int)$item['id'] === (int)_get_setting('open_item_id',OPEN_ITEM_ID);
+            $item['orderItemNotes'] = '';
 
-        if($item['image']) {
-            $image_path = _get_config('global_upload_path');
-            $cache_path = _get_config('global_upload_cache_path');
-            if(!file_exists($cache_path . 'items/')) {
-                mkdir($cache_path . 'items/',0777,true);
-            }
-            $image_file_name = _get_image_cache_name($item['image'],'_' . POS_DETAIL_WIDTH . 'x' . POS_DETAIL_HEIGHT);
-            if(!file_exists($cache_path . $image_file_name)) {
-                $params = [
-                    'width'         =>  POS_DETAIL_WIDTH,
-                    'height'        =>  POS_DETAIL_HEIGHT,
-                    'source'        =>  $image_path . $item['image'],
-                    'destination'   =>  $cache_path . $image_file_name
-                ];
-                $resize = _resize_crop_center($params);
-                if(!$resize) {
-                    $image_file_name = '';
+            if(@$item['addons']){
+                $temp = [];
+                foreach($item['addons'] as &$a){
+                    $addon = [
+                        'itemId'=>$a['id'],
+                        'title'=>$a['title'],
+                        'rate'=>$a['rate'],
+                        'type'=>$a['type'],
+                        'quantity'=>1,
+                        'enabled'=>false,
+                        'parent'=>$a['parent']
+                    ];
+                    $temp[] = $addon;
+                        
                 }
+                $item['addons'] = $temp;
             }
-            $item['imageCachePath'] = $image_file_name;
-          }
-         }
+
+            if($item['image']) {
+                $image_path = _get_config('global_upload_path');
+                $cache_path = _get_config('global_upload_cache_path');
+                if(!file_exists($cache_path . 'items/')) {
+                    mkdir($cache_path . 'items/',0777,true);
+                }
+                $image_file_name = _get_image_cache_name($item['image'],'_' . POS_DETAIL_WIDTH . 'x' . POS_DETAIL_HEIGHT);
+                if(!file_exists($cache_path . $image_file_name)) {
+                    $params = [
+                        'width'         =>  POS_DETAIL_WIDTH,
+                        'height'        =>  POS_DETAIL_HEIGHT,
+                        'source'        =>  $image_path . $item['image'],
+                        'destination'   =>  $cache_path . $image_file_name
+                    ];
+                    $resize = _resize_crop_center($params);
+                    if(!$resize) {
+                        $image_file_name = '';
+                    }
+                }
+                $item['imageCachePath'] = $image_file_name;
+            }
+        }
         return $item;
     }
 
-    public function _update_check_get() {
+    public function _user_login_post(){
+       _model('auth/auth_model','auth_m');
 
-        /*$item_params = [];
-        $item_params['limit'] = 3000;
-        $item_params['orders'] = [['order_by'=>'title','order'=>'ASC']];
-        $item_params['exclude'] = true;
-        $item_params['convert'] = true;
-        $items = _get_module('items','_search',$item_params);*/
+        $email = _input('email',true);
+        $password = _input('password',true);
 
-        /*$load_addon_items = _get_setting('pos_load_addon_items',POS_LOAD_ADDON_ITEMS);
-
-        $query = "SELECT COUNT(*) as item_count FROM itm_item WHERE pos_status=1";
-        if(!$load_addon_items) {
-            $query .= " AND `is_addon`=0";
+        $user = $this->auth_m->login($email,$password);
+      
+        if($user){
+            _response_data('userLogin',true);
+            return true;
+        }else{
+            _response_data('message','Invalid Email or Password.');
+            return false;
         }
-        $items = _db_get_query($query, true);
-        _response_data('itemCount',(int)@$items['item_count'] ?? 0);*/
+    }
+
+    public function _update_check_get() {
+        _model('registers/register','register');
+
+        $web_session_id = WEB_SESSION_ID;
+        $source_id = SO_SOURCE_WEB_ID;
+        $obj  = _input('obj');
+        $result = [];
+        $session_id =$obj['sessionId'];
+        $session_query = " SELECT
+                            (SELECT COUNT(*)  FROM pos_register_session prs WHERE prs.session_id = $session_id AND prs.closing_user_id IS NOT NULL AND prs.closing_date IS NOT NULL) AS closeRegister,
+                            (SELECT COUNT(*) AS openRegister FROM pos_register_session prs WHERE prs.session_id = $session_id) AS openRegister,
+                            (SELECT COUNT(*) FROM emp_shift es WHERE  es.session_id = $session_id AND es.close_register_id IS NULL AND es.end_shift IS NULL) AS  openEmpShiftCount,
+                            (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = 1 AND oo.order_status IN ('Confirmed','Preparing','Ready'))  AS openOrderCount,
+                            (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = $web_session_id AND oo.source_id=$source_id) AS onlineOrderCount
+                          FROM dual";
+
+        $session_result = _db_get_query($session_query, true);
+        $result['closeRegister'] = $session_result['closeRegister'];
+        $result['openRegister'] = $session_result['openRegister'];
+        $result['openEmpShiftCount'] = $session_result['openEmpShiftCount'];
+        $result['openOrderCount'] = $session_result['openOrderCount'];
+        $result['onlineOrderCount'] = $session_result['onlineOrderCount'];
 
         $items = _get_cache('pos_items');
-        _response_data('itemCount', $items ? count($items) : -1);
+        $result['itemCount'] = $items ? count($items) : -1;
 
         $print_queue = [];
         $print_queue_count = 0;
@@ -1510,22 +1723,25 @@ class Pos extends MY_Controller {
             $query = "SELECT id,order_id FROM ord_print_queue ORDER BY added ASC;";
             $print_queue_list = _db_get_query($query);
             $print_queue_count = ($print_queue_list) ? count($print_queue_list) : 0;
-            if(_input('browserId') == $browser_id && $print_queue_list) {
+            if($obj['browserId'] == $browser_id && $print_queue_list) {
                 $print_queue = $this->_get_print_orders($print_queue_list);
             }
         }
-        _response_data('printQueueCount', $print_queue_count);
-        _response_data('printQueue', $print_queue);
+        $result['printQueueCount'] = $print_queue_count;
+        $result['printQueue'] = $print_queue;
+        $result['result'] = CORE_VERSION;
 
-        $session_id = WEB_SESSION_ID;
-        $source_id = SO_SOURCE_WEB_ID;
+        $register_id = $obj['registerId'];
+        $key = $obj['key'];
+        $registerCheckLogin =$this->register->single(['key'=>$key,'id'=>$register_id]) ;
+        $register_data = [
+            'title'=>$registerCheckLogin ? $registerCheckLogin['title']:'',
+            'registerCheckLogin'=>$registerCheckLogin?true:false,
+        ];
 
-        $query = "SELECT COUNT(*) as order_count FROM ord_order WHERE `session_id`=$session_id AND `source_id`=$source_id";
+        $result['register'] =$register_data;
 
-        $result = _db_get_query($query, true);
-        _response_data('onlineOrderCount',@$result['order_count'] > 0);
-
-        _response_data('appVersion', CORE_VERSION);
+        _response_data('result', $result);
 
         return true;
     }
@@ -1549,8 +1765,12 @@ class Pos extends MY_Controller {
             $params['limit'] = 400;
             $orders = _get_module('orders', '_search', $params);
 
-            $sources = _get_module('orders', '_order_sources', ['convert'=>true,'exclude'=>true]);
-
+           // $sources = _get_module('orders', '_order_sources', ['convert'=>true,'exclude'=>true]);
+            $sources = _get_cache('pos_order_sources');
+            if(!$sources) {
+                $sources =_get_module('orders', '_order_sources', ['convert'=>true,'exclude'=>true]);
+                _set_cache('pos_order_sources',$sources);
+            }
             if($orders) {
                 $temp = [];
                 foreach ($orders as $order) {
@@ -1604,6 +1824,12 @@ class Pos extends MY_Controller {
                         $order['cancelOrder'] = true;
                     }
 
+                    $unset_array = ['change','tip','discount','adjustment','cancelled','notes','gratuityTotal','gratuityRate','seatUsed','subTotal','taxTotal','taxRate','promotionTotal','discountValue','discountType','freightTotal','dutyTotal','totalPaid','employeeId'];
+                    if($unset_array){
+                        foreach($unset_array as $ua){
+                            unset($order[$ua]);
+                        }
+                    }
                     $temp[] = $order;
                 }
                 $orders = $temp;
@@ -1674,13 +1900,13 @@ class Pos extends MY_Controller {
         $register_id = _input('registerId');
 
         $session_order_no = $this->_get_new_session_order_no($session_id);
-        $salesperson_id = _get_user_id();
+        $employee_id = _get_user_id();
 
         $update_data = [
             'session_id'        =>  $session_id,
             'register_id'       =>  $register_id,
             'session_order_no'  =>  $session_order_no,
-            'salesperson_id'    =>  $salesperson_id
+            'employee_id'    =>  $employee_id
         ];
         $filter = ['id'=>$id];
 
@@ -1751,21 +1977,22 @@ class Pos extends MY_Controller {
             $session_id = $obj['session_id'];
             $obj['session_order_no'] = $this->_get_new_session_order_no($session_id);
             $obj['order_no'] = _get_ref(ORDER_REF);
-            $obj['reference_no'] = '';
             $obj['notes'] = (@$obj['notes'])?$obj['notes']:'';
             $obj['order_date'] = sql_now_datetime();
-            $obj['expected_delivery_date'] = sql_now_datetime();
             $obj['added'] = sql_now_datetime();
             if (!isset($obj['order_status'])) {
                 $obj['order_status'] = 'Confirmed';
             }
             $source_id = SO_SOURCE_POS_ID;
             $order_table['source_id'] = $source_id;
-            $salesperson_id = _get_user_id();
-            if($salesperson_id==NULL){
+           /*  $employee_id = _get_user_id();
+            if($employee_id==NULL){
                 log_message('error','UserID is null');
-            }
-            $obj['salesperson_id'] = ($salesperson_id)?$salesperson_id:0;
+            } */
+           /*  if($obj['employee_id'] === null){
+                $obj['employee_id'] = _get_user_id();
+            } */
+           // $obj['employee_id'] = ($employee_id)?$employee_id:0;
 
             $obj['adjustment'] = 0;
 
@@ -1775,10 +2002,8 @@ class Pos extends MY_Controller {
             }
 
         }elseif ($mode==='edit') {
-
             $order_id = $obj['id'];
             unset($obj['id']);
-
             $existing = $this->order->single(['id'=>$order_id]);
             $existing_status_rank = $this->_get_order_status_rank($existing['order_status']);
             $new_status_rank = $this->_get_order_status_rank($obj['order_status']);
@@ -1803,43 +2028,30 @@ class Pos extends MY_Controller {
     }
 
     private function _add_order_item($obj) {
-
         $order_item_id = false;
         $addons = $obj['addons'];
         $notes = $obj['selectedNotes'];
         unset($obj['addons']);
         unset($obj['selectedNotes']);
         unset($obj['originalQty']);
-
         if(isset($obj['id']) && $obj['id']) {
-
             $order_item_id = $obj['id'];
             unset($obj['id']);
-
             $this->order_item->update($obj,['id'=>$order_item_id]);
-
         }else{
-
-            $item['unit'] = '';
-            $item['sale_unit'] = '';
             $obj['added'] = sql_now_datetime();
-
             if ($this->order_item->insert($obj)) {
                 $order_item_id = $this->order_item->insert_id();
             }
-
         }
-
         if($order_item_id) {
-
             $this->addon->delete(['order_item_id'=>$order_item_id]);
-            if($addons) {
+            if(@$addons) {
                 $this->_vue_to_sql($addons,$this->addon->keys,true);
                 foreach ($addons as $addon) {
                     $enabled = @$addon['enabled']==true;
                     if($enabled && $addon['quantity']>0) {
-                        unset($addon['id']);
-                        unset($addon['enabled']);
+                        unset($addon['enabled'],$addon['parent']);
                         $addon['order_item_id'] = $order_item_id;
                         $addon['added'] = sql_now_datetime();
                         $this->addon->insert($addon);
@@ -1857,9 +2069,7 @@ class Pos extends MY_Controller {
                     $this->note->insert($note);
                 }
             }
-
             $item = $this->order_item->single(['id' => $order_item_id]);
-
             if ($item) {
                 return $item;
             }
@@ -2033,12 +2243,12 @@ class Pos extends MY_Controller {
         unset($obj['customer']);
 
         $obj['billingName'] = $customer['displayName'];
-        $obj['address1'] ='';//$customer['billing']['address1'];
+       /*  $obj['address1'] ='';//$customer['billing']['address1'];
         $obj['address2'] = '';//$customer['billing']['address2'];
         $obj['city'] = '';//$customer['billing']['city'];
         $obj['state'] = '';//$customer['billing']['state'];
         $obj['country'] = '';//$customer['billing']['country'];
-        $obj['zipCode'] ='';// $customer['billing']['zipCode'];
+        $obj['zipCode'] ='';// $customer['billing']['zipCode']; */
 
 
 
@@ -2126,7 +2336,7 @@ class Pos extends MY_Controller {
                 dump_exit($temp);*/
                 $temp['has_spice_level'] = ($temp['has_spice_level'] == true) ? 1 : 0;
                 $temp['amount'] = (float)$temp['quantity'] * (float)$temp['rate'];
-                $temp['freight_total'] = 0;
+                /* $temp['freight_total'] = 0;
                 $temp['duty_total'] = 0;
                 if ($freight > 0) {
                     $item_freight = ((float)$temp['amount'] * (float)$freight) / (float)$obj['order_table']['sub_total'];
@@ -2135,7 +2345,7 @@ class Pos extends MY_Controller {
                 if ($duty > 0) {
                     $item_duty = ((float)$temp['amount'] * (float)$duty) / (float)$obj['order_table']['sub_total'];
                     $temp['duty_total'] = $item_duty;
-                }
+                } */
 
                 $obj['order_item_table'][] = $temp;
             }
@@ -2264,7 +2474,7 @@ class Pos extends MY_Controller {
                 return 5;
             case 'Refunded':
                 return 6;
-            case 'Partial Refunded':
+            case 'Partial_refunded':
                 return 7;
             default:
                 return NULL;
@@ -2366,7 +2576,7 @@ class Pos extends MY_Controller {
             //unset unused variables
             unset($order['selectedAddons']);
 
-            $user_id = $order['salesPersonId'];
+            $user_id = $order['employeeId'];
 
             $order['cashier'] = '';
             if($user_id) {

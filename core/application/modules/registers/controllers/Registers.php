@@ -29,7 +29,7 @@ class Registers extends MY_Controller {
         $body = [];
         if($results) {
             foreach ($results as $result) {
-                $action = _edit_link(base_url($this->module.'/edit/'.$result['id'])) . _vue_delete_link('handleRemove('.$result['id'].')');
+                $action =_vue_button_link('fa fa-info','handleSetRegister('.$result['id'].')','set Pc as authorised Pc '). _edit_link(base_url($this->module.'/edit/'.$result['id'])) . _vue_delete_link('handleRemove('.$result['id'].')');
                 $action_cell = [
                     'class' =>  'text-center',
                     'data'  =>  $action
@@ -45,7 +45,7 @@ class Registers extends MY_Controller {
         $heading = [
             $this->singular . ' Name',
             'Status',
-            ['data'=>'Action','class'=>'text-center no-sort w-110p']
+            ['data'=>'Action','class'=>'text-center no-sort w-150p']
         ];
 
         _vars('table_heading',$heading);
@@ -132,6 +132,8 @@ class Registers extends MY_Controller {
         $this->_prep_obj($obj);
 
         $register = $obj['primary_table'];
+
+        $register['primary'] = $register['primary'] ==='true'?1:0;
         $register['status'] = 1;
         $register['added'] = sql_now_datetime();
 
@@ -153,7 +155,7 @@ class Registers extends MY_Controller {
         $this->_prep_obj($obj);
 
         $register = $obj['primary_table'];
-
+        $register['primary'] = $register['primary'] ==='true'?1:0;
         $register_id = $register['id'];
         unset($register['id']);
 
@@ -290,6 +292,40 @@ class Registers extends MY_Controller {
 
         return $this->{$this->model}->search(['status'=>1]);
 
+    }
+
+    public function _check_register_pos_post(){
+        $register_id = _input('registerId');
+        $key = _input('key');
+        $registerCheckLogin =$this->{$this->model}->single(['key'=>$key,'id'=>$register_id]) ;
+        $result = [
+            'title'=>$registerCheckLogin ? $registerCheckLogin['title']:'',
+            'registerCheckLogin'=>$registerCheckLogin?true:false,
+        ];
+        _response_data('result',$result);
+        return true;
+
+    }
+
+    public function _set_register_key_post(){
+        $obj = _input('obj');
+        $filter=[
+            'id'    =>  $obj['id']
+        ];
+        $register = $this->{$this->model}->single(['key'=>$obj['key']]);
+        if(!$register){
+            unset($obj['id']);
+            $this->{$this->model}->update($obj,$filter);
+            $update_register = $this->{$this->model}->single($filter);
+            $result = [];
+            $result['redirect'] = base_url($this->module);
+            $result['registerType'] = $update_register['type'];
+            _response_data('result',$result);
+            return true;
+        } else{
+            _response_data('message','Something wrong. Please try again.');
+            return false;
+        }
     }
 
     public function _install() {

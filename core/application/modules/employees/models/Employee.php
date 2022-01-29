@@ -32,10 +32,6 @@ class Employee extends MY_Model
 
     public function get_list($params=[]) {
 
-        $allowed_groups = _get_setting('allowed_employee_groups',[]);
-
-        if($allowed_groups) {
-
             $filter = $params['filter'];
             $limit = (isset($params['limit']) && is_int($params['limit'])) ? $params['limit'] : _get_setting('global_limit', 50);
             $offset = (isset($params['offset']) && is_int($params['offset'])) ? $params['offset'] : 0;
@@ -73,47 +69,26 @@ class Employee extends MY_Model
                     $this->order_by($order['order_by'], $order['order']);
                 }
             }
-
-            $this->where_in('group_id', $allowed_groups);
-
-            //$this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
-            $this->select('*');
-
             return $this->search($filter, $limit, $offset);
-        }
-        return [];
-
     }
 
     public function get_list_count($params=[]) {
+        $filter = $params['filter'];
+        $and_likes = (isset($params['and_likes']) && is_array($params['and_likes'])) ? $params['and_likes'] : [];
+        $or_likes = (isset($params['or_likes']) && is_array($params['or_likes'])) ? $params['or_likes'] : [];
 
-        $allowed_groups = _get_setting('allowed_employee_groups',[]);
-
-        if($allowed_groups) {
-
-            $filter = $params['filter'];
-            $and_likes = (isset($params['and_likes']) && is_array($params['and_likes'])) ? $params['and_likes'] : [];
-            $or_likes = (isset($params['or_likes']) && is_array($params['or_likes'])) ? $params['or_likes'] : [];
-
-            if ($and_likes) {
-                foreach ($and_likes as $field => $value) {
-                    $this->like($field, $value);
-                }
+        if ($and_likes) {
+            foreach ($and_likes as $field => $value) {
+                $this->like($field, $value);
             }
-            if ($or_likes) {
-                foreach ($or_likes as $field => $value) {
-                    $this->or_like($field, $value);
-                }
-            }
-
-            $this->where_in('group_id', $allowed_groups);
-
-            //$this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
-            $this->select('COUNT(*) as total_rows');
-
-            return $this->single($filter);
         }
-        return [];
+        if ($or_likes) {
+            foreach ($or_likes as $field => $value) {
+                $this->or_like($field, $value);
+            }
+        }
+        $this->select('COUNT(*) as total_rows');
+        return $this->single($filter);
     }
 
 }

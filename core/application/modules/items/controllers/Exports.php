@@ -20,22 +20,12 @@ class Exports extends MY_Controller {
         $spreadsheet = new Spreadsheet();
         $items = $this-> _get_items_export();
         $basic_items = $items['Basic'];
-        $variants_items = $items['Variants'];
-        $prices_items = $items['Prices'];
-        $addons_items = $items['Addons'];
         $notes_items = $items['Notes'];
-        $stock_items = $items['Stock'];
-        $features_items = $items['Features'];
         $basic_fields = [
-            'item_code','category','taxable','status','title','description','unit','purchase_unit','sale_unit','manufacturer',
-            'vendor','image','has_spice_level','is_addon','print_location','web_status','app_status','pos_status','icon'
+            'item_code','type','parent','category','outlet_id','taxable','title'
+            ,'image','has_spice_level','is_addon','print_location','web_status','app_status','pos_status','is_veg','rate'
         ];
-        $variants_fields = ['item_code','sku','title','upc','is_veg','reorder_level','weight','ean'];
-        $prices_fields = ['item_code','sku','unit','purchase_price','sale_price','conversion_rate'];
-        $addons_fields = ['item_code','sku','addon_item_code','type','title','sale_price'];
         $notes_fields = ['item_code','title'];
-        $stock_fields = ['item_code','sku','warehouse','opening_stock','opening_stock_value'];
-        $features_fields = ['item_code','feature','value'];
         $basic_sheet = $spreadsheet->getActiveSheet()->setTitle('Basic');
         $basic_sheet->fromArray($basic_fields, NULL, 'A1');
         $row=2;
@@ -48,49 +38,8 @@ class Exports extends MY_Controller {
             }
             $row++;
         }
-     
         $spreadsheet->createSheet();
-        $variants_sheet = $spreadsheet->setActiveSheetIndex(1)->setTitle('Variants');
-        $variants_sheet->fromArray($variants_fields, NULL, 'A1');
-        $row=2;
-        foreach ($variants_items as $item) {
-            $char='A';
-            foreach($variants_fields as $f) {
-                $data = $item[$f];
-                $variants_sheet->setCellValue($char.$row, $data);
-                $char = chr(ord($char)+1);
-            }
-            $row++;
-        }
-        $spreadsheet->createSheet();
-        $prices_sheet = $spreadsheet->setActiveSheetIndex(2)->setTitle('Prices');
-        $prices_sheet->fromArray($prices_fields, NULL, 'A1');
-        $row=2;
-        foreach ($prices_items as $item) {
-            $char='A';
-            foreach($prices_fields as $f) {
-                $data = $item[$f];
-                $prices_sheet->setCellValue($char.$row, $data);
-                $char = chr(ord($char)+1);
-            }
-            $row++;
-        }
-
-        $spreadsheet->createSheet();
-        $addons_sheet = $spreadsheet->setActiveSheetIndex(3)->setTitle('Addons');
-        $addons_sheet->fromArray($addons_fields, NULL, 'A1');
-        $row=2;
-        foreach ($addons_items as $item) {
-            $char='A';
-            foreach($addons_fields as $f) {
-                $data = $item[$f];
-                $addons_sheet->setCellValue($char.$row, $data);
-                $char = chr(ord($char)+1);
-            }
-            $row++;
-        }
-        $spreadsheet->createSheet();
-        $notes_sheet = $spreadsheet->setActiveSheetIndex(4)->setTitle('Notes');
+        $notes_sheet = $spreadsheet->setActiveSheetIndex(1)->setTitle('Notes');
         $notes_sheet->fromArray($notes_fields, NULL, 'A1');
         $row=2;
         foreach ($notes_items as $item) {
@@ -98,32 +47,6 @@ class Exports extends MY_Controller {
             foreach($notes_fields as $f) {
                 $data = $item[$f];
                 $notes_sheet->setCellValue($char.$row, $data);
-                $char = chr(ord($char)+1);
-            }
-            $row++;
-        }
-        $spreadsheet->createSheet();
-        $stock_sheet = $spreadsheet->setActiveSheetIndex(5)->setTitle('Stock');
-        $stock_sheet->fromArray($stock_fields, NULL, 'A1');
-        $row=2;
-        foreach ($stock_items as $item) {
-            $char='A';
-            foreach($stock_fields as $f) {
-                $data = $item[$f];
-                $stock_sheet->setCellValue($char.$row, $data);
-                $char = chr(ord($char)+1);
-            }
-            $row++;
-        }
-        $spreadsheet->createSheet();
-        $features_sheet = $spreadsheet->setActiveSheetIndex(6)->setTitle('Features');
-        $features_sheet->fromArray($features_fields, NULL, 'A1');
-        $row=2;
-        foreach ($features_items as $item) {
-            $char='A';
-            foreach($features_fields as $f) {
-                $data = $item[$f];
-                $features_sheet->setCellValue($char.$row, $data);
                 $char = chr(ord($char)+1);
             }
             $row++;
@@ -139,14 +62,9 @@ class Exports extends MY_Controller {
         
     }
     private function _get_items_export() {
-        _model('items/item_sku','item_sku');
-        _model('items/item_price','price');
-        _model('items/item_inventory','inventory');
-        _model('items/item_stock','stock');
-        _model('items/item_addon','item_addon');
         _model('items/item_note','item_note');
-        _model('item_feature_value','feature_value');
         _model('items/item','item');
+        _model('item_category','category');
 
       /*   $filters['filter'] = [
             'type'  =>  'single'
@@ -154,80 +72,51 @@ class Exports extends MY_Controller {
        // $filters['limit'] = 99999;
        // $filters['orders'] = [['order_by'=>'code','order'=>'ASC']];
         $this->item->order_by('code','ASC');
-        $items = $this->item->search( ['type'  =>  'single']);
-
+        $items = $this->item->search();
+        $categories = $this->category->search();
+        $all_warehouse = _get_module('warehouses', '_search', ['filter' => []]);
         $body=[];
 
         if($items) {
-            foreach ($items as $item) {
+            foreach ($items as $i) {
                
-                $item_id = $item['id'];
-                $category_id = $item['category_id'];
-                $unit_id = $item['unit_id'];
-                
-                $category = $this->_get_category($category_id);
-                $unit = $this->_get_unit($unit_id);
-                $code = $item['code'];
+                $item_id = $i['id'];
+                $category_id = $i['category_id'];
+                $unit_id = $i['unit_id'];
+                $category = array_values(array_filter($categories,function($single) use ($category_id) {
+                    return $category_id == $single['id'];
+                }));
+                $parent_id = $i['parent'];
+                $parent = array_values(array_filter($items, function ($single) use ($parent_id) {
+                    return $single['id'] === $parent_id;
+                }));
+                $outlet_id = $i['outlet_id'];
+                $outlet = array_values(array_filter($all_warehouse, function ($single) use ($outlet_id) {
+                    return $single['id'] === $outlet_id;
+                }));
+               // $unit = $this->_get_unit($unit_id);
+                $code = $i['code'];
                 $body['Basic'][] = [
-                    'item_code'		         =>	$code,
-                    'category'           =>	$category,
-                    'taxable'	         =>	$item['taxable'],
-                    'status'	         =>	$item['status'],
-                    'title'	             =>	$item['title'],
-                    'description'        => '',
-                    'unit'               => $unit,
-                    'purchase_unit'      => $unit,
-                    'sale_unit'          => $unit,
-                    'manufacturer'       => $item['manufacturer'],
-                    'vendor'             => $item['vendor_id'],
-                    'image'              => $item['image'],
-                    'has_spice_level'    => $item['has_spice_level'],
-                    'is_addon'           => $item['is_addon'],
-                    'print_location'     => $item['print_location'],
-                    'web_status'         => $item['web_status'],
-                    'app_status'         => $item['app_status'],
-                    'pos_status'         => $item['pos_status'],
-                    'icon'               => $item['icon'],
+                    'item_code'		     =>	$code,
+                    'type'               =>$i['type'],
+                    'parent'             =>@$parent[0]['code'] ?? 0,
+                    'category'           =>	@$category[0]['title']??'',
+                    'outlet_id'          =>@$outlet[0]['title']??'',
+                    'taxable'	         =>	$i['taxable'],
+                    'title'	             =>	$i['title'],
+                   // 'unit'               => $unit,
+                    'image'              => $i['image'],
+                    'has_spice_level'    => $i['has_spice_level'],
+                    'is_addon'           => $i['is_addon'],
+                    'print_location'     => $i['print_location'],
+                    'web_status'         => $i['web_status'],
+                    'app_status'         => $i['app_status'],
+                    'pos_status'         => $i['pos_status'],
+                    //'icon'               => $i['icon'],
+                    'is_veg'             =>$i['is_veg'],
+                    'rate'               =>$i['rate'],
+
                 ];
-                $item_sku = $this->item_sku->single(['item_id' => $item_id]);
-                $sku = $item_sku['sku'];
-                $body['Variants'][] = [
-                    'item_code'    => $code,
-                    'sku'          =>$sku,
-                    'title'        =>$item_sku['title'],
-                    'upc'          =>0,
-                    'ean'          =>0,
-                    'weight'       =>0,
-                    'reorder_level'=>0,
-                    'is_veg'       =>$item_sku['is_veg']
-                ];
-                
-                $item_price = $this->price->single(['item_id' => $item_id]);
-                $body['Prices'][]=[
-                    'item_code'=>$code,
-                    'sku'            =>$sku,
-                    'unit'           =>$unit,
-                    'purchase_price' =>$item_price['purchase_price'],
-                    'sale_price'     =>$item_price['sale_price'],
-                    'conversion_rate'=>$item_price['conversion_rate']
-                ];
-                $item_addon = $this->item_addon->search(['item_id' => $item_id]);
-                if($item_addon){
-                    foreach ($item_addon as $addon){
-                        $addon_item_id = $addon['addon_item_id'];
-                        $addon_code = array_values(array_filter($items, function ($single) use ($addon_item_id) {
-                            return $single['id'] === $addon_item_id;
-                        }));
-                        $body['Addons'][]=[
-                            'item_code'      => $code,
-                            'sku'            =>$sku,
-                            'addon_item_code'=>$addon_code[0]['code'],
-                            'type'           =>$addon['type'],
-                            'title'          =>$addon['title'],
-                            'sale_price'     =>$addon['sale_price']
-                        ];
-                    }
-                }
                 $item_note = $this->item_note->search(['item_id' => $item_id]);
                 if($item_note){
                     foreach ($item_note as $note)
@@ -236,27 +125,17 @@ class Exports extends MY_Controller {
                         'title'          =>$note['title']
                     ];
                 }
-                $item_stock = $this->stock->single(['item_id'=>$item_id]);
-                $warehouse = _get_module('warehouses','_find',['filter'=>['id'=>$item_stock['warehouse_id']]]);
-                $body['Stock'][]=[
-                  'item_code'            =>$code,
-                  'sku'                  =>$sku,
-                  'warehouse'            =>$warehouse['code'] ?? 'OTL001',
-                  'opening_stock'        =>0,
-                  'opening_stock_value'  =>0
-                ];
-                $body['Features'][]=[
-                    'item_code' =>'',
-                    'feature'   =>'',
-                    'value'     =>''
-                ];
             }
         }
+       // dd($body);
         return $body;
     }
     public function _get_category($category_id){
-        _model('item_category','category');
-        $category = $this->category->single(['id'=>$category_id]);
+        $categories = $this->category->search();
+
+        $category = array_values(array_filter($categories,function($single) use ($category_id) {
+            return $category_id == $single['id'];
+        }));
         if($category){
            $title = $category['title'];
            return $title;
@@ -266,7 +145,8 @@ class Exports extends MY_Controller {
         $filter = [];
         $filter['id'] = $unit_id;
     
-        $unit = _get_module('core/units','_find',['filter'=>$filter]);
+        $unit = _get_module('core/units','_search',[]);
+        //dd($unit);
         if($unit){
             $code = $unit['code'];
             return $code;

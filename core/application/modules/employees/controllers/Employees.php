@@ -22,22 +22,12 @@ class Employees extends MY_Controller {
     }
     public function index()	{
 
-        _model('employee_group','egroup');
-
         _library('table');
 
         $filters = [];
         $filters['filter'] = [];
 
         $employees = $this->{$this->model}->get_list($filters);
-
-        $group_filters = [];
-        $group_filters['filter'] = [];
-        $groups = $this->egroup->get_list($group_filters);
-
-        if($groups) {
-            $groups = get_index_id_array($groups,'id');
-        }
 
         $body=[];
 
@@ -49,12 +39,9 @@ class Employees extends MY_Controller {
                     'data'  =>  $action
                 ];
 
-                $group = (isset($groups[$user['group_id']]))?$groups[$user['group_id']]['title']:'';
-
                 $body[] = [
                     'id'		=>	$user['id'],
                     'name'      =>	$user['first_name'] . ' ' . $user['last_name'],
-                    'group'	    =>	$group,
                     'email'	    =>	$user['email'],
                     $action_cell
                 ];
@@ -64,7 +51,6 @@ class Employees extends MY_Controller {
         $heading = [
             'ID',
             'Name',
-            'Group',
             'Email',
             ['data'=>'Action','class'=>'text-center w-100p']
         ];
@@ -94,64 +80,22 @@ class Employees extends MY_Controller {
     }
 
     public function edit($id) {
-
-        _model('employee_warehouse','etw');
-        _model('employee_register','etr');
-
         if(!$id) {
             _set_message($this->singular . ' was not found.','warning');
             $this->_redirect($this->module);
         }
-
         $user = $this->{$this->model}->single(['id'=>$id]);
-
         $user['status'] = (int)$user['status'];
-        $warehouses = $this->etw->search(['user_id'=>$user['id']]);
-        $user['warehouse_id'] = (@$warehouses[0]['warehouse_id'])?$warehouses[0]['warehouse_id']:null;
-        $registers = $this->etr->search(['user_id'=>$user['id']]);
-        $user['register_id'] = (@$registers[0]['register_id'])?$registers[0]['register_id']:null;
-
         _set_js_var('user',$user,'j');
 
         $this->_edit($id);
     }
 
     public function _action_put() {
-        _model('employee_warehouse','etw');
-        _model('employee_register','etr');
-        _helper('password');
-
         $user = _input('user');
-
-        $data = [
-            'group_id'      =>  $user['group_id'],
-            'first_name'    =>  $user['first_name'],
-            'last_name'     =>  $user['last_name'],
-            'email'         =>  $user['email'],
-            'default_page'  =>  $user['default_page'],
-            'password'      =>  hash_password($user['password']),
-            'added'         =>  sql_now_datetime()
-        ];
-
-        $affected_rows = $this->{$this->model}->insert($data);
-
+        $user['added'] = sql_now_datetime();
+        $affected_rows = $this->{$this->model}->insert($user);
         if($affected_rows) {
-
-            $user_id = $this->{$this->model}->insert_id();
-
-            $insert = [
-                'user_id'       =>  $user_id,
-                'warehouse_id'  =>  $user['warehouse_id'],
-                'added'         =>  sql_now_datetime()
-            ];
-            $this->etw->insert($insert);
-            $insert = [
-                'user_id'       =>  $user_id,
-                'register_id'  =>  $user['register_id'],
-                'added'         =>  sql_now_datetime()
-            ];
-            $this->etr->insert($insert);
-
             _response_data('redirect',base_url($this->module));
             return true;
         }else{
@@ -161,40 +105,12 @@ class Employees extends MY_Controller {
 
     public function _action_post() {
 
-        _model('employee_warehouse','etw');
-        _model('employee_register','etr');
-        _helper('password');
 
         $user = _input('user');
 
-        $data = [
-            'group_id'      =>  $user['group_id'],
-            'first_name'    =>  $user['first_name'],
-            'last_name'     =>  $user['last_name'],
-            'email'         =>  $user['email'],
-            'default_page'  =>  $user['default_page'],
-
-        ];
-        if($user['password']) {
-            $data['password'] = hash_password($user['password']);
-        }
-
         $filter = ['id'=>$user['id']];
-        $affected_rows = $this->{$this->model}->update($data,$filter);
-
-        $update = [
-            'warehouse_id'  =>  $user['warehouse_id'],
-            'added'         =>  sql_now_datetime()
-        ];
-        $etw_filter = ['user_id'=>$user['id']];
-        $this->etw->update($update,$etw_filter);
-        $update = [
-            'register_id'  =>  $user['register_id'],
-            'added'         =>  sql_now_datetime()
-        ];
-        $etr_filter = ['user_id'=>$user['id']];
-        $this->etr->update($update,$etr_filter);
-
+        unset($user['id']);
+        $affected_rows = $this->{$this->model}->update($user,$filter);
         if($affected_rows) {
             _response_data('redirect',base_url($this->module));
             return true;
@@ -256,6 +172,102 @@ class Employees extends MY_Controller {
         return true;
     }
 
+    public function _employees_pos($params = []){
+        _model('employee_shift','es');
+        $session_id = $params['session_id'];
+        $all_employees = $this->{$this->model}->search(['deleted'=>0,'status'=>1]);
+        $employees = [];
+        if($all_employees){
+            foreach($all_employees as &$e){
+                $employee =[
+                    'name'=>$e['first_name'].' '.$e['last_name'],
+                    'id'=>$e['id'],
+                    'shiftOpen'=>$this->es->single(['employee_id'=>$e['id'],'session_id'=>$session_id,'close_register_id'=>null,'end_shift'=>null])?true:false
+                ]; 
+                $employees[] = $employee;
+            }
+        }
+       
+        return $employees;
+
+    }
+
+    public function _set_employee_shit_post(){
+        _model('employee_shift','es');
+        $employee =  _input('employee');
+        $emp_id= $employee['id'];
+        $code = $employee['code'];
+        $session_id = $employee['sessionId'];
+        $exit_emp = $this->_check_employee_login($emp_id,$code);
+        if($exit_emp){
+            $login = false;
+            if($this->es->single(['employee_id'=>$emp_id,'session_id'=>$session_id,'close_register_id'=>null,'end_shift'=>null])){
+                $login = true;
+            }else{
+                $data = [
+                    'id'=>'',
+                    'outlet_id'=>0,
+                    'employee_id'=>$emp_id,
+                    'session_id'=>$session_id,
+                    'opening_register_id'=>$employee['openingRegisterId'],
+                    'close_register_id'=>null,
+                    'take_out'=>null,
+                    'start_shift'=>sql_now_datetime(),
+                    'end_shift'=>null,
+                ];
+                $this->es->insert($data);
+                $login = true;
+            }
+           
+            if($login){
+                _response_data('employeeId',$emp_id);
+                return true;
+            };
+        }else{
+            _response_data('message','Invalid Employee code.');
+            return false;
+        }
+    }
+
+    public function _set_employee_shit_close_post(){
+        _model('employee_shift','es');
+        $obj = _input('obj');
+        $register_id = $obj['registerId'];
+        $session_id = $obj['sessionId'];
+        $employee_id = $obj['employeeId'];
+
+        if($employee_id){
+            $shift = $this->es->single(['session_id'=>$session_id,'employee_id'=>$employee_id,'close_register_id'=>null,'end_shift'=>null]);
+            if($shift){
+                $data = ['take_out'=>$obj['takeOut'],'close_register_id'=>$register_id,'end_shift'=>sql_now_datetime()];
+                if($this->es->update($data,['id'=>$shift['id']])){
+                    _response_data('message','OP');
+                    return true;
+                };
+
+            }
+            _response_data('message','Invalid Employee or code.');
+            return false;
+
+        }
+        _response_data('message','Invalid Employee or code.');
+        return false;
+        
+    }
+
+    public function _check_employee_login($id,$code){
+        $filters = [
+            'id'     => $id,
+            'code'  =>  $code
+        ];
+        $user = $this->{$this->model}->single($filters);
+        if($user) {
+            return $user;
+        }else{
+            return false;
+        }
+
+    }
     public function _warehouses($params=[]) {
 
         _model('employee_warehouse','etw');
@@ -274,12 +286,7 @@ class Employees extends MY_Controller {
     }
 
     public function _get_menu() {
-
         $menus = [];
-
-        $menus = [];
-
-        $employees = [];
         $employees[] = array(
             'name'	    =>  'Employees',
             'class'     =>  '',
@@ -288,16 +295,6 @@ class Employees extends MY_Controller {
             'module'    =>  'employees',
             'children'  =>  []
         );
-
-        $employees[] = array(
-            'name'	    =>  'Groups',
-            'class'     =>  '',
-            'icon'      =>  'people',
-            'path'      =>  'employees/egroups',
-            'module'    =>  'employees',
-            'children'  =>  []
-        );
-
         $menus[] = array(
             'id'        => 'menu-employees',
             'class'     => '',
@@ -329,20 +326,8 @@ class Employees extends MY_Controller {
         }
 
         if(_get_method()=='add' || _get_method()=='edit') {
-
-            _model('employee_group','egroup');
-
             _load_plugin(['vue_multiselect']);
             $this->layout = 'employees_form_view';
-
-            $groups = [];
-            if($this->egroup->allowed_groups) {
-                $filter = ['rank >='=>_get_session('rank')];
-                $this->group->where_in('id', $this->egroup->allowed_groups);
-                $groups = $this->group->search($filter);
-            }
-            _set_js_var('groups',$groups,'j');
-
             _set_js_var('statuses',get_status_array(),'j');
 
             _page_script_override('employees/employees-form');

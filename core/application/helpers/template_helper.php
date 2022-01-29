@@ -343,3 +343,8 @@ if ( ! function_exists('_vue_text_link')){
         return '<a class="js-tooltip-enabled" data-toggle="tooltip" @click.prevent="'.$function.'" data-original-title="'. $tooltip . '" href="#">'.$text.'</a>';
     }
 }
+if ( ! function_exists('_vue_button_link')){
+    function _vue_button_link($icon,$function,$tooltip='') {
+        return '<a class="btn btn-sm btn-secondary js-tooltip-enabled mr-2" data-toggle="tooltip" @click.prevent="'.$function.'" data-original-title="'. $tooltip . '" href="#"><i class="' . $icon . '"></i></a>';
+    }
+}

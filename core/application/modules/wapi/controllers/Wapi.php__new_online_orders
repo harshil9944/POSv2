@@ -662,12 +662,11 @@ class Wapi extends MY_Controller {
             $obj['reference_no'] = '';
             $obj['notes'] = '';
             $obj['order_date'] = sql_now_datetime();
-            $obj['expected_delivery_date'] = sql_now_datetime();
             $obj['added'] = sql_now_datetime();
             if (!isset($obj['order_status'])) {
                 $obj['order_status'] = 'Confirmed';
             }
-            $obj['salesperson_id'] = WEB_SALESPERSON_ID;//_get_user_id();
+            $obj['employee_id'] = WEB_SALESPERSON_ID;//_get_user_id();
 
             $obj['adjustment'] = 0;
 

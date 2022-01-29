@@ -25,40 +25,19 @@ $code = 'employee';
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="email">Email</label>
-                                            <input class="form-control" id="email" placeholder="Email Address" type="email" v-model="user.email" required autocomplete="off" />
+                                            <input class="form-control" id="email" placeholder="Email Address" type="email" v-model="user.email"  />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="password">Password</label>
-                                            <input class="form-control" id="password" placeholder="Password" type="password" v-model="user.password" autocomplete="new-password"/>
+                                            <label for="mobile">Mobile</label>
+                                            <input class="form-control" id="mobile" placeholder="Mobile" type="text" v-model="user.mobile"  />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="user-group">Group</label>
-                                            <select id="user-group" class="form-control custom-select d-block w-100" v-model="user.group_id" @change.prevent="populateRoutes" required>
-                                                <option value="" selected>None</option>
-                                                <option v-for="group in groups" :value="group.id">{{ group.title }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="user-warehouse">Warehouse/Outlet</label>
-                                            <select id="user-warehouse" class="form-control custom-select d-block w-100" v-model="user.warehouse_id" required>
-                                                <option value="" selected>None</option>
-                                                <option v-for="single in warehouses" :value="single.id">{{ single.title }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="default-page">Default Page</label>
-                                            <select id="default-page" class="form-control custom-select d-block w-100" v-model="user.default_page">
-                                                <option value="" selected>None</option>
-                                                <option v-for="single in routes" :value="single">{{ single }}</option>
-                                            </select>
+                                            <label for="code">Code</label>
+                                            <input class="form-control" id="code" placeholder="Code" type="Number" v-model="user.code" required />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -66,15 +45,6 @@ $code = 'employee';
                                             <label for="user-status">Status</label>
                                             <select id="user-status" class="form-control custom-select d-block w-100" v-model="user.status">
                                                 <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="user-register">Register</label>
-                                            <select id="user-register" class="form-control custom-select d-block w-100" v-model="user.register_id" >
-                                                <option value="" selected>None</option>
-                                                <option v-for="single in registers" :value="single.id">{{ single.title }}</option>
                                             </select>
                                         </div>
                                     </div>

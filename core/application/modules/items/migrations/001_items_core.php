@@ -19,16 +19,24 @@ class Migration_items_core extends CI_Migration {
                 'unique'    => TRUE
             ],
             'type' => [
-                'type' => 'ENUM("single","group")',
-                'default' => 'single'
+                'type' => 'VARCHAR',
+                'constraint' => 10,
             ],
-            'category_id' => [
+            'parent' => [
+                'type' => 'INT',
+                'constraint' => 11,
+            ],
+            'outlet_id' => [
                 'type' => 'INT',
                 'constraint' => 11,
             ],
             'title' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
+            ],
+            'category_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
             ],
             'taxable' => [
                 'type' => 'TINYINT',
@@ -40,35 +48,45 @@ class Migration_items_core extends CI_Migration {
                 'type' => 'INT',
                 'constraint' => 11,
             ],
-            'purchase_unit_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-            ],
-            'sale_unit_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-            ],
-            'manufacturer' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-            ],
-            'vendor_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-            ],
             'image' => [
                 'type' => 'TEXT'
+            ],
+            'icon' => [
+                'type' => 'TEXT'
+            ],
+            'is_addon' => [
+                'type' => 'TINYINT',
+                'constraint' => 1,
+                'default' => 0
             ],
             'has_spice_level' => [
                 'type' => 'TINYINT',
                 'constraint' => 1,
                 'default' => 0
             ],
-            'status' => [
+            'is_veg' => [
                 'type' => 'TINYINT',
                 'constraint' => 1,
-                'null' => FALSE,
-                'default' => 1
+            ],
+            'print_location' => [
+                'type' => 'VARCHAR(20)', 
+                'default'=>'default'
+            ],
+            'rate' => [
+                'type' => 'DECIMAL',
+                'constraint' => '16,2'
+            ],
+            'pos_status' => [
+                'type' => 'TINYINT',
+                'constraint' => 1,
+            ],
+            'web_status' => [
+                'type' => 'TINYINT',
+                'constraint' => 1,
+            ],
+            'app_status' => [
+                'type' => 'TINYINT',
+                'constraint' => 1,
             ],
             'created_by' => [
                 'type' => 'INT',
@@ -84,60 +102,6 @@ class Migration_items_core extends CI_Migration {
         $this->dbforge->create_table(ITEM_TABLE, TRUE);
         //Item Table End
 
-        //Options Table Start
-        $fields = [
-            'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'auto_increment' => TRUE
-            ],
-            /*'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],*/
-            'title' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-            ],
-            'added' => [
-                'type' => 'DATETIME'
-            ]
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('id', TRUE);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->create_table(OPTION_TABLE, TRUE);
-        //Options Table End
-
-        //Option Values Table Start
-        $fields = [
-            'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'auto_increment' => TRUE
-            ],
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'option_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'title' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-            ]
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('id', TRUE);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->add_key('option_id', TRUE);
-        $this->dbforge->create_table(OPTION_VALUE_TABLE, TRUE);
-        //Option Values Table End
-
         //Category Table Start
         $fields = [
             'id' => [
@@ -152,11 +116,24 @@ class Migration_items_core extends CI_Migration {
             ],
             'sort_order' => [
                 'type' => 'INT',
-                'constraint' => 11
+                'constraint' => 4,
+                'default' => 0
+            ],
+            'web_status' => [
+                'type' => 'TINYINT(1)', 
+                'default'=>'1'
+            ],
+            'pos_status' => [
+                'type' => 'TINYINT(1)', 
+                'default'=>'1'
+            ],
+            'app_status' => [
+                'type' => 'TINYINT(1)', 
+                'default'=>'1'
             ],
             'parent' => [
                 'type' => 'INT',
-                'constraint' => 11,
+                'constraint' => 4,
                 'default' => 0
             ],
             'added' => [
@@ -169,12 +146,16 @@ class Migration_items_core extends CI_Migration {
         $this->dbforge->create_table(ITEM_CATEGORY_TABLE, TRUE);
         //Category Table End
 
-        //Features Table Start
-        $fields = [
+         //Item Note Table Start
+         $fields = [
             'id' => [
                 'type' => 'INT',
                 'constraint' => 11,
-                'auto_increment' => TRUE
+                'auto_increment' => true
+            ],
+            'item_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
             ],
             'title' => [
                 'type' => 'VARCHAR',
@@ -187,252 +168,30 @@ class Migration_items_core extends CI_Migration {
 
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('id', TRUE);
-        $this->dbforge->create_table(FEATURE_TABLE, TRUE);
-        //Features Table End
+        $this->dbforge->create_table(ITEM_NOTES_TABLE, TRUE);
+        //Item Note Table End
 
-        //Feature Values Table Start
-        $fields = [
+          //Item Icon Table End
+          $fields = [
             'id' => [
                 'type' => 'INT',
                 'constraint' => 11,
                 'auto_increment' => TRUE
             ],
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'feature_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'title' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-            ]
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('id', TRUE);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->add_key('feature_id', TRUE);
-        $this->dbforge->create_table(FEATURE_VALUE_TABLE, TRUE);
-        //Feature Values Table End
-
-        //Item SKUs Table Start
-        $fields = [
-            'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'auto_increment' => TRUE
-            ],
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'is_veg' => [
-                'type' => 'TINYINT',
-                'constraint' => 1,
-                'default' => 1
-            ],
-            'sku' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50
-            ],
             'title' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
             ],
-            'upc' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50
-            ],
-            'ean' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50
-            ],
-            'weight' => [
-                'type' => 'DECIMAL',
-                'constraint' => '15,8'
-            ],
-            'reorder_level' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,2'
+            'added' =>  [
+                'type'  =>  'DATETIME'
             ]
+
         ];
 
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('id', TRUE);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->create_table(ITEM_SKU_TABLE, TRUE);
-        //Item SKUs Table End
-
-        //Item Inventory Table Start
-        $fields = [
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'order_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'order_no' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50
-            ],
-            'sku_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'warehouse_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'reason' => [
-                'type' => 'ENUM("opening","purchase","sale","transferIn","transferOut")'
-            ],
-            'date' => [
-                'type' => 'datetime'
-            ],
-            'quantity' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,2',
-                'null' => FALSE,
-                'default' => 0.00
-            ],
-            'rate' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,2',
-                'null' => TRUE
-            ],
-            'amount' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,2',
-                'null' => TRUE
-            ],
-            'created_by' => [
-                'type' => 'INT',
-                'constraint' => 11,
-            ],
-            'added' => [
-                'type' => 'DATETIME'
-            ]
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->create_table(ITEM_INVENTORY_TABLE, TRUE);
-        //Item Inventory Table End
-
-        //Item Stock Table Start
-        $fields = [
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'sku_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'warehouse_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'on_hand' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,2',
-                'null' => FALSE,
-                'default' => 0.00
-            ],
-            'modified' => [
-                'type' => 'DATETIME'
-            ]
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->add_key('sku_id', TRUE);
-        $this->dbforge->add_key('warehouse_id', TRUE);
-        $this->dbforge->create_table(ITEM_STOCK_TABLE, TRUE);
-        //Item Stock Table End
-
-        //SKU Values Table Start
-        $fields = [
-            'order_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'sku_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'option_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'value_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->add_key('sku_id', TRUE);
-        $this->dbforge->add_key('option_id', TRUE);
-        $this->dbforge->add_key('value_id', TRUE);
-        $this->dbforge->create_table(SKU_VALUE_TABLE, TRUE);
-        //SKU Values Table End
-
-        //Item Price Table Start
-        $fields = [
-            'item_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'sku_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'unit_id' => [
-                'type' => 'INT',
-                'constraint' => 11
-            ],
-            'conversion_rate' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
-            ],
-            'purchase_currency' => [
-                'type' => 'VARCHAR',
-                'constraint' => 5
-            ],
-            'sale_currency' => [
-                'type' => 'VARCHAR',
-                'constraint' => 5
-            ],
-            'purchase_price' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
-            ],
-            'sale_price' => [
-                'type' => 'DECIMAL',
-                'constraint' => '16,4'
-            ],
-            'added' => [
-                'type' => 'DATETIME'
-            ]
-        ];
-
-        $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('item_id', TRUE);
-        $this->dbforge->add_key('sku_id', TRUE);
-        $this->dbforge->add_key('unit_id', TRUE);
-        $this->dbforge->create_table(ITEM_PRICE_TABLE, TRUE);
-        //Item Price Table End
-
+        $this->dbforge->create_table(ITEM_ICON_TABLE, TRUE);
+        //Item Icon Table End
     }
 
     public function down()

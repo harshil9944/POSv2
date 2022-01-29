@@ -2,6 +2,9 @@
 function get_number($data=array(),$type='number',$only_control=false) {
     return get_text($data,$type,$only_control);
 }
+function get_password($data=array(),$type='password',$only_control=false) {
+    return get_text($data,$type,$only_control);
+}
 function get_text($data=array(),$type='text',$only_control=false) {
     $id = $data['id'];
     $name = (isset($data['name']) && $data['name'])?$data['name']:$data['id'];

@@ -244,7 +244,6 @@ class Orders extends MY_Controller {
                     $item_inventory = [
                         'order_id'      =>  $order_id,
                         'item_id'       =>  $item_id,
-                        'sku_id'        =>  $sku_id,
                         'warehouse_id'  =>  $warehouse_id,
                         'reason'        =>  'sale',
                         'date'          =>  sql_now_datetime(),
@@ -303,14 +302,12 @@ class Orders extends MY_Controller {
                 if($order['order_status']=='Confirmed') {
 
                     $item_id = $item['item_id'];
-                    $sku_id = $item['sku_id'];
 
                     $amount = (float)$item['quantity'] * (float)$item['rate'];
 
                     $item_inventory = [
                         'order_id'      =>  $order_id,
                         'item_id'       =>  $item_id,
-                        'sku_id'        =>  $sku_id,
                         'warehouse_id'  =>  $warehouse_id,
                         'reason'        =>  'sale',
                         'date'          =>  sql_now_datetime(),
@@ -508,8 +505,8 @@ class Orders extends MY_Controller {
                 }
             }
 
-            $warehouse = _get_module('warehouses','_single',['id'=>$result['warehouse_id']]);
-
+           // $warehouse = _get_module('warehouses','_single',['id'=>$result['warehouse_id']]);
+/* 
             if($warehouse) {
                 $result['company'] = [
                     'name' => $warehouse['title'],
@@ -522,7 +519,9 @@ class Orders extends MY_Controller {
                     'email' => $warehouse['email'],
                     'phone' => $warehouse['phone'],
                 ];
-            }
+            } */
+
+           // $result['company'] = [];
 
             $result['promotions']['available'] = [];
 
@@ -549,39 +548,29 @@ class Orders extends MY_Controller {
             if($items) {
                 foreach ($items as $item) {
                     $item_id = $item['item_id'];
-                    $sku_id = $item['sku_id'];
                     $item_titles[$item['id']] = $item['title'];
                     foreach ($order_item_keys as $new=>$old) {
                         change_array_key($old,$new,$item);
                     }
                     $item = filter_array_keys($item,$order_item_exclude_fields);
 
-                    $price_filter = ['item_id'=>$item_id,'sku_id'=>$sku_id];
-
-                    $prices = _get_module('items/item_prices','_search',['filter'=>$price_filter,'exclude'=>true,'convert'=>true]);
 
                     $notes = _get_module('items','_search_notes',['item_id'=>$item_id,'exclude'=>true,'convert'=>true]);
                     $item['notes'] = ($notes)?$notes:[];
 
                     $selected_addons = $this->addon->search(['order_item_id'=>$item['id']]);
 
-                    $addons = _get_module('items','_search_addons',['item_id'=>$item_id,'exclude'=>true,'convert'=>true]);
+                    $addons = _get_module('items','_search_addons',['parent_id'=>$item['parentId']]);
                     if($addons) {
                         $temp = [];
                         foreach ($addons as $addon) {
                             $item_id = $addon['itemId'];
-                            $addon_item_id = $addon['addonItemId'];
-                            $sku_id = $addon['skuId'];
                             $type = $addon['type'];
                             if($selected_addons) {
                                 //TODO Check if duplicate item is found. it can cause error is same item is repeated
                                 //TODO Never let repeat same addon_item_id for an addon otherwise it will case error
-                                $filtered = array_values(array_filter($selected_addons,function($single) use ($item_id,$sku_id,$addon_item_id,$type) {
-                                    if($sku_id!=0) {
-                                        return $single['item_id'] == $item_id && $single['sku_id'] == $sku_id && $single['addon_item_id'] == $addon_item_id && $single['type'] == $type;
-                                    }else{
-                                        return $single['item_id'] == $item_id && $single['addon_item_id'] == $addon_item_id && $single['type'] == $type;
-                                    }
+                                $filtered = array_values(array_filter($selected_addons,function($single) use ($item_id,$type) {
+                                    return $single['item_id'] == $item_id  && $single['type'] == $type;
                                 }));
                                 if(count($filtered)==1) {
                                     $filtered = $filtered[0];
@@ -615,15 +604,15 @@ class Orders extends MY_Controller {
                         $item['selectedNotes'] = $selected_notes;
                     }
 
-                    if($prices) {
+                   /*  if($prices) {
                         $temp = [];
                         foreach ($prices as $price) {
                             unset($price['purchasePrice']);
                             $temp[] = $price;
                         }
                         $prices = $temp;
-                    }
-                    $item['prices'] = $prices;
+                    } */
+                    //$item['prices'] = $prices;
                     $result['items'][] = $item;
                 }
             }

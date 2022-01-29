@@ -54,6 +54,7 @@ class Login extends MY_Controller {
                 _set_session('short_name', substr($user['first_name'], 0, 1) . '. ' . $user['last_name']);
                 _set_session('name', $user['first_name'] . ' ' . $user['last_name']);
                 _set_session('initial', strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)));
+                _set_session('userEmail', $user['email']);
 
                 $redirect = $this->auth_m->get_redirect($user);
                 if (!$redirect) {

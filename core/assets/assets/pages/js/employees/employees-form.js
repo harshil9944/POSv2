@@ -1,25 +1,21 @@
-Vue.component('employee-form',{
+Vue.component('employee-form', {
     template: '#employee-form-template',
     data: function() {
         return {
             module: 'employees',
             mode: _s('mode'),
             user: {},
-            groups: _s('groups'),
             statuses: _s('statuses'),
-            routes: [],
-            warehouses: [],
-            registers:[]
         }
     },
     methods: {
-        populate: function() {
+        /* populate: function() {
             var self = this;
             var data = {
-                module    :   this.module,
-                method    :   'populate'
+                module: this.module,
+                method: 'populate'
             };
-            var request = submitRequest(data,'get');
+            var request = submitRequest(data, 'get');
             request.then(function(response) {
                 self.warehouses = response.warehouses;
                 self.registers = response.registers;
@@ -28,44 +24,44 @@ Vue.component('employee-form',{
         populateRoutes: function(ref) {
             var self = this;
             var group_id = this.user.group_id;
-            if(group_id!=='') {
+            if (group_id !== '') {
                 var data = {
-                    module    :   'users/groups',
-                    method    :   'routes',
-                    group_id  :   group_id
+                    module: 'users/groups',
+                    method: 'routes',
+                    group_id: group_id
                 };
-                var request = submitRequest(data,'get');
+                var request = submitRequest(data, 'get');
                 request.then(function(response) {
-                    if(ref !== 'load') {
+                    if (ref !== 'load') {
                         self.user.default_page = '';
                     }
                     self.routes = response.routes;
                 });
             }
-        },
+        }, */
         submit: function() {
             var form = $('#frm-employee');
-            if(form.parsley().validate()) {
+            if (form.parsley().validate()) {
 
                 var method = '';
-                if(this.mode==='add') {
+                if (this.mode === 'add') {
                     method = 'put';
-                }else if(this.mode==='edit') {
+                } else if (this.mode === 'edit') {
                     method = 'post';
                 }
 
                 var data = {
-                    module  :   'employees',
-                    user    :   this.user
+                    module: 'employees',
+                    user: this.user
                 };
-                if(method) {
+                if (method) {
                     var request = submitRequest(data, method);
-                    request.then(function (response) {
+                    request.then(function(response) {
                         if (response.status === 'ok') {
                             window.location = response.redirect;
                         }
                     });
-                }else{
+                } else {
                     alert('Something went wrong!');
                 }
 
@@ -76,22 +72,22 @@ Vue.component('employee-form',{
         }
     },
     mounted: function() {
-        this.populate();
-        if(this.mode==='add') {
+        //this.populate();
+        if (this.mode === 'add') {
             this.user = {
-                group_id: '',
+                id: '',
                 first_name: '',
                 last_name: '',
                 email: '',
-                password: '',
-                default_page: '',
-                status: 1
+                mobile: '',
+                code: '',
+                status: 1,
+                deleted: 0,
+                outlet_id: '',
             }
-        }else if(this.mode==='edit') {
-            var user = _s('user');
-            user.password = '';
-            this.user = user;
-            this.populateRoutes('load');
+        } else if (this.mode === 'edit') {
+            this.user = _s('user');
+            // this.populateRoutes('load');
         }
     }
 });

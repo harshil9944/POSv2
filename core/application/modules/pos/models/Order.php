@@ -46,7 +46,6 @@ class Order extends MY_Model
             'sessionOrderNo'=>'session_order_no',
             'referenceNo'=>'reference_no',
             'date'=>'order_date',
-            'expectedDeliveryDate'=>'expected_delivery_date',
             'subTotal'=>'sub_total',
             'taxTotal'=>'tax_total',
             'taxRate'=>'tax_rate',
