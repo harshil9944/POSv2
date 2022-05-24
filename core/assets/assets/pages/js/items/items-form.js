@@ -199,33 +199,10 @@ Vue.component("item-form", {
         handleRemoveNote: function(i) {
             this.item.notes.splice(i, 1);
         },
-        duplicateSku: function(string, field) {
-            var mode = _s("mode");
-            if (mode === "edit") {
-                return false;
-            }
-            var result = false;
-            /*var field = this.$refs.email;*/
-            $(field).parsley().removeError("sku_duplicate");
-            var action = _s("action");
-            var url = action + "?module=items&method=duplicate_sku&sku=" + string;
-
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.status === 200) {
-                    var response = JSON.parse(this.responseText);
-                    result = response.result;
-                }
-            };
-            xhttp.open("GET", url, false);
-            xhttp.send();
-            return result;
-        },
+       
         handleSubmit: function() {
             var form = $("#frm-item");
-            //var field = this.$refs.sku;
             if (form.parsley().validate()) {
-                // if (!this.duplicateSku(this.item.sku, field)) {
                 var method = "";
                 var mode = _s("mode");
                 if (mode === "add") {
@@ -249,18 +226,14 @@ Vue.component("item-form", {
                 } else {
                     alert("Something went wrong!");
                 }
-                /*  } else {
-                     $(field)
-                         .parsley()
-                         .addError("sku_duplicate", { message: "SKU already exists." });
-                 } */
+               
             }
         },
         copyToAll: function(key) {
             var self = this;
             var value = self.item.variations[0][key];
             if (!isNaN(value)) {
-                self.item.variations.forEach(function(sku, index) {
+                self.item.variations.forEach(function(item, index) {
                     self.item.variations[index][key] = value;
                 });
             }
@@ -269,7 +242,7 @@ Vue.component("item-form", {
             var self = this;
             var value = self.item.addons[0][key];
             if (!isNaN(value)) {
-                self.item.addons.forEach(function(sku, index) {
+                self.item.addons.forEach(function(item, index) {
                     self.item.addons[index][key] = value;
                 });
             }

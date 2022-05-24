@@ -99,3 +99,23 @@ defined('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT')  OR  define('ALLOW_GRATUITY_IN_
 
 defined('ALLOW_CUSTOMER_GROUP')         OR  define('ALLOW_CUSTOMER_GROUP', true);
 defined('ALLOW_CUSTOMER_NOTES')         OR  define('ALLOW_CUSTOMER_NOTES', true);
+
+defined( 'CARD_PAYMENT_ID' ) OR define( 'CARD_PAYMENT_ID', 3 );
+
+defined( 'ALLOW_CLOVER_PAYMENT' ) OR define( 'ALLOW_CLOVER_PAYMENT', false );
+defined( 'CLOVER_MERCHANT_ID' ) OR define( 'CLOVER_MERCHANT_ID', '70W8AGE61JKJ1' );
+defined( 'CLOVER_ACCESS_TOKEN' ) OR define( 'CLOVER_ACCESS_TOKEN', '74c1dd7a-0697-3fa4-1816-c74eba67c2b8' );
+defined( 'CLOVER_DEVICE_ID' ) OR define( 'CLOVER_DEVICE_ID', '98559e79-f32b-4c57-9848-74671af22c95' );
+defined( 'CLOVER_FRIENDLY_ID' ) OR define( 'CLOVER_FRIENDLY_ID', 'Primary POS' );
+defined( 'CLOVER_REMOTE_APPLICATION_ID' ) OR define( 'CLOVER_REMOTE_APPLICATION_ID', 'CLOVERDEV.655VQ41Z9CVF8' );
+defined( 'CLOVER_DOMAIN' ) OR define( 'CLOVER_DOMAIN', 'https://sandbox.dev.clover.com' );
+defined( 'CLOVER_PAYMENT_WAITING_MESSAGE' ) OR define( 'CLOVER_PAYMENT_WAITING_MESSAGE', 'Waiting For Payment' );
+defined( 'CLOVER_TIP_PERCENTAGE' ) OR define( 'CLOVER_TIP_PERCENTAGE', true );
+defined( 'CLOVER_TIP_SUGGESTIONS' ) OR define( 'CLOVER_TIP_SUGGESTIONS', [
+    ['title' => 'Acceptable', 'value' => 15],
+    ['title' => 'Good', 'value' => 18],
+    ['title' => 'Great', 'value' => 20],
+    ['title' => 'Excellent', 'value' => 25],
+] );
+
+defined('ALLOW_SUMMARY_PRINT')                    OR  define('ALLOW_SUMMARY_PRINT', true);

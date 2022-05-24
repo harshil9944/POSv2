@@ -119,13 +119,7 @@ class Imports extends MY_Controller {
                     if ($item_variants) {
                         foreach ($item_variants as $variant) {
                             unset($variant['item_code']);
-                            $sku_id = $this->_update_item_variant($variant, $item_id);
-                            $sku = $variant['sku'];
-                            $ignore_variant_ids[] = $sku_id;
-
-                            $item_prices = array_filter($prices, function ($single) use ($code, $sku) {
-                                return $single['item_code'] === $code && $single['sku'] === $sku;
-                            });
+                           
 
                         }
                     }
@@ -158,10 +152,6 @@ class Imports extends MY_Controller {
                         foreach ($db_items as $db_item) {
                             $addon_variant_filters[] = $db_item['id'];
                         }
-                        if($addon_variant_filters) {
-                            $this->sku->where_in('item_id',$addon_variant_filters);
-                        }
-                        $db_variants = $this->sku->search([], 9999);
                     }
                     foreach ($db_items as $item) {
                         $item_id = $item['id'];
@@ -171,11 +161,9 @@ class Imports extends MY_Controller {
                         });
                         foreach ($item_variants as $variant) {
 
-                            $sku_id = $variant['id'];
-                            $sku = $variant['sku'];
 
-                            $item_addons = array_values(array_filter($addons, function ($single) use ($code, $sku) {
-                                return $single['item_code'] === $code && $single['sku'] === $sku;
+                            $item_addons = array_values(array_filter($addons, function ($single) use ($code) {
+                                return $single['item_code'] === $code ;
                             }));
 
                             if ($item_addons) {
@@ -184,10 +172,8 @@ class Imports extends MY_Controller {
                                     $addon_item_code = $addon['addon_item_code'];
 
                                     unset($addon['item_code']);
-                                    unset($addon['sku']);
                                     unset($addon['addon_item_code']);
                                     $addon['item_id'] = $item_id;
-                                    $addon['sku_id'] = 0 ;
 
                                     $addon_item = array_values(array_filter($db_items, function ($single) use ($addon_item_code) {
                                         return $single['code'] === $addon_item_code;

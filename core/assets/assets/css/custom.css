@@ -173,3 +173,13 @@ textarea {
 		opacity: 0;
 	}
 }
+.daterangepicker.single.show-ranges {
+    min-width: 386px !important;
+}
+.block.block-mode-loading .loader-text {
+    margin: 100px 20px 0 ;
+    color: #343a40;
+    font-size: 18px;
+    text-align: center;
+    z-index: 2;
+}

@@ -139,11 +139,7 @@ class Migration_promotions_core extends CI_Migration {
                 'type' => 'INT',
                 'constraint' => 11,
             ],
-            'sku_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'default' => 0
-            ],
+           
             'type' => [
                 'type' => 'ENUM("include","exclude")',
             ],
@@ -217,11 +213,6 @@ class Migration_promotions_core extends CI_Migration {
             'item_id' => [
                 'type' => 'INT',
                 'constraint' => 11,
-            ],
-            'sku_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'default' => 0
             ],
             'type' => [
                 'type' => 'ENUM("include","exclude")',

@@ -258,6 +258,26 @@ Vue.component("report-orders", {
 				href: pdfUrl,
 			}).click();
 		},
+		handleExportCSV: function () {
+			var startDate = moment(
+				this.filteredDateRange.startDate,
+				"YYYY/MM/DD HH:mm:ss",
+			).format("YYYY-MM-DD");
+			var endDate = moment(
+				this.filteredDateRange.endDate,
+				"YYYY/MM/DD HH:mm:ss",
+			).format("YYYY-MM-DD");
+			var csvUrl =
+				_s("ordersReportCSVUrl") +
+				"?startDate=" +
+				startDate +
+				"&endDate=" +
+				endDate;
+			Object.assign(document.createElement("a"), {
+				target: "_blank",
+				href: csvUrl,
+			}).click();
+		},
 	},
 	mounted: function () {
 		if (this.reportsCount === null) {

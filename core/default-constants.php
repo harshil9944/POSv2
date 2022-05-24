@@ -73,6 +73,7 @@ defined('DEFAULT_CITY_ID')              OR  define('DEFAULT_CITY_ID', 31);
 defined('ALLOW_DISCOUNT_IN_SUMMARY')              OR  define('ALLOW_DISCOUNT_IN_SUMMARY', false);
 defined('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT')  OR  define('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT', false);
 defined('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT')  OR  define('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT', true);
+defined('ALLOW_SUMMARY_PRINT')                    OR  define('ALLOW_SUMMARY_PRINT', true);
 
 //Payment
 defined('ALLOW_CARD_PAYMENT_CHANGE')    OR  define('ALLOW_CARD_PAYMENT_CHANGE', false);
@@ -86,3 +87,8 @@ defined('ITEM_TYPE_VARIANT_OPTIONAL')    OR  define('ITEM_TYPE_VARIANT_OPTIONAL'
 defined('SUMMARY_TYPE_REGISTER')    OR  define('SUMMARY_TYPE_REGISTER', 'register');
 defined('SUMMARY_TYPE_SESSION')    OR  define('SUMMARY_TYPE_SESSION', 'session');
 defined('SUMMARY_TYPE_EMPLOYEE')    OR  define('SUMMARY_TYPE_EMPLOYEE', 'employee');
+
+defined( 'CARD_PAYMENT_ID' ) OR define( 'CARD_PAYMENT_ID', 3 );
+
+//Clover
+defined( 'ALLOW_CLOVER_PAYMENT' ) OR define( 'ALLOW_CLOVER_PAYMENT', false );

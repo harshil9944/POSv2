@@ -187,23 +187,6 @@ class Items extends MY_Controller {
             'children'  =>  []
         );
 
-        /* $items[] = array(
-            'name'	    =>  'Item Groups',
-            'class'     =>  '',
-            'icon'      =>  'basket-loaded',
-            'path'      =>  'items/item_groups',
-            'module'    =>  'items',
-            'children'  =>  []
-        );
-
-        $items[] = array(
-            'name'	    =>  'Addon Items',
-            'class'     =>  '',
-            'icon'      =>  'basket-loaded',
-            'path'      =>  'items/addon_items',
-            'module'    =>  'items',
-            'children'  =>  []
-        ); */
 
         $items[] = array(
             'name'	    =>  'Categories',
@@ -214,14 +197,6 @@ class Items extends MY_Controller {
             'children'  =>  []
         );
 
-        /*$items[] = array(
-            'name'	    =>  'Composite Items',
-            'class'     =>  '',
-            'icon'      =>  'basket-loaded',
-            'path'      =>  'items/item_composites',
-            'module'    =>  'items',
-            'children'  =>  []
-        );*/
 
         $items[] = array(
             'name'	    =>  'Icons',
@@ -291,7 +266,6 @@ class Items extends MY_Controller {
 
         _clear_cache('item');
         _model('items/item_note','note');
-        _model('items/item_addon','addon');
 
         $obj = _input('obj');
         if($obj) {
@@ -368,7 +342,6 @@ class Items extends MY_Controller {
         _clear_cache('item');
 
         _model('items/item_note','note');
-        _model('items/item_addon','addon');
 
         $obj = _input('obj');
         if($obj) {
@@ -476,7 +449,6 @@ class Items extends MY_Controller {
         _clear_cache('item');
 
         _model('items/item_note','note');
-        _model('items/item_addon','addon');
 
         $ignore_list = [];
 
@@ -486,7 +458,7 @@ class Items extends MY_Controller {
             $result = $this->{$this->model}->single(['id' => $item_id]);
             if ($result) {
                 $this->_clear_notes($item_id,[]);
-                $this->_clear_addons($item_id,[]);
+               // $this->_clear_addons($item_id,[]);
                 $affected_rows = $this->{$this->model}->delete(['id' => $item_id]);
                 if ($affected_rows) {
                     _response_data('redirect', base_url($this->module));
@@ -508,7 +480,6 @@ class Items extends MY_Controller {
     private function _prep_obj(&$obj) {
         $item_keys = $this->{$this->model}->keys;
         $item_notes_keys = $this->note->keys;
-        $item_addons_keys = $this->addon->keys;
 
         $obj['item_table'] = [];
         foreach ($item_keys as $old => $new) {
@@ -518,7 +489,6 @@ class Items extends MY_Controller {
                 unset($obj[$new]);
             }
         }
-       // $obj['item_table']['is_addon'] = 0;
 
         $obj['variants_table'] = [];
         if(count($obj['variations']) > 0){
@@ -571,7 +541,7 @@ class Items extends MY_Controller {
         if($ignore_ids) {
             $this->db->where_not_in('id',$ignore_ids);
         }
-        $this->addon->delete(['item_id'=>$item_id]);
+        $this->{$this->model}->delete(['id'=>$item_id]);
     }
 
     private function _upload_image() {
@@ -723,7 +693,6 @@ class Items extends MY_Controller {
 
     public function _get_items_meta($params) {
 
-        _model('items/item_addon','addon');
         _model('items/item_note','note');
 
         $ids = (@$params['ids'])?$params['ids']:false;
@@ -803,15 +772,7 @@ class Items extends MY_Controller {
         return $records;
     }
 
-    public function _find_addon($params) {
-
-        _model('item_addon');
-
-        $addon_id = $params['addon_id'];
-
-        return $this->item_addon->single(['id'=>$addon_id]);
-
-    }
+   
 
     public function _find_note($params) {
 
@@ -824,8 +785,6 @@ class Items extends MY_Controller {
     }
 
     public function _search_addons($params) {
-
-        _model('item_addon');
 
         $this->{$this->model}->where('type',ITEM_TYPE_VARIANT_OPTIONAL);
         $result = $this->{$this->model}->search(['parent'=>$params['parent_id']]);
@@ -899,7 +858,6 @@ class Items extends MY_Controller {
 
     public function _single_item_get() {
 
-        _model('items/item_addon','addon');
         _model('items/item_note','note');
         _model('items/item_category','item_category');
         _model('item_icon','icon');
@@ -962,10 +920,10 @@ class Items extends MY_Controller {
         $result = $this->{$this->model}->query($query_string);
 
         foreach ($result as $row) {
-            $value = $row['title'] . ' (' . $row['sku'] . ')';
+            $value = $row['title'] ;
 
             //TODO below statement will be different for group items
-            $display_title = $row['title'];// . ' - ' . $row['sku'];
+            $display_title = $row['title'];
 
             $items[] = [
                 'id'            =>  '',
@@ -974,15 +932,12 @@ class Items extends MY_Controller {
                 'purchaseUnitId'=>  $row['purchase_unit_id'],
                 'unit'          =>  '',
                 'purchaseUnit'  =>  '',
-                'poId'          =>  '',
-                'skuId'         =>  $row['sku_id'],
                 'value'         =>  $value,
                 'title'         =>  $display_title,
                 'quantity'      =>  0,
                 'rate'          =>  0,
                 'unitRate'      =>  0,
                 'unitQuantity'  =>  1,
-                'sku'           =>  $row['sku']
             ];
         }
 
@@ -1001,10 +956,10 @@ class Items extends MY_Controller {
         $result = $this->{$this->model}->query($query_string);
 
         foreach ($result as $row) {
-            $value = $row['title'] . ' (' . $row['sku'] . ')';
+            $value = $row['title'] ;
 
             //TODO below statement will be different for group items
-            $display_title = $row['title'];// . ' - ' . $row['sku'];
+            $display_title = $row['title'];
 
             $items[] = [
                 'id'            =>  '',
@@ -1014,14 +969,12 @@ class Items extends MY_Controller {
                 'unit'          =>  '',
                 'saleUnit'      =>  '',
                 'soId'          =>  '',
-                'skuId'         =>  $row['sku_id'],
                 'value'         =>  $value,
                 'title'         =>  $display_title,
                 'quantity'      =>  0,
                 'rate'          =>  0,
                 'unitRate'      =>  0,
                 'unitQuantity'  =>  1,
-                'sku'           =>  $row['sku']
             ];
         }
 
@@ -1039,15 +992,13 @@ class Items extends MY_Controller {
         $result = $this->{$this->model}->query($query_string);
 
         foreach ($result as $row) {
-            $value = $row['title'] . ' (' . $row['sku'] . ')';
+            $value = $row['title'] ;
             $items[] = [
                 'id'            =>  '',
                 'itemId'        =>  $row['id'],
                 'toId'          =>  '',
-                'skuId'         =>  $row['sku_id'],
                 'value'         =>  $value,
-                'title'         =>  ($row['display_title'])?$row['display_title']:$row['title'].' - '.$row['sku'],
-                'sku'           =>  $row['sku'],
+                'title'         =>  ($row['display_title'])?$row['display_title']:$row['title'],
                 'quantity'      =>  1,
             ];
         }
@@ -1199,6 +1150,8 @@ class Items extends MY_Controller {
             return $code;
         }
     }
+    public function pdf(){}
+    public function csv(){}
 
     public function _install() {
         return true;

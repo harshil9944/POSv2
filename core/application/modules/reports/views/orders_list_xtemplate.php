@@ -7,9 +7,16 @@
                     <date-range-picker
                         opens="right"
                         v-model="filteredDateRange"
+                        :auto-apply="true"
                     ></date-range-picker>
                     <button :disabled="!enableFilterBtn" class="btn btn-danger ml-2" @click="handleFilter">Filter</button>
-                    <a href="#" @click.prevent="handleExportPDF" class="float-right">Export PDF</a>
+                    <div class="btn-group float-right d-block" role="group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>Exports</button>
+                        <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
+                            <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportPDF"></i>PDF</a>
+                            <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportCSV"></i>CSV</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

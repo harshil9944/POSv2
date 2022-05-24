@@ -16,6 +16,8 @@ defined('ORDER_SPLIT_PAYMENT_TABLE')    OR  define('ORDER_SPLIT_PAYMENT_TABLE', 
 
 defined('ORDER_PAYMENT_TABLE')          OR  define('ORDER_PAYMENT_TABLE', 'ord_payment');
 defined('ORDER_PAYMENT_DESC_TABLE')     OR  define('ORDER_PAYMENT_DESC_TABLE', 'ord_payment_description');
+defined( 'ORDER_CLOVER_PAYMENT' ) OR define( 'ORDER_CLOVER_PAYMENT', 'ord_clover_payment' );
+defined( 'ORDER_CLOVER_REFUND_PAYMENT' ) OR define( 'ORDER_CLOVER_REFUND_PAYMENT', 'ord_clover_refund_payment' );
 
 defined('ORDER_SOURCE_TABLE')           OR  define('ORDER_SOURCE_TABLE', 'sys_order_source');
 

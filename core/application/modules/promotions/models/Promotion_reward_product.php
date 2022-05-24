@@ -14,7 +14,6 @@ class Promotion_reward_product extends MY_Model
             'rewardId'=>'reward_id',
             'promotionId'=>'promotion_id',
             'itemId'=>'item_id',
-            'skuId'=>'sku_id',
             'type'=>'type',
             'updated'=>'updated',
             'added'=>'added'

@@ -388,7 +388,7 @@ var self = new Vue({
 
             if(this.salesorder.items.length) {
                 this.salesorder.items.forEach(function(item,index){
-                    if(item.itemId===selected.itemId && item.skuId===selected.skuId) {
+                    if(item.itemId===selected.itemId) {
                         matched = true;
                     }
                 });

@@ -4,7 +4,6 @@ $group_1 = [
     ['control'=>'text','code'=>['id'=>$code.'-title','title'=>'Title','attribute'=>'required','vue_model'=>$code.'.title']],
     ['control'=>'number','code'=>['id'=>$code.'-pos-iscount','title'=>'Pos Discount (%)','attribute'=>'','vue_model'=>$code.'.posDiscount']],
     ['control'=>'number','code'=>['id'=>$code.'-web-iscount','title'=>'Web Discount (%)','attribute'=>'','vue_model'=>$code.'.webDiscount']],
-   // ['control'=>'','number'=>['id'=>$code.'-sku','title'=>'App Discount','attribute'=>'required ','vue_model'=>$code.'.appDiscount']],
     ['control'=>'select','code'=>['id'=>$code.'-status','title'=>'Status','attribute'=>'','vue_model'=>$code.'.status','vue_for'=>'statuses']],
 ];
 ?>
