@@ -237,7 +237,6 @@ class Orders extends MY_Controller {
                 if($order['order_status']=='Confirmed') {
 
                     $item_id = $item['item_id'];
-                    $sku_id = $item['sku_id'];
 
                     $amount = (float)$item['quantity'] * (float)$item['rate'];
 
@@ -898,6 +897,7 @@ class Orders extends MY_Controller {
 
     public function _single_view_get() {
         _model('orders/payment_refund','payment_refund');
+        _model('orders/clover_payment','clover_payment');
         $id = _input('id');
 
         if($id) {
@@ -921,6 +921,20 @@ class Orders extends MY_Controller {
                     }
                 }
                 $result['refundPayments'] = $refundPayments;
+                $result['cloverPayment'] = [];
+                if(ALLOW_CLOVER_PAYMENT){
+                    $cloverPayments = $this->clover_payment->single(['order_id'=>$order_id]);
+                  /*   if(@$cloverPayments){
+                        foreach($cloverPayments as &$c){
+                            $c['row'] = unserialize(($c['row']));
+                        }
+                    } */
+                    if(@$cloverPayments){
+                        $cloverPayments['row'] = unserialize(($cloverPayments['row']));
+                        $result['cloverPayment'] = $cloverPayments;
+                    }
+
+                }
                 _response_data('obj', $result);
 
             } else {
@@ -1066,6 +1080,7 @@ class Orders extends MY_Controller {
             return true;
         }
     }
+    public function csv(){}
 
     protected function _load_files() {
 

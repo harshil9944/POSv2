@@ -203,14 +203,12 @@ class Payments extends MY_Controller {
                 if($order['order_status']=='Confirmed') {
 
                     $item_id = $item['item_id'];
-                    $sku_id = $item['sku_id'];
 
                     $amount = (float)$item['quantity'] * (float)$item['rate'];
 
                     $item_inventory = [
                         'order_id'      =>  $so_id,
                         'item_id'       =>  $item_id,
-                        'sku_id'        =>  $sku_id,
                         'warehouse_id'  =>  $warehouse_id,
                         'reason'        =>  'sale',
                         'date'          =>  sql_now_datetime(),
@@ -321,7 +319,7 @@ class Payments extends MY_Controller {
             if($items) {
                 foreach ($items as $item) {
 
-                    $price_filter = ['item_id'=>$item['item_id'],'sku_id'=>$item['sku_id']];
+                    $price_filter = ['item_id'=>$item['item_id']];
 
                     $prices = _get_module('items/item_prices','_search',['filter'=>$price_filter,'exclude'=>true,'convert'=>true]);
 

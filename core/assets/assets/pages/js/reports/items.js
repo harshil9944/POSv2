@@ -92,6 +92,46 @@ Vue.component('report-items',{
                 self.reportsCount = response.reportsCount;
             }
         },
+        handleExportPDF: function () {
+			var startDate = moment(
+				this.filteredDateRange.startDate,
+				"YYYY/MM/DD HH:mm:ss",
+			).format("YYYY-MM-DD");
+			var endDate = moment(
+				this.filteredDateRange.endDate,
+				"YYYY/MM/DD HH:mm:ss",
+			).format("YYYY-MM-DD");
+			var pdfUrl =
+				_s("itemsReportPDFUrl") +
+				"?startDate=" +
+				startDate +
+				"&endDate=" +
+				endDate;
+			Object.assign(document.createElement("a"), {
+				target: "_blank",
+				href: pdfUrl,
+			}).click();
+		},
+		handleExportCSV: function () {
+			var startDate = moment(
+				this.filteredDateRange.startDate,
+				"YYYY/MM/DD HH:mm:ss",
+			).format("YYYY-MM-DD");
+			var endDate = moment(
+				this.filteredDateRange.endDate,
+				"YYYY/MM/DD HH:mm:ss",
+			).format("YYYY-MM-DD");
+			var csvUrl =
+				_s("itemsReportCSVUrl") +
+				"?startDate=" +
+				startDate +
+				"&endDate=" +
+				endDate;
+			Object.assign(document.createElement("a"), {
+				target: "_blank",
+				href: csvUrl,
+			}).click();
+		},
     },
     mounted: function() {
         if(this.reportsCount===null) {

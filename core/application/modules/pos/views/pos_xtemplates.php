@@ -166,11 +166,11 @@
                                 </div>
                                 <div class="col-6 py-2 bg-gray-lighter">
                                     <h5>Buy 1 of the following</h5>
-                                    <p v-for="c in getCriteriaInclude" class="mb-2 font-16">{{ getItemName(c.itemId,c.skuId) }}<span v-if="isCartItem(c.itemId,c.skuId)" class="ml-1 font-10 badge badge-danger">IN CART</span><span class="pull-right">{{ getItemPriceText(c.itemId,c.skuId) }}</span></p>
+                                    <p v-for="c in getCriteriaInclude" class="mb-2 font-16">{{ getItemName(c.itemId) }}<span v-if="isCartItem(c.itemId)" class="ml-1 font-10 badge badge-danger">IN CART</span><span class="pull-right">{{ getItemPriceText(c.itemId) }}</span></p>
                                 </div>
                                 <div class="col-6 py-2 bg-gray-light">
                                     <h5>Get 1 of the following</h5>
-                                    <p v-for="r in getRewardInclude" class="mb-2 font-16">{{ getItemName(r.itemId,r.skuId) }}<span v-if="isCartItem(r.itemId,r.skuId)" class="ml-1 font-10 badge badge-danger">IN CART</span><span class="pull-right">{{ getItemDiscountedPriceText(r.itemId,r.skuId,r) }}</span></p>
+                                    <p v-for="r in getRewardInclude" class="mb-2 font-16">{{ getItemName(r.itemId) }}<span v-if="isCartItem(r.itemId)" class="ml-1 font-10 badge badge-danger">IN CART</span><span class="pull-right">{{ getItemDiscountedPriceText(r.itemId,r) }}</span></p>
                                 </div>
                             </div>
                         </div>
@@ -277,11 +277,11 @@
 <script type="text/x-template" id="cart-accordian-view-template">
     <div id="cart-items" role="tablist" aria-multiselectable="true">
         <div v-for="(single,index) in cart.items" class="block block-bordered mb-0">
-            <div class="block-header" role="tab" :id="'item-'+single.itemId+'-'+single.skuId">
-                <a class="font-w600 text-dark collapsed" data-toggle="collapse" data-parent="#cart-items" :href="'#item-body-'+single.itemId+'-'+single.skuId" aria-expanded="false" :aria-controls="'item-body-'+single.itemId+'-'+single.skuId">{{ single.title }}</a>
+            <div class="block-header" role="tab" :id="'item-'+single.itemId">
+                <a class="font-w600 text-dark collapsed" data-toggle="collapse" data-parent="#cart-items" :href="'#item-body-'+single.itemId" aria-expanded="false" :aria-controls="'item-body-'+single.itemId">{{ single.title }}</a>
                 <a href="javascript:void(0)" @click.prevent="handleRemoveItem(index)" class="pull-right text-danger"><i class="fa fa-trash"></i></a>
             </div>
-            <div :id="'item-body-'+single.itemId+'-'+single.skuId" class="collapse" role="tabpanel" :aria-labelledby="'item-'+single.itemId+'-'+single.skuId" data-parent="#cart-items">
+            <div :id="'item-body-'+single.itemId" class="collapse" role="tabpanel" :aria-labelledby="'item-'+single.itemId" data-parent="#cart-items">
                 <div class="block-content pt-1">
                     <div class="row">
                         <div class="col-md-4">&nbsp;</div>
@@ -301,7 +301,7 @@
                                 </div>
                             </div>
                         </div>
-                        <?php if(1==2){ ?>
+                        <?php if ( 1 == 2 ) {?>
                             <div class="col-md-4">
                                 <div class="form-group row">
                                     <label class="col-md-12 text-right" for="'item-discount-'+single.id">Discount (%)</label>
@@ -310,7 +310,7 @@
                                     </div>
                                 </div>
                             </div>
-                        <?php } ?>
+                        <?php }?>
                         <div class="col-md-12">
                             <div class="form-group row">
                                 <label class="col-md-12" for="'item-note-'+single.id">Note</label>
@@ -679,7 +679,7 @@
     </div>
 </script>
 <script type="text/x-template" id="add-customer-template">
-    <?php $code = 'customer'; ?>
+    <?php $code = 'customer';?>
     <div>
         <b-modal no-fade centered :id="modal.id" size="xl" hide-header hide-footer body-class="p-0" v-cloak>
             <div class="block block-themed block-transparent mb-0">
@@ -702,34 +702,36 @@
                                                 <div class="block-content block-content-full">
                                                     <div class="row">
                                                         <div class="col-md-12 text-right"><h6>Customer Information</h6></div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>'customer-customer-id','title'=>'Customer Id','attribute'=>'disabled','vue_model'=>'customer.customerId']); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => 'customer-customer-id', 'title' => 'Customer Id', 'attribute' => 'disabled', 'vue_model' => 'customer.customerId'] ); ?></div>
                                                         <div class="col-md-12">
                                                             <div class="form-group row">
-                                                                <label class="col-md-<?php echo LABEL_COLUMNS; ?> col-form-label" for="<?php echo $code.'-salutation'; ?>">Customer Name</label>
+                                                                <label class="col-md-<?php echo LABEL_COLUMNS; ?> col-form-label" for="<?php echo $code . '-salutation'; ?>">Customer Name</label>
                                                                 <div class="col-md-<?php echo TEXT_COLUMNS ?>">
-                                                                    <?php echo get_text(['id'=>$code.'-first-name','title'=>'First Name','placeholder'=>'First Name','class'=>'form-control mb-2','attribute'=>'@blur="onName"','vue_model'=>$code.'.firstName'],'text',true); ?>
-                                                                    <?php echo get_text(['id'=>$code.'-last-name','title'=>'Last Name','placeholder'=>'Last Name','attribute'=>'@blur="onName"','vue_model'=>$code.'.lastName'],'text',true); ?>
+                                                                    <?php echo get_text( ['id' => $code . '-first-name', 'title' => 'First Name', 'placeholder' => 'First Name', 'class' => 'form-control mb-2', 'attribute' => '@blur="onName"', 'vue_model' => $code . '.firstName'], 'text', true ); ?>
+                                                                    <?php echo get_text( ['id' => $code . '-last-name', 'title' => 'Last Name', 'placeholder' => 'Last Name', 'attribute' => '@blur="onName"', 'vue_model' => $code . '.lastName'], 'text', true ); ?>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>'customer-display-name','title'=>'Display Name','attribute'=>'required','vue_model'=>'customer.displayName']); ?></div>
-                                                        <div class="col-md-12"><?php $required=(_get_var('customer_user_field','mobile')=='mobile')?'required':'';echo get_text(['id'=>'customer-phone','title'=>'Mobile','attribute'=>$required.' ref="phone"','vue_model'=>'customer.phone']); ?></div>
-                                                        <div class="col-md-12"><?php $required=(_get_var('customer_user_field','mobile')=='email')?'required':'';echo get_text(['id'=>'customer-email','title'=>'Email','attribute'=>$required.' ref="email"','vue_model'=>'customer.email'],'email'); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => 'customer-display-name', 'title' => 'Display Name', 'attribute' => 'required', 'vue_model' => 'customer.displayName'] ); ?></div>
+                                                        <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'mobile' ) ? 'required' : '';
+echo get_text( ['id' => 'customer-phone', 'title' => 'Mobile', 'attribute' => $required . ' ref="phone"', 'vue_model' => 'customer.phone'] );?></div>
+                                                        <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'email' ) ? 'required' : '';
+echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $required . ' ref="email"', 'vue_model' => 'customer.email'], 'email' );?></div>
                                                         <div v-if="allowCustomerGroup" class="col-md-12 mb-3">
                                                             <div class="row">
                                                                 <label class="col-md-3 col-form-label" for="customer-group">Customer Group</label>
-                                                                <div class="col-md-9"><?php echo get_select(['id'=>$code.'-groupId','title'=>'Customer Group','attribute'=>'','vue_model'=>$code.'.groupId','vue_for'=>'masters.groups'],[],'value','id',true); ?></div>
+                                                                <div class="col-md-9"><?php echo get_select( ['id' => $code . '-groupId', 'title' => 'Customer Group', 'attribute' => '', 'vue_model' => $code . '.groupId', 'vue_for' => 'masters.groups'], [], 'value', 'id', true ); ?></div>
                                                             </div>
                                                         </div>
                                                         <div v-if="isCustomFields('fullVaccinated')" class="col-md-12 mb-3">
                                                             <div class="row">
                                                                 <label class="col-md-3 col-form-label" for="customer-full-vaccinated">Fully Vaccinated</label>
-                                                                <div class="col-md-9"><?php echo get_select(['id'=>$code.'-full-vaccinated','title'=>'Full Vaccinated','attribute'=>'','vue_model'=>$code.'.fullVaccinated','vue_for'=>'vaccination'],[],'value','id',true); ?></div>
+                                                                <div class="col-md-9"><?php echo get_select( ['id' => $code . '-full-vaccinated', 'title' => 'Full Vaccinated', 'attribute' => '', 'vue_model' => $code . '.fullVaccinated', 'vue_for' => 'vaccination'], [], 'value', 'id', true ); ?></div>
                                                             </div>
                                                         </div>
-                                                        <div v-if="isCustomFields('memberNumber')" class="col-md-12"><?php echo get_text(['id'=>$code.'-member-number','title'=>'Member Number','attribute'=>'','vue_model'=>$code.'.memberNumber']); ?></div>
+                                                        <div v-if="isCustomFields('memberNumber')" class="col-md-12"><?php echo get_text( ['id' => $code . '-member-number', 'title' => 'Member Number', 'attribute' => '', 'vue_model' => $code . '.memberNumber'] ); ?></div>
                                                         <div v-if="allowCustomerNotes"  class="col-md-12">
-                                                            <?php echo get_textarea(['id'=>$code.'-member-number','title'=>'Notes','attribute'=>'','vue_model'=>$code.'.notes']); ?>
+                                                            <?php echo get_textarea( ['id' => $code . '-member-number', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -740,13 +742,13 @@
                                                 <div class="block-content block-content-full">
                                                     <div class="row">
                                                         <div class="col-md-12 text-right"><h6>Address</h6></div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>$code.'-address-title','title'=>'Title','attribute'=>'','vue_model'=>$code.'.address.title']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>$code.'-address-address-1','title'=>'Address 1','attribute'=>'','vue_model'=>$code.'.address.address1']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>$code.'-address-address-2','title'=>'Address 2','attribute'=>'','vue_model'=>$code.'.address.address2']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_select(['id'=>$code.'-address-country','title'=>'Country','attribute'=>'disabled','vue_model'=>$code.'.address.countryId','vue_for'=>'masters.countries']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_select(['id'=>$code.'-address-state','title'=>'State','attribute'=>'','vue_model'=>$code.'.address.stateId','vue_for'=>'masters.states']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_select(['id'=>$code.'-address-city','title'=>'City','attribute'=>'','vue_model'=>$code.'.address.cityId','vue_for'=>'masters.cities']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>$code.'-address-zip-code','title'=>'Zip Code','attribute'=>'','vue_model'=>$code.'.address.zipCode']); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => $code . '-address-title', 'title' => 'Title', 'attribute' => '', 'vue_model' => $code . '.address.title'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => $code . '-address-address-1', 'title' => 'Address 1', 'attribute' => '', 'vue_model' => $code . '.address.address1'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => $code . '-address-address-2', 'title' => 'Address 2', 'attribute' => '', 'vue_model' => $code . '.address.address2'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_select( ['id' => $code . '-address-country', 'title' => 'Country', 'attribute' => 'disabled', 'vue_model' => $code . '.address.countryId', 'vue_for' => 'masters.countries'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_select( ['id' => $code . '-address-state', 'title' => 'State', 'attribute' => '', 'vue_model' => $code . '.address.stateId', 'vue_for' => 'masters.states'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_select( ['id' => $code . '-address-city', 'title' => 'City', 'attribute' => '', 'vue_model' => $code . '.address.cityId', 'vue_for' => 'masters.cities'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => $code . '-address-zip-code', 'title' => 'Zip Code', 'attribute' => '', 'vue_model' => $code . '.address.zipCode'] ); ?></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -759,38 +761,40 @@
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <div class="row">
-                                                        <?php if(1==2){ ?>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>$code.'-customer-id','title'=>'Customer ID','attribute'=>'readonly','vue_model'=>$code.'.customerId']); ?></div>
-                                                        <?php } ?>
-                                                        <div class="col-md-12"><?php $required=(_get_var('customer_user_field','mobile')=='mobile')?'required':'';echo get_text(['id'=>$code.'-phone','title'=>'Mobile','attribute'=>$required.' ref="phone"','placeholder'=>'e.g. 9999999999','vue_model'=>$code.'.phone']); ?></div>
+                                                        <?php if ( 1 == 2 ) {?>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => $code . '-customer-id', 'title' => 'Customer ID', 'attribute' => 'readonly', 'vue_model' => $code . '.customerId'] ); ?></div>
+                                                        <?php }?>
+                                                        <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'mobile' ) ? 'required' : '';
+echo get_text( ['id' => $code . '-phone', 'title' => 'Mobile', 'attribute' => $required . ' ref="phone"', 'placeholder' => 'e.g. 9999999999', 'vue_model' => $code . '.phone'] );?></div>
                                                         <div class="col-md-12">
                                                             <div class="form-group row">
-                                                                <label class="col-md-<?php echo LABEL_COLUMNS; ?> col-form-label" for="<?php echo $code.'-salutation'; ?>">Customer Name</label>
+                                                                <label class="col-md-<?php echo LABEL_COLUMNS; ?> col-form-label" for="<?php echo $code . '-salutation'; ?>">Customer Name</label>
                                                                 <div class="col-md-<?php echo TEXT_COLUMNS; ?> form-inline">
-                                                                    <?php echo get_select(['id'=>$code.'-salutation','title'=>'Salutation','class'=>'mr-2','attribute'=>'v-if="!isLimitedDisplayMode"','vue_model'=>$code.'.salutation','vue_for'=>'masters.salutations'],[],'value','id',true); ?>
-                                                                    <?php echo get_text(['id'=>$code.'-first-name','title'=>'First Name','placeholder'=>'First Name','class'=>'mr-2','attribute'=>'@blur="onName"','vue_model'=>$code.'.firstName'],'text',true); ?>
-                                                                    <?php echo get_text(['id'=>$code.'-last-name','title'=>'Last Name','placeholder'=>'Last Name','attribute'=>'@blur="onName"','vue_model'=>$code.'.lastName'],'text',true); ?>
+                                                                    <?php echo get_select( ['id' => $code . '-salutation', 'title' => 'Salutation', 'class' => 'mr-2', 'attribute' => 'v-if="!isLimitedDisplayMode"', 'vue_model' => $code . '.salutation', 'vue_for' => 'masters.salutations'], [], 'value', 'id', true ); ?>
+                                                                    <?php echo get_text( ['id' => $code . '-first-name', 'title' => 'First Name', 'placeholder' => 'First Name', 'class' => 'mr-2', 'attribute' => '@blur="onName"', 'vue_model' => $code . '.firstName'], 'text', true ); ?>
+                                                                    <?php echo get_text( ['id' => $code . '-last-name', 'title' => 'Last Name', 'placeholder' => 'Last Name', 'attribute' => '@blur="onName"', 'vue_model' => $code . '.lastName'], 'text', true ); ?>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div v-if="!isLimitedDisplayMode" class="col-md-12"><?php echo get_text(['id'=>$code.'-company-name','title'=>'Company Name','attribute'=>'@blur="onCompanyName"','vue_model'=>$code.'.companyName']); ?></div>
-                                                        <div class="col-md-12"><?php echo get_text(['id'=>$code.'-display-name','title'=>'Display Name','attribute'=>'required','vue_model'=>$code.'.displayName']); ?></div>
-                                                        <div class="col-md-12"><?php $required=(_get_var('customer_user_field','mobile')=='email')?'required':'';echo get_text(['id'=>$code.'-email','title'=>'Email','attribute'=>$required.' ref="email"','placeholder'=>'example@email.com','vue_model'=>$code.'.email'],'email'); ?></div>
+                                                        <div v-if="!isLimitedDisplayMode" class="col-md-12"><?php echo get_text( ['id' => $code . '-company-name', 'title' => 'Company Name', 'attribute' => '@blur="onCompanyName"', 'vue_model' => $code . '.companyName'] ); ?></div>
+                                                        <div class="col-md-12"><?php echo get_text( ['id' => $code . '-display-name', 'title' => 'Display Name', 'attribute' => 'required', 'vue_model' => $code . '.displayName'] ); ?></div>
+                                                        <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'email' ) ? 'required' : '';
+echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $required . ' ref="email"', 'placeholder' => 'example@email.com', 'vue_model' => $code . '.email'], 'email' );?></div>
                                                         <div class="col-md-12">
                                                             <div class="row">
                                                                 <div v-if="isCustomFields('memberNumber')" class="col-sm">
                                                                     <div class="row">
                                                                     <label class="col-sm col-form-label" for="customer-full-vaccinated">Fully Vaccinated</label>
-                                                                    <div class="col-sm"><?php echo get_select(['id'=>$code.'-full-vaccinated','title'=>'Full Vaccinated','attribute'=>'','vue_model'=>$code.'.fullVaccinated','vue_for'=>'vaccination'],[],'value','id',true); ?></div>
+                                                                    <div class="col-sm"><?php echo get_select( ['id' => $code . '-full-vaccinated', 'title' => 'Full Vaccinated', 'attribute' => '', 'vue_model' => $code . '.fullVaccinated', 'vue_for' => 'vaccination'], [], 'value', 'id', true ); ?></div>
                                                                     </div>
                                                                 </div>
-                                                                <div v-if="isCustomFields('fullVaccinated')" class="col-sm"><?php echo get_text(['id'=>$code.'-member-number','title'=>'Member Number','attribute'=>'','vue_model'=>$code.'.memberNumber']); ?></div>
+                                                                <div v-if="isCustomFields('fullVaccinated')" class="col-sm"><?php echo get_text( ['id' => $code . '-member-number', 'title' => 'Member Number', 'attribute' => '', 'vue_model' => $code . '.memberNumber'] ); ?></div>
                                                             </div>
                                                         </div>
-                                                        <?php if(1==2){ ?>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-designation','title'=>'Designation','attribute'=>'','vue_model'=>$code.'.designation']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-department','title'=>'Department','attribute'=>'','vue_model'=>$code.'.department']); ?></div>
-                                                        <?php } ?>
+                                                        <?php if ( 1 == 2 ) {?>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-designation', 'title' => 'Designation', 'attribute' => '', 'vue_model' => $code . '.designation'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-department', 'title' => 'Department', 'attribute' => '', 'vue_model' => $code . '.department'] ); ?></div>
+                                                        <?php }?>
                                                     </div>
                                                 </div>
                                             </div>
@@ -806,50 +810,50 @@
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-md-12"><h6>Billing Address</h6></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-attention','title'=>'Attention','attribute'=>'','vue_model'=>$code.'.billing.attention']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-address-1','title'=>'Address 1','attribute'=>'','vue_model'=>$code.'.billing.address1']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-address-2','title'=>'Address 2','attribute'=>'','vue_model'=>$code.'.billing.address2']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_select(['id'=>$code.'-billing-country','title'=>'Country','attribute'=>'','vue_model'=>$code.'.billing.country','vue_for'=>'masters.countries']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_select(['id'=>$code.'-billing-state','title'=>'State','attribute'=>'','vue_model'=>$code.'.billing.state','vue_for'=>'masters.states.billing']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-city','title'=>'City','attribute'=>'','vue_model'=>$code.'.billing.city']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-zip-code','title'=>'Zip Code','attribute'=>'','vue_model'=>$code.'.billing.zipCode']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-phone','title'=>'Phone','attribute'=>'','vue_model'=>$code.'.billing.phone']); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-attention', 'title' => 'Attention', 'attribute' => '', 'vue_model' => $code . '.billing.attention'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-address-1', 'title' => 'Address 1', 'attribute' => '', 'vue_model' => $code . '.billing.address1'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-address-2', 'title' => 'Address 2', 'attribute' => '', 'vue_model' => $code . '.billing.address2'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_select( ['id' => $code . '-billing-country', 'title' => 'Country', 'attribute' => '', 'vue_model' => $code . '.billing.country', 'vue_for' => 'masters.countries'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_select( ['id' => $code . '-billing-state', 'title' => 'State', 'attribute' => '', 'vue_model' => $code . '.billing.state', 'vue_for' => 'masters.states.billing'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-city', 'title' => 'City', 'attribute' => '', 'vue_model' => $code . '.billing.city'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-zip-code', 'title' => 'Zip Code', 'attribute' => '', 'vue_model' => $code . '.billing.zipCode'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-phone', 'title' => 'Phone', 'attribute' => '', 'vue_model' => $code . '.billing.phone'] ); ?></div>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-md-12"><h6>Shipping Address<a @click.prevent="copyBillingAddress" href="javascript:void(0)" class="float-right font-12">Copy from billing address</a></h6></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-attention','title'=>'Attention','attribute'=>'','vue_model'=>$code.'.shipping.attention']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-address-1','title'=>'Address 1','attribute'=>'','vue_model'=>$code.'.shipping.address1']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-address-2','title'=>'Address 2','attribute'=>'','vue_model'=>$code.'.shipping.address2']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_select(['id'=>$code.'-shipping-country','title'=>'Country','attribute'=>'','vue_model'=>$code.'.shipping.country','vue_for'=>'masters.countries']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_select(['id'=>$code.'-shipping-state','title'=>'State','attribute'=>'','vue_model'=>$code.'.shipping.state','vue_for'=>'masters.states.shipping']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-city','title'=>'City','attribute'=>'','vue_model'=>$code.'.shipping.city']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-zip-code','title'=>'Zip Code','attribute'=>'','vue_model'=>$code.'.shipping.zipCode']); ?></div>
-                                                                <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-phone','title'=>'Phone','attribute'=>'','vue_model'=>$code.'.shipping.phone']); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-attention', 'title' => 'Attention', 'attribute' => '', 'vue_model' => $code . '.shipping.attention'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-address-1', 'title' => 'Address 1', 'attribute' => '', 'vue_model' => $code . '.shipping.address1'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-address-2', 'title' => 'Address 2', 'attribute' => '', 'vue_model' => $code . '.shipping.address2'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_select( ['id' => $code . '-shipping-country', 'title' => 'Country', 'attribute' => '', 'vue_model' => $code . '.shipping.country', 'vue_for' => 'masters.countries'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_select( ['id' => $code . '-shipping-state', 'title' => 'State', 'attribute' => '', 'vue_model' => $code . '.shipping.state', 'vue_for' => 'masters.states.shipping'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-city', 'title' => 'City', 'attribute' => '', 'vue_model' => $code . '.shipping.city'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-zip-code', 'title' => 'Zip Code', 'attribute' => '', 'vue_model' => $code . '.shipping.zipCode'] ); ?></div>
+                                                                <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-phone', 'title' => 'Phone', 'attribute' => '', 'vue_model' => $code . '.shipping.phone'] ); ?></div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </b-tab>
                                                 <b-tab title="Tax &amp; Payment Details">
                                                     <div class="row py-4">
-                                                        <div class="col-md-7"><?php echo get_select(['id'=>$code.'-currency','title'=>'Currency','class'=>'mr-2','attribute'=>'required','vue_model'=>$code.'.currencyId','vue_for'=>'masters.currencies'],[],'value','id'); ?></div>
-                                                        <?php if(1==2){ ?>
-                                                            <div class="col-md-7"><?php echo get_select(['id'=>$code.'-price-list','title'=>'Group','class'=>'mr-2','attribute'=>'','vue_model'=>$code.'.priceListId','vue_for'=>'priceLists'],[],'value','id'); ?></div>
-                                                            <div class="col-md-7"><?php echo get_select(['id'=>$code.'-payment-terms','title'=>'Payment Terms','class'=>'mr-2','attribute'=>'','vue_model'=>$code.'.paymentTerm','vue_for'=>'paymentTerms'],[],'value','id'); ?></div>
-                                                        <?php } ?>
+                                                        <div class="col-md-7"><?php echo get_select( ['id' => $code . '-currency', 'title' => 'Currency', 'class' => 'mr-2', 'attribute' => 'required', 'vue_model' => $code . '.currencyId', 'vue_for' => 'masters.currencies'], [], 'value', 'id' ); ?></div>
+                                                        <?php if ( 1 == 2 ) {?>
+                                                            <div class="col-md-7"><?php echo get_select( ['id' => $code . '-price-list', 'title' => 'Group', 'class' => 'mr-2', 'attribute' => '', 'vue_model' => $code . '.priceListId', 'vue_for' => 'priceLists'], [], 'value', 'id' ); ?></div>
+                                                            <div class="col-md-7"><?php echo get_select( ['id' => $code . '-payment-terms', 'title' => 'Payment Terms', 'class' => 'mr-2', 'attribute' => '', 'vue_model' => $code . '.paymentTerm', 'vue_for' => 'paymentTerms'], [], 'value', 'id' ); ?></div>
+                                                        <?php }?>
                                                     </div>
                                                 </b-tab>
                                                 <b-tab title="Notes">
                                                     <div class="row py-4">
                                                         <div class="col-md-7">
-                                                            <?php echo get_textarea(['id'=>$code.'-notes','title'=>'Notes','attribute'=>'','vue_model'=>$code.'.notes']); ?>
+                                                            <?php echo get_textarea( ['id' => $code . '-notes', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?>
                                                         </div>
                                                     </div>
                                                 </b-tab>
                                             </b-tabs>
                                         </div>
-                                        <?php if(1==2){ ?>
+                                        <?php if ( 1 == 2 ) {?>
                                         <ul class="nav nav-tabs nav-tabs-alt" data-toggle="tabs" role="tablist">
                                             <li class="nav-item">
                                                 <a class="nav-link active" href="#tab-tax-payment-details">Tax &amp; Payment Details</a>
@@ -864,11 +868,11 @@
                                         <div class="block-content tab-content">
                                             <div class="tab-pane active" id="tab-tax-payment-details" role="tabpanel">
                                                 <div class="row">
-                                                    <div class="col-md-7"><?php echo get_select(['id'=>$code.'-currency','title'=>'Currency','class'=>'mr-2','attribute'=>'required','vue_model'=>$code.'.defaultCurrency','vue_for'=>'currencies'],[],'value','id'); ?></div>
-                                                    <?php if(1==2){ ?>
-                                                        <div class="col-md-7"><?php echo get_select(['id'=>$code.'-price-list','title'=>'Group','class'=>'mr-2','attribute'=>'','vue_model'=>$code.'.priceListId','vue_for'=>'priceLists'],[],'value','id'); ?></div>
-                                                        <div class="col-md-7"><?php echo get_select(['id'=>$code.'-payment-terms','title'=>'Payment Terms','class'=>'mr-2','attribute'=>'','vue_model'=>$code.'.paymentTerm','vue_for'=>'paymentTerms'],[],'value','id'); ?></div>
-                                                    <?php } ?>
+                                                    <div class="col-md-7"><?php echo get_select( ['id' => $code . '-currency', 'title' => 'Currency', 'class' => 'mr-2', 'attribute' => 'required', 'vue_model' => $code . '.defaultCurrency', 'vue_for' => 'currencies'], [], 'value', 'id' ); ?></div>
+                                                    <?php if ( 1 == 2 ) {?>
+                                                        <div class="col-md-7"><?php echo get_select( ['id' => $code . '-price-list', 'title' => 'Group', 'class' => 'mr-2', 'attribute' => '', 'vue_model' => $code . '.priceListId', 'vue_for' => 'priceLists'], [], 'value', 'id' ); ?></div>
+                                                        <div class="col-md-7"><?php echo get_select( ['id' => $code . '-payment-terms', 'title' => 'Payment Terms', 'class' => 'mr-2', 'attribute' => '', 'vue_model' => $code . '.paymentTerm', 'vue_for' => 'paymentTerms'], [], 'value', 'id' ); ?></div>
+                                                    <?php }?>
                                                 </div>
                                             </div>
                                             <div class="tab-pane" id="tab-address" role="tabpanel">
@@ -876,27 +880,27 @@
                                                     <div class="col-md-6">
                                                         <div class="row">
                                                             <div class="col-md-12"><h6>Billing Address</h6></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-attention','title'=>'Attention','attribute'=>'','vue_model'=>$code.'.billing.attention']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-address-1','title'=>'Address 1','attribute'=>'','vue_model'=>$code.'.billing.address1']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-address-2','title'=>'Address 2','attribute'=>'','vue_model'=>$code.'.billing.address2']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_select(['id'=>$code.'-billing-country','title'=>'Country','attribute'=>'','vue_model'=>$code.'.billing.country','vue_for'=>'masters.countries']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_select(['id'=>$code.'-billing-state','title'=>'State','attribute'=>'','vue_model'=>$code.'.billing.state','vue_for'=>'masters.states.billing']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-city','title'=>'City','attribute'=>'','vue_model'=>$code.'.billing.city']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-zip-code','title'=>'Zip Code','attribute'=>'','vue_model'=>$code.'.billing.zipCode']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-billing-phone','title'=>'Phone','attribute'=>'','vue_model'=>$code.'.billing.phone']); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-attention', 'title' => 'Attention', 'attribute' => '', 'vue_model' => $code . '.billing.attention'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-address-1', 'title' => 'Address 1', 'attribute' => '', 'vue_model' => $code . '.billing.address1'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-address-2', 'title' => 'Address 2', 'attribute' => '', 'vue_model' => $code . '.billing.address2'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_select( ['id' => $code . '-billing-country', 'title' => 'Country', 'attribute' => '', 'vue_model' => $code . '.billing.country', 'vue_for' => 'masters.countries'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_select( ['id' => $code . '-billing-state', 'title' => 'State', 'attribute' => '', 'vue_model' => $code . '.billing.state', 'vue_for' => 'masters.states.billing'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-city', 'title' => 'City', 'attribute' => '', 'vue_model' => $code . '.billing.city'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-zip-code', 'title' => 'Zip Code', 'attribute' => '', 'vue_model' => $code . '.billing.zipCode'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-billing-phone', 'title' => 'Phone', 'attribute' => '', 'vue_model' => $code . '.billing.phone'] ); ?></div>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="row">
                                                             <div class="col-md-12"><h6>Shipping Address<a @click.prevent="copyBillingAddress" href="javascript:void(0)" class="float-right font-12">Copy from billing address</a></h6></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-attention','title'=>'Attention','attribute'=>'','vue_model'=>$code.'.shipping.attention']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-address-1','title'=>'Address 1','attribute'=>'','vue_model'=>$code.'.shipping.address1']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-address-2','title'=>'Address 2','attribute'=>'','vue_model'=>$code.'.shipping.address2']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_select(['id'=>$code.'-shipping-country','title'=>'Country','attribute'=>'','vue_model'=>$code.'.shipping.country','vue_for'=>'masters.countries']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_select(['id'=>$code.'-shipping-state','title'=>'State','attribute'=>'','vue_model'=>$code.'.shipping.state','vue_for'=>'masters.states.shipping']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-city','title'=>'City','attribute'=>'','vue_model'=>$code.'.shipping.city']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-zip-code','title'=>'Zip Code','attribute'=>'','vue_model'=>$code.'.shipping.zipCode']); ?></div>
-                                                            <div class="col-md-12"><?php echo get_text(['id'=>$code.'-shipping-phone','title'=>'Phone','attribute'=>'','vue_model'=>$code.'.shipping.phone']); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-attention', 'title' => 'Attention', 'attribute' => '', 'vue_model' => $code . '.shipping.attention'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-address-1', 'title' => 'Address 1', 'attribute' => '', 'vue_model' => $code . '.shipping.address1'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-address-2', 'title' => 'Address 2', 'attribute' => '', 'vue_model' => $code . '.shipping.address2'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_select( ['id' => $code . '-shipping-country', 'title' => 'Country', 'attribute' => '', 'vue_model' => $code . '.shipping.country', 'vue_for' => 'masters.countries'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_select( ['id' => $code . '-shipping-state', 'title' => 'State', 'attribute' => '', 'vue_model' => $code . '.shipping.state', 'vue_for' => 'masters.states.shipping'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-city', 'title' => 'City', 'attribute' => '', 'vue_model' => $code . '.shipping.city'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-zip-code', 'title' => 'Zip Code', 'attribute' => '', 'vue_model' => $code . '.shipping.zipCode'] ); ?></div>
+                                                            <div class="col-md-12"><?php echo get_text( ['id' => $code . '-shipping-phone', 'title' => 'Phone', 'attribute' => '', 'vue_model' => $code . '.shipping.phone'] ); ?></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -904,12 +908,12 @@
                                             <div class="tab-pane" id="tab-notes" role="tabpanel">
                                                 <div class="row">
                                                     <div class="col-md-7">
-                                                        <?php echo get_textarea(['id'=>$code.'-notes','title'=>'Notes','attribute'=>'','vue_model'=>$code.'.notes']); ?>
+                                                        <?php echo get_textarea( ['id' => $code . '-notes', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <?php } ?>
+                                        <?php }?>
                                     </div>
                                 </div>
                                 <div class="col-md-12">
@@ -1372,6 +1376,10 @@
                                                         <td>Overall Orders Amount</td>
                                                         <td class="text-right">{{ session.transactionsTotal | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>
+                                                    <tr class="alert-danger ">
+                                                        <th>Overall Payment Received</th>
+                                                        <th class="text-right">{{ session.totalPaymentReceived | toTwoDecimal | beautifyCurrency }}</th>
+                                                    </tr>
                                                     <tr>
                                                         <td>Expected Closing Cash</td>
                                                         <td class="text-right">{{ session.expectedClosingCash | toTwoDecimal | beautifyCurrency }}</td>
@@ -1518,7 +1526,7 @@
                     <th class="text-center" style="width: 60px;"></th>
                     <th>Product</th>
                     <th class="text-center" style="width: 90px;">Quantity</th>
-                    <th class="text-right" style="width: 120px;">Unit</th>
+                    <th class="text-right" style="width: 120px;">Rate</th>
                     <th class="text-right" style="width: 120px;">Amount</th>
                 </tr>
                 </thead>
@@ -1592,8 +1600,8 @@
 </script>
 <script type="text/x-template" id="table-list-template">
     <div>
-        <b-modal no-fade id="table-list-modal" size="xl" hide-header hide-footer body-class="p-0"  @hidden="handleClosing" v-cloak>
-            <div id="table-list-block" class="block block-themed block-transparent mb-0">
+        <b-modal no-fade id="table-list-modal" size="xl"  no-close-on-backdrop  hide-header hide-footer body-class="p-0"  @hidden="handleClosing" v-cloak>
+            <div id="table-list-block" data-keyboard="false" data-backdrop="static" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
                     <h3 class="block-title">{{ modelTitle}}</h3>
                     <div class="block-options">
@@ -1619,7 +1627,7 @@
                                             <span class="font-w600 text-white">{{ single.title }}</span>
                                         </div>
                                         <div class="block-content block-content-full" :class="single.status === 'available' ? 'bg-white' : 'bg-white'">
-                                            <img class="w-100" src="<?php _easset_url("assets/img/restaurant-table.png"); ?>" alt="">
+                                            <img class="w-100" src="<?php _easset_url( "assets/img/restaurant-table.png" );?>" alt="">
                                             <div class="mt-15">
                                                 <span v-if="single.status === 'available'" class="text-primary-dark text-uppercase">Available</span>
                                                 <span v-if="single.status === 'engaged'" class="text-primary-dark text-uppercase">{{ single.durationSince }}</span>
@@ -2088,7 +2096,7 @@
                                 <th class="text-center" style="width: 60px;"></th>
                                 <th>Items</th>
                                 <th class="text-center" style="width: 90px;">Quantity</th>
-                                <th class="text-right" style="width: 120px;">Unit</th>
+                                <th class="text-right" style="width: 120px;">Rate</th>
                                 <th class="text-right" style="width: 120px;">Amount</th>
                             </tr>
                             </thead>
@@ -2373,33 +2381,35 @@
                                 <div class="block block-rounded block-bordered">
                                     <div class="block-content block-content-full">
                                         <div class="row">
-                                            <div class="col-md-12"><?php echo get_text(['id'=>'customer-customer-id','title'=>'Customer Id','attribute'=>'disabled','vue_model'=>'customer.customerId']); ?></div>
+                                            <div class="col-md-12"><?php echo get_text( ['id' => 'customer-customer-id', 'title' => 'Customer Id', 'attribute' => 'disabled', 'vue_model' => 'customer.customerId'] ); ?></div>
                                             <div class="col-md-12">
                                                 <div class="form-group row">
-                                                    <label class="col-md-<?php echo LABEL_COLUMNS; ?> col-form-label" for="<?php echo $code.'-salutation'; ?>">Customer Name</label>
+                                                    <label class="col-md-<?php echo LABEL_COLUMNS; ?> col-form-label" for="<?php echo $code . '-salutation'; ?>">Customer Name</label>
                                                     <div class="col-md-<?php echo TEXT_COLUMNS; ?> form-inline">
-                                                        <?php echo get_text(['id'=>$code.'-first-name','title'=>'First Name','placeholder'=>'First Name','class'=>'mr-2','attribute'=>'@blur="onName"','vue_model'=>$code.'.firstName'],'text',true); ?>
-                                                        <?php echo get_text(['id'=>$code.'-last-name','title'=>'Last Name','placeholder'=>'Last Name','attribute'=>'@blur="onName"','vue_model'=>$code.'.lastName'],'text',true); ?>
+                                                        <?php echo get_text( ['id' => $code . '-first-name', 'title' => 'First Name', 'placeholder' => 'First Name', 'class' => 'mr-2', 'attribute' => '@blur="onName"', 'vue_model' => $code . '.firstName'], 'text', true ); ?>
+                                                        <?php echo get_text( ['id' => $code . '-last-name', 'title' => 'Last Name', 'placeholder' => 'Last Name', 'attribute' => '@blur="onName"', 'vue_model' => $code . '.lastName'], 'text', true ); ?>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-12"><?php echo get_text(['id'=>'customer-display-name','title'=>'Display Name','attribute'=>'required','vue_model'=>'customer.displayName']); ?></div>
-                                            <div class="col-md-12"><?php $required=(_get_var('customer_user_field','mobile')=='mobile')?'required':'';echo get_text(['id'=>'customer-phone','title'=>'Mobile','attribute'=>$required.' ref="phone"','vue_model'=>'customer.phone']); ?></div>
-                                            <div class="col-md-12"><?php $required=(_get_var('customer_user_field','mobile')=='email')?'required':'';echo get_text(['id'=>'customer-email','title'=>'Email','attribute'=>$required.' ref="email"','vue_model'=>'customer.email'],'email'); ?></div>
+                                            <div class="col-md-12"><?php echo get_text( ['id' => 'customer-display-name', 'title' => 'Display Name', 'attribute' => 'required', 'vue_model' => 'customer.displayName'] ); ?></div>
+                                            <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'mobile' ) ? 'required' : '';
+echo get_text( ['id' => 'customer-phone', 'title' => 'Mobile', 'attribute' => $required . ' ref="phone"', 'vue_model' => 'customer.phone'] );?></div>
+                                            <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'email' ) ? 'required' : '';
+echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $required . ' ref="email"', 'vue_model' => 'customer.email'], 'email' );?></div>
                                             <div v-if="isCustomFields('fullVaccinated')" class="col-md-12 mb-3">
                                                 <div class="row">
                                                     <label class="col-md-3 col-form-label" for="customer-full-vaccinated">Fully Vaccinated</label>
-                                                    <div class="col-md-9"><?php echo get_select(['id'=>$code.'-full-vaccinated','title'=>'Full Vaccinated','attribute'=>'','vue_model'=>'customer.fullVaccinated','vue_for'=>'vaccination'],[],'value','id',true); ?></div>
+                                                    <div class="col-md-9"><?php echo get_select( ['id' => $code . '-full-vaccinated', 'title' => 'Full Vaccinated', 'attribute' => '', 'vue_model' => 'customer.fullVaccinated', 'vue_for' => 'vaccination'], [], 'value', 'id', true ); ?></div>
                                                 </div>
                                             </div>
-                                            <div v-if="isCustomFields('memberNumber')" class="col-md-12"><?php echo get_text(['id'=>$code.'-member-number','title'=>'Member Number','attribute'=>'','vue_model'=>$code.'.memberNumber']); ?></div>
+                                            <div v-if="isCustomFields('memberNumber')" class="col-md-12"><?php echo get_text( ['id' => $code . '-member-number', 'title' => 'Member Number', 'attribute' => '', 'vue_model' => $code . '.memberNumber'] ); ?></div>
                                             <div v-if="allowCustomerGroup" class=" col-md-12">
                                                 <div class="row">
                                                     <label class="col-md-3 col-form-label" for="customer-group">Customer Group</label>
-                                                    <div class="col-md-9"><?php echo get_select(['id'=>$code.'-groupId','title'=>'Customer Group','attribute'=>'','vue_model'=>$code.'.groupId','vue_for'=>'masters.groups'],[],'value','id',true); ?></div>
+                                                    <div class="col-md-9"><?php echo get_select( ['id' => $code . '-groupId', 'title' => 'Customer Group', 'attribute' => '', 'vue_model' => $code . '.groupId', 'vue_for' => 'masters.groups'], [], 'value', 'id', true ); ?></div>
                                                 </div>
                                             </div>
-                                            <div v-if="allowCustomerNotes"  class="col-md-12"><?php echo get_textarea(['id'=>$code.'-member-number','title'=>'Notes','attribute'=>'','vue_model'=>$code.'.notes']);?></div>
+                                            <div v-if="allowCustomerNotes"  class="col-md-12"><?php echo get_textarea( ['id' => $code . '-member-number', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?></div>
                                         </div>
                                     </div>
                                 </div>
@@ -2462,13 +2472,13 @@
                                <div class="block block-rounded block-bordered">
                                     <div class="block-content block-content-full">
                                         <div class="row">
-                                            <div class="col-md-12"><?php echo get_text(['id'=>'address-title','title'=>'Title','attribute'=>'required','vue_model'=>'address.title']); ?></div>
-                                            <div class="col-md-12"><?php echo get_text(['id'=>'address-address-1','title'=>'Address 1','attribute'=>'required','vue_model'=>'address.address1']); ?></div>
-                                            <div class="col-md-12"><?php echo get_text(['id'=>'address-address-2','title'=>'Address 2','attribute'=>'','vue_model'=>'address.address2']); ?></div>
-                                            <div class="col-md-12"><?php echo get_select(['id'=>'address-country','title'=>'Country','attribute'=>'disabled','vue_model'=>'address.countryId','vue_for'=>'masters.countries']); ?></div>
-                                            <div class="col-md-12"><?php echo get_select(['id'=>'address-state','title'=>'State','attribute'=>'','vue_model'=>'address.stateId','vue_for'=>'masters.states']); ?></div>
-                                            <div class="col-md-12"><?php echo get_select(['id'=>'address-city','title'=>'City','attribute'=>'','vue_model'=>'address.cityId','vue_for'=>'masters.cities']); ?></div>
-                                            <div class="col-md-12"><?php echo get_text(['id'=>'address-zip-code','title'=>'Zip Code','attribute'=>'required','vue_model'=>'address.zipCode']); ?></div>
+                                            <div class="col-md-12"><?php echo get_text( ['id' => 'address-title', 'title' => 'Title', 'attribute' => 'required', 'vue_model' => 'address.title'] ); ?></div>
+                                            <div class="col-md-12"><?php echo get_text( ['id' => 'address-address-1', 'title' => 'Address 1', 'attribute' => 'required', 'vue_model' => 'address.address1'] ); ?></div>
+                                            <div class="col-md-12"><?php echo get_text( ['id' => 'address-address-2', 'title' => 'Address 2', 'attribute' => '', 'vue_model' => 'address.address2'] ); ?></div>
+                                            <div class="col-md-12"><?php echo get_select( ['id' => 'address-country', 'title' => 'Country', 'attribute' => 'disabled', 'vue_model' => 'address.countryId', 'vue_for' => 'masters.countries'] ); ?></div>
+                                            <div class="col-md-12"><?php echo get_select( ['id' => 'address-state', 'title' => 'State', 'attribute' => '', 'vue_model' => 'address.stateId', 'vue_for' => 'masters.states'] ); ?></div>
+                                            <div class="col-md-12"><?php echo get_select( ['id' => 'address-city', 'title' => 'City', 'attribute' => '', 'vue_model' => 'address.cityId', 'vue_for' => 'masters.cities'] ); ?></div>
+                                            <div class="col-md-12"><?php echo get_text( ['id' => 'address-zip-code', 'title' => 'Zip Code', 'attribute' => 'required', 'vue_model' => 'address.zipCode'] ); ?></div>
                                         </div>
                                     </div>
                                 </div>
@@ -2758,6 +2768,15 @@
         </div>
     </b-modal>
 </script>
+<script type="text/x-template" id="clover-payment-template">
+    <b-modal no-fade centered id="clover-payment-modal" size="lg" :no-close-on-backdrop="true"  hide-header hide-footer body-class="p-0" v-cloak>
+        <div id="clover-payment-block" class="block">
+            <div class="loader-text text-bold">
+            {{ cloverPaymentMessage }}
+            </div>
+        </div>
+    </b-modal>
+</script>
 <script type="text/x-template" id="pos-template">
     <div id="brahma-pos" v-cloak>
         <div v-if="canShowSession" class="row" v-cloak>
@@ -2832,6 +2851,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button type="button" class="btn btn-alt-primary" :disabled="!canCloseSession" @click="handleSessionSummary">Close Session</button>
+                        </div>
                         <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                     </div>
                 </div>
@@ -2847,7 +2869,7 @@
                                         <div  v-for="e in employees" class="col-md-4 col-12">
                                             <a class="block block-link-pop text-center bg-info-light" @click.prevent="handleEmployee(e)" href="javascript:void(0)">
                                                 <div class="block-content block-content-full">
-                                                    <img class="img-avatar" src="<?php _easset_url("assets/img/employee.jpg"); ?>" alt="">
+                                                    <img class="img-avatar" src="<?php _easset_url( "assets/img/employee.jpg" );?>" alt="">
                                                 </div>
                                                 <div class="block-content block-content-full bg-info">
                                                     <div class="font-w600 mb-5 text-white">{{ e.name }}</div>
@@ -2889,14 +2911,14 @@
                 <div class="block mb-10 line-height-0">
                     <div class="block-content block-content-full d-inline-block py-10">
                         <div class="btn-group" role="group">
-                            <button v-if="hasOrderMethod('p')" :disabled="!isEditable || order.mode === 'edit'" @click="order.type='p'" type="button" class="btn btn-alt-primary" :class="order.type == 'p' ? 'active border-primary' : ''">Pickup</button>
-                            <button v-if="hasOrderMethod('d')" :disabled="!isEditable || order.mode ==='edit'" @click="order.type='d'" type="button" class="btn btn-alt-primary" :class="order.type == 'd' ? 'active border-primary' : ''">Delivery</button>
-                            <button v-if="hasOrderMethod('dine')" :disabled="!isEditable || order.mode ==='edit'" @click="order.type='dine'" type="button" class="btn btn-alt-primary" :class="order.type == 'dine' ? 'active border-primary' : ''">Dine-in</button>
+                            <button v-if="hasOrderMethod('p')" :disabled="!isEditable" @click="handleOrderType('p')" type="button" class="btn btn-alt-primary" :class="order.type == 'p' ? 'active border-primary' : ''">Pickup</button>
+                            <button v-if="hasOrderMethod('d')" :disabled="!isEditable" @click="handleOrderType('d')" type="button" class="btn btn-alt-primary" :class="order.type == 'd' ? 'active border-primary' : ''">Delivery</button>
+                            <button v-if="hasOrderMethod('dine')" :disabled="!isEditable" @click="handleOrderType('dine')" type="button" class="btn btn-alt-primary" :class="order.type == 'dine' ? 'active border-primary' : ''">Dine-in</button>
                         </div>
                         <span v-if="order.type=='dine'" class="ml-2">Table: <a href="javascript:void(0)" @click="handleChangeTable" title="Change Table" class="text-danger">{{ getTableName() }}</a></span>
                         <div class="btn-group pull-right" role="group">
                             <button type="button" class="btn btn-primary" @click="onOrderHistory">Orders</button>
-                            <div v-if="" class="btn-group float-right d-block" role="group">
+                            <div class="btn-group float-right d-block" role="group">
                                 <button type="button" class="btn btn-danger dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-fw fa-cog mr-5"></i>Options</button>
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
                                     <a v-if="enableSourceSwitch && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
@@ -2939,6 +2961,7 @@
                                 <cart-edit-item :items="order.cart.items" :is-editable="isEditable"></cart-edit-item>
                             </div>
                             <payment :order="order" :is-editable="isEditable"></payment>
+                            <clover-payment></clover-payment>
                         </div>
                     </div>
                 </div>

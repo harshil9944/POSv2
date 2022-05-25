@@ -905,3 +905,14 @@ if (! function_exists('dsMoneyRound')) {
         return numfmt_format_currency($fmt, $value, $curr_code);
     }
 }
+if ( ! function_exists('_generate_csv')){
+    function _generate_csv($data,$header,$file_path) {
+        $file = fopen($file_path, 'w');
+        fputcsv($file, $header);
+        foreach ($data as $key=>$line) {
+            fputcsv($file,$line);
+        }
+        fclose($file);
+        return true;
+    }
+}

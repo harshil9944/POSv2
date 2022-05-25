@@ -14,7 +14,6 @@ class Promotion_criteria_product extends MY_Model
             'criteriaId'=>'criteria_id',
             'promotionId'=>'promotion_id',
             'itemId'=>'item_id',
-            'skuId'=>'sku_id',
             'type'=>'type',
             'updated'=>'updated',
             'added'=>'added'

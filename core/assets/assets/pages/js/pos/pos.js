@@ -388,6 +388,287 @@ var promotionMixin = {
 		});
 	},
 };
+var cloverPaymentMixin = {
+	data: function () {
+		return {
+			deviceId: _s("deviceId"),
+			remoteApplicationId: _s("remoteApplicationId"),
+			merchant_id: _s("merchant_id"),
+			access_token: _s("access_token"),
+			targetCloverDomain: _s("targetCloverDomain"),
+			friendlyId: _s("friendlyId"),
+			cloverConnector: null,
+			cloverTipSuggestions: _s("cloverTipSuggestions"),
+			cloverTipPercentage: _s("cloverTipPercentage"),
+			cloverPaymentObj:{}
+		};
+	},
+	computed: {},
+	methods: {
+		handleCloverConnect: function () {
+			var cloverConnectorFactoryConfiguration = {};
+			cloverConnectorFactoryConfiguration[
+				clover.CloverConnectorFactoryBuilder.FACTORY_VERSION
+			] = clover.CloverConnectorFactoryBuilder.VERSION_12;
+			var cloverConnectorFactory =
+				clover.CloverConnectorFactoryBuilder.createICloverConnectorFactory(
+					cloverConnectorFactoryConfiguration,
+				);
+
+			const configBuilder =
+				new clover.WebSocketCloudCloverDeviceConfigurationBuilder(
+					this.remoteApplicationId,
+					this.deviceId,
+					this.merchant_id,
+					this.access_token,
+				);
+			configBuilder.setCloverServer(this.targetCloverDomain);
+			configBuilder.setFriendlyId(this.friendlyId);
+			var cloudConfig = configBuilder.build();
+
+			this.cloverConnector =
+				cloverConnectorFactory.createICloverConnector(cloudConfig);
+			this.setCloverConnectorListener();
+			this.setDisposalHandler();
+			this.cloverConnector.initializeConnection();
+		},
+		setCloverConnectorListener: function () {
+			var self = this;
+			var CloverConnectorListener = function (connector) {
+				clover.remotepay.ICloverConnectorListener();
+				self.cloverConnector = connector;
+			};
+			CloverConnectorListener.prototype = Object.create(
+				clover.remotepay.ICloverConnectorListener.prototype,
+			);
+			CloverConnectorListener.prototype.constructor = CloverConnectorListener;
+			CloverConnectorListener.prototype.onDeviceConnected = function () {
+				ds_alert("Device is connected!");
+			};
+
+			CloverConnectorListener.prototype.onDeviceReady = function () {
+				ds_alert("Device is connected and ready!");
+			};
+
+			CloverConnectorListener.prototype.onDeviceError = function (
+				deviceErrorEvent,
+			) {
+				window.alert(`Message: ${deviceErrorEvent.getMessage()}`);
+			};
+
+			CloverConnectorListener.prototype.onDeviceDisconnected = function () {
+				ds_alert("Device is disconnected!");
+			};
+
+			this.cloverConnectorListener = new CloverConnectorListener(
+				self.cloverConnector,
+			);
+			self.cloverConnector.addCloverConnectorListener(
+				this.cloverConnectorListener,
+			);
+			CloverConnectorListener.prototype.onVerifySignatureRequest = function (
+				verifySignatureRequest,
+			) {
+				// Clear any previous signatures and draw the current signature.
+				var canvas = document.getElementById("verify-signature-canvas");
+				var ctx = canvas.getContext("2d");
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.scale(0.25, 0.25);
+				ctx.beginPath();
+				for (
+					var strokeIndex = 0;
+					strokeIndex < verifySignatureRequest.getSignature().strokes.length;
+					strokeIndex
+				) {
+					var stroke =
+						verifySignatureRequest.getSignature().strokes[strokeIndex];
+					ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+					for (
+						var pointIndex = 1;
+						pointIndex < stroke.points.length;
+						pointIndex
+					) {
+						ctx.lineTo(
+							stroke.points[pointIndex].x,
+							stroke.points[pointIndex].y,
+						);
+						ctx.stroke();
+					}
+				}
+				ctx.scale(4, 4);
+				setTimeout(
+					function () {
+						if (confirm("Would you like to approve this signature?")) {
+							// Accept or reject, based on the merchant's input.
+							self.cloverConnector.acceptSignature(verifySignatureRequest);
+						} else {
+							self.cloverConnector.rejectSignature(verifySignatureRequest);
+						}
+					}.bind(this),
+					0,
+				);
+			};
+
+			CloverConnectorListener.prototype.onConfirmPaymentRequest = function (
+				confirmPaymentRequest,
+			) {
+				for (var i = 0; i < confirmPaymentRequest.getChallenges().length; i++) {
+					// Boolean of whether the app is resolving the last challenge in the Challenges array
+					var isLastChallenge =
+						i === confirmPaymentRequest.getChallenges().length - 1;
+
+					if (confirm(confirmPaymentRequest.getChallenges()[i].getMessage())) {
+						if (isLastChallenge) {
+							self.cloverConnector.acceptPayment(
+								confirmPaymentRequest.getPayment(),
+							);
+						}
+					} else {
+						self.cloverConnector.rejectPayment(
+							confirmPaymentRequest.getPayment(),
+							confirmPaymentRequest.getChallenges()[i],
+						);
+						return;
+					}
+				}
+			};
+			CloverConnectorListener.prototype.onSaleResponse = function (
+				saleResponse,
+			) {
+				if (saleResponse.getSuccess()) {
+
+					var saleResponseAmount = saleResponse.getPayment().getAmount();
+					var saleResponseObj = saleResponse.getPayment();
+					ds_alert("Sale was successful for $" + saleResponseAmount * 100, "info");
+					bus.$emit(
+						"cloverPaymentClose",
+						JSON.parse(JSON.stringify(saleResponseObj)),
+					);
+				} else {
+					ds_alert(saleResponse.getMessage(), "warning");
+					bus.$emit("cloverPaymentClose");
+				}
+			};
+			CloverConnectorListener.prototype.onRefundPaymentResponse = function (
+				refundResponse,
+			) {
+				console.log(refundResponse);
+				if(refundResponse.getSuccess()){
+					bus.$emit(
+						"cloverRefundPaymentClose",
+						JSON.parse(JSON.stringify(refundResponse)),
+					);
+				}else{
+					console.log('Not refund');
+				}
+			
+				
+			};
+		},
+		setDisposalHandler: function () {
+			window.onbeforeunload = function (event) {
+				try {
+					this.cloverConnector.dispose();
+				} catch (e) {
+					console.error(e);
+				}
+			}.bind(this);
+		},
+		performSale: function (amount) {
+			var saleRequest = new clover.remotepay.SaleRequest();
+			var tipSuggestions = [];
+            var self = this;
+			if (this.cloverTipSuggestions.length) {
+				var tipSuggestion = null;
+				self.cloverTipSuggestions.forEach(function (tip) {
+					tipSuggestion = new clover.sdk.merchant.TipSuggestion();
+					if (self.cloverTipPercentage) {
+						tipSuggestion.setPercentage(tip.value);
+					} else {
+						tipSuggestion.setAmount(tip.value);
+					}
+					tipSuggestion.setIsEnabled(true);
+					tipSuggestion.setName(tip.title);
+					tipSuggestions.push(tipSuggestion);
+				});
+			}
+			
+			saleRequest.setTipSuggestions(tipSuggestions);
+			saleRequest.setTipMode("ON_SCREEN_BEFORE_PAYMENT");
+			saleRequest.setAmount(amount);
+			saleRequest.setExternalId(clover.CloverID.getNewId());
+			window.localStorage.setItem("lastTransactionRequestAmount", amount);
+			this.cloverConnector.sale(saleRequest);
+		},
+		makeFullRefund: function (){
+			 var refundPaymentRequest = new clover.remotepay.RefundPaymentRequest();
+			refundPaymentRequest.setPaymentId(this.cloverPaymentObj.id);
+			refundPaymentRequest.setOrderId(this.cloverPaymentObj.order.id);
+			refundPaymentRequest.setFullRefund(true);
+			this.cloverConnector.refundPayment(refundPaymentRequest);
+		}
+	},
+	mounted: function () {
+		if (_s("allowCloverPayment")) {
+			this.handleCloverConnect();
+		}
+	},
+	created: function () {
+		//this.handleCloverConnect();
+		var self = this;
+		/* bus.$on("initCloverConnect", function (payload) {
+			self.handleCloverConnect();
+		}); */
+		 bus.$on("cloverRefundPayment", function (payload) {
+			self.cloverPaymentObj = payload;
+			self.makeFullRefund();
+		}); 
+	},
+};
+Vue.component("clover-payment", {
+	template: "#clover-payment-template",
+	data: function () {
+		return {
+			modal: {
+				id: "clover-payment-modal",
+				isLoading: false,
+				active: false,
+			},
+			cloverPaymentMessage: _s('cloverPaymentMessage'),
+		};
+	},
+	computed: {},
+	watch: {},
+	methods: {
+		onInitCloverPayment: function () {
+			this.showDialog();
+			this.startCloverPaymentLoader();
+		},
+		startCloverPaymentLoader() {
+			this.modal.isLoading = true;
+			Codebase.blocks("#clover-payment-block", "state_loading");
+			bus.$emit("posBusyStart", true);
+		},
+		stopCloverPaymentLoader() {
+			this.modal.isLoading = false;
+			Codebase.blocks("#clover-payment-block", "state_normal");
+		},
+		closeCloverPaymentModal: function () {
+			this.stopCloverPaymentLoader();
+			this.hideDialog();
+			bus.$emit("posBusyStop", true);
+		},
+	},
+	created: function () {
+		var self = this;
+		bus.$on("initCloverPayment", function (payload) {
+			self.onInitCloverPayment(payload);
+		});
+		bus.$on("cloverPaymentClose", function (payload) {
+			self.closeCloverPaymentModal(payload);
+		});
+	},
+});
 Vue.component("promotion-dialog", {
 	template: "#promotion-dialog-template",
 	mixins: [promotionMixin],
@@ -1461,7 +1742,6 @@ Vue.component("group-item-detail", {
 			});
 			this.item.variations.forEach(function (variation) {
 				var addonPrice = 0;
-				//if(_s('addonSkuCalculation')) {
 				addonPrice = selectedAddons.reduce(function (total, selectedAddon) {
 					if (selectedAddon.parent === variation.parent) {
 						return (
@@ -1471,7 +1751,6 @@ Vue.component("group-item-detail", {
 					}
 					return Number(total);
 				}, addonPrice);
-				//}
 				var generalAddonPrice = selectedAddons.reduce(function (
 					total,
 					selectedAddon,
@@ -2073,6 +2352,7 @@ Vue.component("add-customer", {
 Vue.component("payment", {
 	template: "#payment-template",
 	props: ["order", "isEditable"],
+	mixins: [cloverPaymentMixin],
 	data: function () {
 		return {
 			module: "pos",
@@ -2373,15 +2653,13 @@ Vue.component("payment", {
 			this.updateChangeAmount();
 		},
 		updateChangeAmount: function () {
-			var totalPaid = Number(this.getTotalPaid());
-			var grandTotal = Number(this.total.grandTotal);
+			var totalPaid = this.getTotalPaid();
 			this.total.change = 0;
-			if (totalPaid > 0 && totalPaid > grandTotal) {
-				//this.total.change = Math.abs(Number(this.total.grandTotal) - Number(totalPaid)).toFixed(2);
-				this.total.change = Number(
-					Number(totalPaid) - Number(this.total.grandTotal),
-				).toFixed(2);
-				this.total.change = Number(this.total.change) - Number(this.total.tip);
+			if (totalPaid > 0) {
+				var change = Number(totalPaid) - Number(this.total.grandTotal);
+				if (change >= 0) {
+					this.total.change = Math.abs(change);
+				}
 			}
 		},
 		getChangeAmount: function () {
@@ -2427,40 +2705,42 @@ Vue.component("payment", {
 			var grandTotal = Number(this.total.grandTotal);
 			var result = false;
 			if (this.order.splitType === "none") {
-				if (totalPaid === 0) {
-					result = ds_confirm("Continue without Payment?");
-					if (result === true) {
-						this.order.close = false;
-						bus.$emit("saveOrder", true);
-					}
-				} else if (totalPaid < grandTotal) {
-					result = ds_confirm("Continue with Partial Payment?");
-					if (result === true) {
-						this.order.close = false;
-						bus.$emit("saveOrder", true);
+				if (_s("allowCloverPayment") && this.checkAnyCardPayment()) {
+					if (ds_confirm("Do you want clover payment")) {
+						this.handleCloverPayment();
+					} else {
+						bus.$emit("saveOrder", { directPrint: self.getPrinters() });
 					}
 				} else {
-					bus.$emit("saveOrder", { directPrint: self.getPrinters() });
+					if (totalPaid === 0) {
+						result = ds_confirm("Continue without Payment?");
+						if (result === true) {
+							this.order.close = false;
+							bus.$emit("saveOrder", true);
+						}
+					} else if (totalPaid < grandTotal) {
+						result = ds_confirm("Continue with Partial Payment?");
+						if (result === true) {
+							this.order.close = false;
+							bus.$emit("saveOrder", true);
+						}
+					} else {
+						bus.$emit("saveOrder", { directPrint: self.getPrinters() });
+					}
 				}
 			} else {
-				var payments = JSON.parse(JSON.stringify(this.total.payments));
-				payments.forEach(function (p) {
-					p.changeTotal = p.cash === true ? self.total.change : 0;
-					p.tipTotal = p.cash === false ? self.total.tip : 0;
-				});
-				var data = {
-					module: this.module,
-					method: "update_split_payment",
-					split_id: this.split.id,
-					payments: payments,
-					order_id: this.order.id,
-				};
-				var request = submitRequest(data, "post");
-				request.then(function (res) {
-					bus.$emit("splitPaymentCompleted", res.split);
-					self.handleModalHidden();
-				});
+				if (_s("allowCloverPayment") && this.checkAnyCardPayment()) {
+					this.handleCloverPayment();
+				} else {
+					this.handleSplitPayment();
+				}
 			}
+		},
+		handleCloverPayment: function () {
+			var amount = this.total.grandTotal - this.getTotalCashPaid();
+			var cloverAmount = 100 * Number(amount);
+			this.performSale(cloverAmount);
+			bus.$emit("initCloverPayment", true);
 		},
 		handleModalHidden: function () {
 			this.modal.active = false;
@@ -2474,6 +2754,53 @@ Vue.component("payment", {
 		stopPaymentLoader() {
 			this.modal.isLoading = false;
 			Codebase.blocks("#payment-modal-block", "state_normal");
+		},
+		checkAnyCardPayment: function () {
+			var result = false;
+			if (this.paymentMethods.length) {
+				this.total.payments.forEach(function (p) {
+					if (Number(p.paymentMethodId) === _s("cardPaymentId")) {
+						result = true;
+					}
+				});
+			}
+			return result;
+		},
+		cloverPaymentDone: function (payload) {
+			if (typeof payload !== "undefined") {
+				var tipAmount = payload.tipAmount / 100;
+				this.order.cart.totals.tip = this.order.cart.totals.tip + tipAmount;
+				bus.$emit("saveOrder", {
+					directPrint: this.getPrinters(),
+					cloverPayment: payload,
+				});
+			} else {
+				ds_alert("Something went to Wrong..", "Warning");
+			}
+		},
+		handleSplitPayment: function (cloverPayment) {
+			if (typeof cloverPayment === "undefined") {
+				cloverPayment = null;
+			}
+			var self = this;
+			var payments = JSON.parse(JSON.stringify(this.total.payments));
+			payments.forEach(function (p) {
+				p.changeTotal = p.cash === true ? self.total.change : 0;
+				p.tipTotal = p.cash === false ? self.total.tip : 0;
+			});
+			var data = {
+				module: this.module,
+				method: "update_split_payment",
+				split_id: this.split.id,
+				payments: payments,
+				order_id: this.order.id,
+				cloverPayment: cloverPayment,
+			};
+			var request = submitRequest(data, "post");
+			request.then(function (res) {
+				bus.$emit("splitPaymentCompleted", res.split);
+				self.handleModalHidden();
+			});
 		},
 	},
 	created: function () {
@@ -2509,6 +2836,13 @@ Vue.component("payment", {
 				},
 			];
 			self.handlePayBoxInit();
+		});
+		bus.$on("cloverPaymentClose", function (payload) {
+			if (self.order.splitType !== "none") {
+				self.handleSplitPayment(payload);
+			} else {
+				self.cloverPaymentDone(payload);
+			}
 		});
 	},
 });
@@ -2908,8 +3242,8 @@ Vue.component("session-summary", {
 			allowGratuity: _s("allowGratuity"),
 			allowDiscountInSummary: _s("allowDiscountInSummary"),
 			mode: null,
-			type:null,
-			allowSummaryCashEmployeeTakeOut:_s('allowSummaryCashEmployeeTakeOut'),
+			type: null,
+			allowSummaryCashEmployeeTakeOut: _s("allowSummaryCashEmployeeTakeOut"),
 		};
 	},
 	watch: {
@@ -2924,13 +3258,13 @@ Vue.component("session-summary", {
 			},
 		},
 	},
-	computed:{
-		isEmployeeType(){
-			return this.type ==='employee';
+	computed: {
+		isEmployeeType() {
+			return this.type === "employee";
 		},
-		isRegisterType(){
-			return this.type ==='register';
-		}
+		isRegisterType() {
+			return this.type === "register";
+		},
 	},
 	methods: {
 		populateMeta: function () {
@@ -2959,26 +3293,24 @@ Vue.component("session-summary", {
 		},
 		handleCloseRegister: function () {
 			var obj = this.prepObject();
-			if(this.type !== 'register' ){
+			if (this.type !== "register") {
 				bus.$emit("closeRegister", obj);
-			}else{
-				bus.$emit("showUserLogin", {type:'Close'});
+			} else {
+				bus.$emit("showUserLogin", { type: "Close" });
 			}
 		},
-		prepObject:function(){
+		prepObject: function () {
 			var closingCash = !isNaN(this.session.closingCash)
 				? this.session.closingCash
 				: 0;
-				return obj = {
-					id: this.session.id,
-					closingCash: closingCash,
-					takeOut: this.session.takeOut,
-					closingNote: this.session.closingNote,
-					type: this.type,
-				}
+			return (obj = {
+				id: this.session.id,
+				closingCash: closingCash,
+				takeOut: this.session.takeOut,
+				closingNote: this.session.closingNote,
+				type: this.type,
+			});
 		},
-	
-	
 	},
 	created: function () {
 		var self = this;
@@ -2987,12 +3319,12 @@ Vue.component("session-summary", {
 			self.$bvModal.show("session-summary-modal");
 			self.populateMeta();
 		});
-		bus.$on("setUserLogin",function(payload){
-			if(payload.type ==='Close'){
+		bus.$on("setUserLogin", function (payload) {
+			if (payload.type === "Close") {
 				var obj = self.prepObject();
 				bus.$emit("closeRegister", obj);
 			}
-		})
+		});
 	},
 });
 Vue.component("print-server-dialog", {
@@ -3598,11 +3930,6 @@ Vue.component("split-order", {
 			return total;
 		},
 		getItemTotalQty: function (items, compareItem) {
-			/*var totalQty = items.reduce(function (total, i) {
-                if (i.itemId === itemId && i.skuId === skuId) {
-                    return Number(total) + Number(i.quantity);
-                }
-            }, 0);*/
 			var item = items.find(function (i) {
 				return compareItem.id === i.orderItemId;
 			});
@@ -4875,6 +5202,7 @@ Vue.component("issue-refund", {
 			//confirmBtnDisabled: true,
 			afterRefundGrandTotal: 0,
 			refundTotal: 0,
+			cloverPaymentObj: null,
 		};
 	},
 	watch: {
@@ -4918,14 +5246,32 @@ Vue.component("issue-refund", {
 			self.refundTotal = totalPaid;
 		},
 		handleConfirm: function () {
+			if (_s("allowCloverPayment") && this.checkAnyCardPayment() && this.cloverPaymentObj) {
+				bus.$emit("cloverRefundPayment", this.cloverPaymentObj);
+			}else{
+               this.handleRefundPos();
+			}
+			
+		},
+		checkAnyCardPayment: function () {
+			var result = false;
+			if (this.refundPayments.length) {
+				this.refundPayments.forEach(function (p) {
+					if (Number(p.paymentMethodId) === _s("cardPaymentId")) {
+						result = true;
+					}
+				});
+			}
+			return result;
+		},
+		handleRefundPos: function (cloverRefundObj) {
+			if (typeof cloverRefundObj === "undefined") {
+				var cloverRefundObj = null;
+			}
 			var orderId = this.order.id;
 			var status = null;
 			var self = this;
-			/* if (Number(self.refundTotal) === Number(self.grandTotalAndTip)) {
-            	status = "Refunded";
-            } else {
-            	status = "Partial Refunded";
-            } */
+			
 			var data = {
 				module: "pos",
 				method: "order_refund",
@@ -4934,15 +5280,11 @@ Vue.component("issue-refund", {
 				sessionId: self.order.sessionId,
 				orderStatus: status,
 				refundTotal: self.refundTotal,
+				cloverRefundObj:cloverRefundObj,
 			};
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					/* if (Number(self.refundTotal) === Number(self.grandTotalAndTip)) {
-                    	self.handleChangeStatus(orderId, "Refunded");
-                    } else {
-                    	self.handleChangeStatus(orderId, "Partial Refunded");
-                    } */
 					self.resetRefundObj();
 					self.refundPayments = [];
 					bus.$emit("resetOrder", { orderId: orderId });
@@ -5049,7 +5391,7 @@ Vue.component("issue-refund", {
 			var request = submitRequest(data, "get");
 			request.then(function (response) {
 				self.order = response.obj;
-				self.$bvModal.show("issue-refund-modal");
+				self.cloverPaymentObj = response.obj.cloverPayment.row;
 			});
 		},
 		populateMeta: function () {
@@ -5062,6 +5404,7 @@ Vue.component("issue-refund", {
 			request.then(function (response) {
 				if (response.status === "ok") {
 					self.paymentMethods = response.paymentMethods;
+					self.$bvModal.show("issue-refund-modal");
 				}
 			});
 			this.resetRefundObj();
@@ -5117,6 +5460,13 @@ Vue.component("issue-refund", {
 				}
 			});
 		},
+		cloverRefundPaymentDone: function (payload) {
+			if (typeof payload !== "undefined") {
+				this.handleRefundPos(payload);
+			} else {
+				ds_alert("Something went to Wrong..", "Warning");
+			}
+		},
 	},
 	created: function () {
 		var self = this;
@@ -5127,6 +5477,9 @@ Vue.component("issue-refund", {
 			self.handleViewOrder(payload.id);
 			self.populateMeta();
 			self.fullRefundBtnDisabled = false;
+		});
+		bus.$on("cloverRefundPaymentClose", function (payload) {
+			self.cloverRefundPaymentDone(payload);
 		});
 	},
 });
@@ -5159,7 +5512,7 @@ Vue.component("employee-login", {
 			var self = this;
 			var data = {
 				module: self.module,
-				method: "set_employee_shit",
+				method: "set_employee_shift",
 				employee: self.employee,
 			};
 			var request = submitRequest(data, "post");
@@ -5196,7 +5549,7 @@ Vue.component("user-login", {
 			errorMessage: "",
 			showMessage: false,
 			sendingRequest: false,
-			mode:null
+			mode: null,
 		};
 	},
 	methods: {
@@ -5221,7 +5574,7 @@ Vue.component("user-login", {
 				request.then(function (response) {
 					self.sendingRequest = false;
 					if (response.status === "ok") {
-						bus.$emit("setUserLogin", {type:self.mode});
+						bus.$emit("setUserLogin", { type: self.mode });
 					} else if (response.status === "error") {
 						self.errorMessage = response.message;
 						self.showMessage = true;
@@ -5302,14 +5655,14 @@ Vue.component("pos", {
 			openRegister: 0,
 			openEmpShiftCount: 0,
 			closeRegister: 0,
-			openOrderCount:0,
+			openOrderCount: 0,
 		};
 	},
 	watch: {
 		"order.type": {
 			handler: function (newValue, oldValue) {
 				if (newValue === "dine") {
-					if (this.order.tableId === null) {
+					if (this.order.tableId === null || this.order.tableId === false) {
 						bus.$emit("initTableList", { mode: "select" });
 					}
 				}
@@ -5350,33 +5703,54 @@ Vue.component("pos", {
 		registerOpen() {
 			return this.registerSession !== null;
 		},
-		anyShiftOpen(){
+		anyShiftOpen() {
 			return this.openEmpShiftCount > 0;
 		},
-		anyOrderOpen(){
+		anyOrderOpen() {
 			return this.openOrderCount > 0;
 		},
-		lastRegister(){
-            return this.openRegister !== 0 ? Number(this.openRegister) - Number(this.closeRegister) === 1 : false
+		lastRegister() {
+			return this.openRegister !== 0
+				? Number(this.openRegister) - Number(this.closeRegister) === 1
+				: false;
 		},
 		canCloseSession() {
-			return this.lastRegister && !this.anyShiftOpen && !this.anyOrderOpen
+			return true;
+			//return this.lastRegister && !this.anyShiftOpen && !this.anyOrderOpen;
+			return this.lastRegister && !this.anyOrderOpen;
 		},
-		
-		
 	},
 	methods: {
+		handleOrderType: function (type) {
+			if (this.isEditable) {
+					if (this.order.mode === 'add') {
+						this.order.type = type;
+					} else {
+						if (type === 'p') {
+				            if (ds_confirm('are you sure you want to pickup this order ?')) {
+								this.order.type = 'p'
+								this.order.cart.totals.gratuityTotal = 0;
+								this.order.seatUsed = 0;
+								this.handlePlaceOrder(true);
+				            }
+							   
+						} else if (type === 'dine') {
+							this.order.type = type;
+						}
+					}
+			}
+		},
 		handleEmployeeShiftClose: function (payload) {
 			var self = this;
 			var obj = {
 				registerId: self.registerId,
 				employeeId: self.employeeId,
 				sessionId: self.session.id,
-				takeOut:payload.takeOut
+				takeOut: payload.takeOut,
 			};
 			var data = {
 				module: "employees",
-				method: "set_employee_shit_close",
+				method: "set_employee_shift_close",
 				obj: obj,
 			};
 			var request = submitRequest(data, "post");
@@ -5481,7 +5855,7 @@ Vue.component("pos", {
 			});
 		},
 		handleOpenSession: function () {
-			bus.$emit("showUserLogin", {type:'Open'});
+			bus.$emit("showUserLogin", { type: "Open" });
 		},
 		setOpenSession: function () {
 			var self = this;
@@ -5535,7 +5909,6 @@ Vue.component("pos", {
 			request.then(function (response) {
 				self.registerTitle = response.result.title;
 				self.registerCheckLogin = response.result.registerCheckLogin;
-				
 			});
 		},
 		getEmployees: function () {
@@ -5586,8 +5959,10 @@ Vue.component("pos", {
 					self.session = null;
 					self.sessionChecked = false;
 					self.order = {};
-					self.directPrint = ["summary"];
-					self.handlePrintToServer(response.printData);
+					if(_s('allowSummaryPrint')){
+                        self.directPrint = ["summary"];
+                        self.handlePrintToServer(response.printData);
+                    }
 					localStorage.removeItem("employeeId");
 					window.location.reload(true);
 					/*if(response.printData) {
@@ -5768,6 +6143,7 @@ Vue.component("pos", {
 						available: [],
 						applied: [],
 					},
+					cloverPayment: null,
 					cart: {
 						items: [],
 						totals: {
@@ -5812,19 +6188,17 @@ Vue.component("pos", {
 				sessionId: this.session ? this.session.id : null,
 				registerId: this.registerId,
 				key: this.registerDeviceId,
-			}
+			};
 			this.checkingForUpdate = true;
 			var self = this;
 			if (self.canCheckUpdate) {
 				var data = {
 					module: self.module,
 					method: "update_check",
-					obj:obj
+					obj: obj,
 				};
 				var request = submitRequest(data, "get");
 				request.then(function (response) {
-
-					
 					/*if(response.result.appVersion !== _s('appVersion')) {
                         window.location.reload();
                         return false;
@@ -5849,7 +6223,8 @@ Vue.component("pos", {
 					}
 					if (!self.registerCheckLogin && self.registerSession === null) {
 						self.registerTitle = response.result.register.title;
-				        self.registerCheckLogin = response.result.register.registerCheckLogin;
+						self.registerCheckLogin =
+							response.result.register.registerCheckLogin;
 					}
 					self.openRegister = Number(response.result.openRegister);
 					self.closeRegister = Number(response.result.closeRegister);
@@ -6004,6 +6379,9 @@ Vue.component("pos", {
 					if (typeof payload.addToPrintQueue !== "undefined") {
 						self.order.addToPrintQueue = payload.addToPrintQueue;
 					}
+					if (typeof payload.cloverPayment !== "undefined") {
+						self.order.cloverPayment = payload.cloverPayment;
+					}
 					var saveAndLoad = false;
 					if (
 						typeof payload.saveAndLoad !== "undefined" &&
@@ -6058,10 +6436,10 @@ Vue.component("pos", {
 					if (typeof obj.type != "undefined") {
 						if (obj.type === "session") {
 							self.handleCloseSession(obj);
-						}else if(obj.type ==="register"){
+						} else if (obj.type === "register") {
 							(obj.id = self.registerSession ? self.registerSession.id : null),
 								self.handleCloseRegister(obj);
-						}else if(obj.type ==='employee'){
+						} else if (obj.type === "employee") {
 							self.handleEmployeeShiftClose(obj);
 						}
 					}
@@ -6087,7 +6465,7 @@ Vue.component("pos", {
 					self.resetOrder();
 				});
 				bus.$on("setUserLogin", function (payload) {
-					if(payload.type ==='Open'){
+					if (payload.type === "Open") {
 						self.setOpenSession();
 					}
 				});
@@ -6136,23 +6514,23 @@ Vue.component("pos", {
 			bus.$off("initTableSelection");
 			bus.$off("initEditAddress");
 			bus.$off("showSessionSummary");
-			//bus.$off("showUserLogin");
+			bus.$off("showUserLogin");
 			return true;
 		},
-		getLocalStorageData:function(){
+		getLocalStorageData: function () {
 			this.browserId = localStorage.getItem("browserUniqueId");
 			this.employeeId = localStorage.getItem("employeeId");
 			this.registerId = localStorage.getItem("registerId");
 			this.registerDeviceId = localStorage.getItem("registerDeviceId");
 			var type = localStorage.getItem("registerType");
-			this.isTabletMode = (type ==='Tablet') ? true : false;
-		}
+			this.isTabletMode = type === "Register" ? false : true;
+		},
 	},
 	mounted: function () {
 		this.populateMeta();
 	},
 	created: function () {
-	    this.getLocalStorageData()
+		this.getLocalStorageData();
 		this.setupEvents();
 	},
 });

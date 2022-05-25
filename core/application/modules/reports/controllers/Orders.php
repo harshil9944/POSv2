@@ -22,6 +22,7 @@ class Orders extends MY_Controller {
         }
         _set_js_var('allowGratuity',ALLOW_GRATUITY,'b');
         _set_js_var('ordersReportPDFUrl',base_url('reports/orders/pdf'),'s');
+        _set_js_var('ordersReportCSVUrl',base_url('reports/orders/csv'),'s');
         _set_js_var('paginationLimit',_get_setting('pagination_limit',10),'s');
 
         _set_layout_type('wide');
@@ -208,6 +209,97 @@ class Orders extends MY_Controller {
             ];
 
             _generate_pdf($pdf_data,$upload_path.$file_name,$params);
+        }
+        return [
+            'file_name'     =>  $file_name,
+            'upload_path'   =>  $upload_path
+        ];
+
+    }
+
+
+    public function csv() {
+
+        $this->view = false;
+
+        $start_date = _input('startDate');
+        $end_date = _input('endDate');
+
+        $params = [
+            'start_date'    =>  $start_date,
+            'end_date'      =>  $end_date,
+            'force'         =>  true
+        ];
+
+        $csv_data = $this->_csv($params);
+
+        $file_name = $csv_data['file_name'];
+        $upload_path = $csv_data['upload_path'];
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Transfer-Encoding: Binary');
+        header('Content-disposition: inline; filename="'.$file_name.'"');
+
+        $fp = fopen($upload_path.$file_name, "r");
+
+        ob_clean();
+        flush();
+        while (!feof($fp)) {
+            $buff = fread($fp, 1024);
+            print $buff;
+        }
+        exit;
+    }
+
+    private function _csv($params) {
+
+        $start_date = $params['start_date'];
+        $end_date = $params['end_date'];
+        $force = $params['force'];
+        $file_name = strtolower('orders-'.$start_date.'-'.$end_date.'-'.date('M').date('Y').'.csv');
+        $upload_path = _get_config('csv_path') . 'reports/orders/';
+
+        if(!file_exists($upload_path)) {
+            mkdir($upload_path,0777,true);
+        }
+
+        if(!file_exists($upload_path.$file_name)|| $force==true) {
+
+            $param = [
+                'filter_date_start' =>  $start_date,
+                'filter_date_end'   =>  $end_date
+            ];
+
+            $reports = $this->_filter_list($param);
+           // dd($reports);
+            $body=[];
+
+            if($reports) {
+                foreach ($reports as $report) {
+                    $body[] = [
+                        'date'      =>	custom_date_format($report['date'],'d/m/Y'),
+                        'type'	=>	$report['type']=='p'?"Pickup":"Dine-in",
+                        'orderStatus'	    =>	$report['orderStatus'],
+                        'billingName'	=>	$report['billingName'],
+                        'subTotal'	=>	$report['subTotal'],
+                        'discount'	=>	$report['discount'],
+                        'taxTotal'	=>	$report['taxTotal'],
+                        'grandTotal'	=>	$report['grandTotal'],
+                    ];
+                }
+            }
+
+            $header = [
+                'Date',
+                'Type',
+                'Status',
+                'Name',
+                'Sub Total',
+                'Discount',
+                'Tax Total',
+                'Grand Total',
+            ];
+            _generate_csv($body,$header,$upload_path . $file_name);
         }
         return [
             'file_name'     =>  $file_name,

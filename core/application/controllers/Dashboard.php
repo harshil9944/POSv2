@@ -83,7 +83,7 @@ class Dashboard extends MY_Controller {
 	public function _items($params) {
         $start_date = $this->db->escape($params['filter_date_start']);
         $end_date = $this->db->escape($params['filter_date_end']);
-       $sql ="SELECT SUM(ooi.quantity) AS total_quantity,ooi.title FROM ord_order_item ooi WHERE DATE(ooi.added) BETWEEN $start_date AND $end_date GROUP BY ooi.item_id,ooi.sku_id ORDER BY SUM(ooi.quantity) DESC LIMIT 10;";
+       $sql ="SELECT SUM(ooi.quantity) AS total_quantity,ooi.title FROM ord_order_item ooi WHERE DATE(ooi.added) BETWEEN $start_date AND $end_date GROUP BY ooi.item_id ORDER BY SUM(ooi.quantity) DESC LIMIT 10;";
         $result = _db_get_query($sql);
         return $result;
     }

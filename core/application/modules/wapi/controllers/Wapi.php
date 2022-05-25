@@ -204,55 +204,7 @@ class Wapi extends MY_Controller {
                 }
 
                 $temp[] = $item_details;
-
-                /*$tags = [];
-                $tags[] = $item['name'];
-
-                $sku_params = [
-                    'filter'    =>  [
-                        'item_id'   =>  $item['id']
-                    ],
-                    'exclude'   =>  true,
-                    'convert'   =>  true
-                ];
-
-                $variations = _get_module('items','_get_item_skus',$sku_params);
-
-                if($variations) {
-                    foreach ($variations as $variation) {
-                        $tags[] = $variation['name'];
-                    }
-                }
-
-                $image_file_name = $item['image'];
-                if($item['image']) {
-                    $image_path = _get_config('global_upload_path');
-                    $cache_path = _get_config('global_image_cache_path');
-                    if(!file_exists($cache_path . 'items/')) {
-                        mkdir($cache_path . 'items/',0777,true);
-                    }
-                    $image_file_name = _get_image_cache_name($item['image'],'_' . POS_THUMB_WIDTH . 'x' . POS_THUMB_HEIGHT);
-                    if(!file_exists($cache_path . $image_file_name)) {
-                        $params = [
-                            'width'         =>  POS_THUMB_WIDTH,
-                            'height'        =>  POS_THUMB_HEIGHT,
-                            'source'        =>  $image_path . $item['image'],
-                            'destination'   =>  $cache_path . $image_file_name
-                        ];
-                        $resize = _resize_crop_center($params);
-                        if(!$resize) {
-                            $image_file_name = '';
-                        }
-                    }
-                }
-
-                $temp[] = [
-                    'id'        =>  $item['id'],
-                    'title'     =>  $item['name'],
-                    'tags'      =>  implode(' ',$tags),
-                    'categoryId'=>  $item['categoryId'],
-                    'image'     =>  $image_file_name
-                ];*/
+               
             }
             $items = $temp;
         }
@@ -628,13 +580,11 @@ class Wapi extends MY_Controller {
             foreach ($obj['cart']['items'] as $key => $item) {
                 $web_item = [
                     'type' => $item['type'],
-                    'sku' => $item['sku'],
                     'quantity' => (float)$item['quantity'],
                     'title' => $item['name'],
                     'notes' => '',
                     'rate' => (float)$item['rate'],
                     'item_id' => $item['id'],
-                    'sku_id' => $item['skuId'],
                     'unit_id' => $item['unit'],
                     'sale_unit_id' => $item['unit'],
                     'unit_quantity' => $item['unit'],

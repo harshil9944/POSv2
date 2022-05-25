@@ -152,7 +152,7 @@ $code = 'salesorder';
                                                 <td colspan="7" class="text-center">No Item added</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="7"><vue-multiselect @select="onItemSelect" id="ajax" label="value" track-by="itemId" placeholder="Type to search item by Name or SKU" open-direction="bottom" :options="items" :multiple="false" :searchable="true" :loading="itemLoading" :internal-search="false" :clear-on-select="true" :close-on-select="true" :options-limit="300" :limit="3" :max-height="600" :show-no-results="false" :hide-selected="true" @search-change="queryItems"></vue-multiselect></td>
+                                                <td colspan="7"><vue-multiselect @select="onItemSelect" id="ajax" label="value" track-by="itemId" placeholder="Type to search item by Name" open-direction="bottom" :options="items" :multiple="false" :searchable="true" :loading="itemLoading" :internal-search="false" :clear-on-select="true" :close-on-select="true" :options-limit="300" :limit="3" :max-height="600" :show-no-results="false" :hide-selected="true" @search-change="queryItems"></vue-multiselect></td>
                                             </tr>
                                             </tbody>
                                             <tfoot>
@@ -221,7 +221,7 @@ $code = 'salesorder';
                                                 <td colspan="4" class="text-center">No Item added</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="4"><vue-multiselect @select="onItemSelect" id="ajax" label="value" track-by="itemId" placeholder="Type to search item by Name or SKU" open-direction="bottom" :options="items" :multiple="false" :searchable="true" :loading="itemLoading" :internal-search="false" :clear-on-select="true" :close-on-select="true" :options-limit="300" :limit="3" :max-height="600" :show-no-results="false" :hide-selected="true" @search-change="queryItems"></vue-multiselect></td>
+                                                <td colspan="4"><vue-multiselect @select="onItemSelect" id="ajax" label="value" track-by="itemId" placeholder="Type to search item by Name " open-direction="bottom" :options="items" :multiple="false" :searchable="true" :loading="itemLoading" :internal-search="false" :clear-on-select="true" :close-on-select="true" :options-limit="300" :limit="3" :max-height="600" :show-no-results="false" :hide-selected="true" @search-change="queryItems"></vue-multiselect></td>
                                             </tr>
                                             </tbody>
                                             <tfoot>

@@ -19,6 +19,7 @@ class Sales extends MY_Controller {
         _set_js_var('paginationLimit',_get_setting('pagination_limit',10),'s');
         _set_js_var('ordersReportUrl',base_url('reports/orders'),'s');
         _set_js_var('salesReportPDFUrl',base_url('reports/sales/pdf'),'s');
+        _set_js_var('salesReportCSVUrl',base_url('reports/sales/csv'),'s');
 
         _set_layout_type('wide');
         _set_page_title($this->plural);
@@ -217,6 +218,91 @@ class Sales extends MY_Controller {
             ];
 
             _generate_pdf($pdf_data,$upload_path.$file_name,$params);
+        }
+        return [
+            'file_name'     =>  $file_name,
+            'upload_path'   =>  $upload_path
+        ];
+
+    }
+    public function csv() {
+
+        $this->view = false;
+
+        $start_date = _input('startDate');
+        $end_date = _input('endDate');
+
+        $params = [
+            'start_date'    =>  $start_date,
+            'end_date'      =>  $end_date,
+            'force'         =>  true
+        ];
+
+        $csv_data = $this->_csv($params);
+
+        $file_name = $csv_data['file_name'];
+        $upload_path = $csv_data['upload_path'];
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Transfer-Encoding: Binary');
+        header('Content-disposition: inline; filename="'.$file_name.'"');
+
+        $fp = fopen($upload_path.$file_name, "r");
+
+        ob_clean();
+        flush();
+        while (!feof($fp)) {
+            $buff = fread($fp, 1024);
+            print $buff;
+        }
+        exit;
+    }
+
+    private function _csv($params) {
+
+        $start_date = $params['start_date'];
+        $end_date = $params['end_date'];
+        $force = $params['force'];
+        $file_name = strtolower('sales-'.$start_date.'-'.$end_date.'-'.date('M').date('Y').'.csv');
+        $upload_path = _get_config('csv_path') . 'reports/sales/';
+
+        if(!file_exists($upload_path)) {
+            mkdir($upload_path,0777,true);
+        }
+
+        if(!file_exists($upload_path.$file_name)|| $force==true) {
+
+            $param = [
+                'filter_date_start' =>  $start_date,
+                'filter_date_end'   =>  $end_date
+            ];
+
+            $reports = $this->_filter_list($param);
+            //dd($reports);
+            $body=[];
+
+            if($reports) {
+                foreach ($reports as $report) {
+                    $body[] = [
+                        'orderDate'      =>	custom_date_format($report['orderDate'],'d/m/Y'),
+                        'totalOrders'	    =>	$report['totalOrders'],
+                        'subTotal'	=>	$report['subTotal'],
+                        'discount'	=>	$report['discount'],
+                        'totalTax'	=>	$report['totalTax'],
+                        'totalAmount'	=>	$report['totalAmount'],
+                    ];
+                }
+            }
+
+            $header = [
+                'Date',
+                'Orders',
+                'Sub Total',
+                'Discount',
+                'Tax',
+                'Amount',
+            ];
+            _generate_csv($body,$header,$upload_path . $file_name);
         }
         return [
             'file_name'     =>  $file_name,

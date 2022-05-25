@@ -27,6 +27,7 @@ $config['migration_type'] = 'sequential';
 
 //PDF files default storage path
 $config['pdf_path'] = './uploads/pdf/';
+$config['csv_path'] = './uploads/csv/';
 
 //Default Theme
 $config['theme'] = 'default';

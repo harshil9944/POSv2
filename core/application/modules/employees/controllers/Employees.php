@@ -192,7 +192,7 @@ class Employees extends MY_Controller {
 
     }
 
-    public function _set_employee_shit_post(){
+    public function _set_employee_shift_post(){
         _model('employee_shift','es');
         $employee =  _input('employee');
         $emp_id= $employee['id'];
@@ -229,7 +229,7 @@ class Employees extends MY_Controller {
         }
     }
 
-    public function _set_employee_shit_close_post(){
+    public function _set_employee_shift_close_post(){
         _model('employee_shift','es');
         $obj = _input('obj');
         $register_id = $obj['registerId'];

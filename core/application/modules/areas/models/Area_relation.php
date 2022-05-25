@@ -64,7 +64,6 @@ class Area_relation extends MY_Model
 
             $this->where_in('group_id', $allowed_groups);
 
-            //$this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
             $this->select('*');
 
             return $this->search($filter, $limit, $offset);
@@ -96,7 +95,6 @@ class Area_relation extends MY_Model
 
             $this->where_in('group_id', $allowed_groups);
 
-            //$this->left_join(ITEM_SKU_TABLE, ITEM_TABLE.'.id='.ITEM_SKU_TABLE.'.item_id');
             $this->select('COUNT(*) as total_rows');
 
             return $this->single($filter);
