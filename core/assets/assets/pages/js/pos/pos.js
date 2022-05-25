@@ -5715,7 +5715,9 @@ Vue.component("pos", {
 				: false;
 		},
 		canCloseSession() {
-			return this.lastRegister && !this.anyShiftOpen && !this.anyOrderOpen;
+			return true;
+			//return this.lastRegister && !this.anyShiftOpen && !this.anyOrderOpen;
+			return this.lastRegister && !this.anyOrderOpen;
 		},
 	},
 	methods: {

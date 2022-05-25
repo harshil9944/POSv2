@@ -1600,8 +1600,8 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
 </script>
 <script type="text/x-template" id="table-list-template">
     <div>
-        <b-modal no-fade id="table-list-modal" size="xl" hide-header hide-footer body-class="p-0"  @hidden="handleClosing" v-cloak>
-            <div id="table-list-block" class="block block-themed block-transparent mb-0">
+        <b-modal no-fade id="table-list-modal" size="xl"  no-close-on-backdrop  hide-header hide-footer body-class="p-0"  @hidden="handleClosing" v-cloak>
+            <div id="table-list-block" data-keyboard="false" data-backdrop="static" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
                     <h3 class="block-title">{{ modelTitle}}</h3>
                     <div class="block-options">
@@ -2913,7 +2913,7 @@ echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $re
                         <div class="btn-group" role="group">
                             <button v-if="hasOrderMethod('p')" :disabled="!isEditable" @click="handleOrderType('p')" type="button" class="btn btn-alt-primary" :class="order.type == 'p' ? 'active border-primary' : ''">Pickup</button>
                             <button v-if="hasOrderMethod('d')" :disabled="!isEditable" @click="handleOrderType('d')" type="button" class="btn btn-alt-primary" :class="order.type == 'd' ? 'active border-primary' : ''">Delivery</button>
-                            <button v-if="hasOrderMethod('dine')" :disabled="!isEditable" @click="handleOrderType('d')" type="button" class="btn btn-alt-primary" :class="order.type == 'dine' ? 'active border-primary' : ''">Dine-in</button>
+                            <button v-if="hasOrderMethod('dine')" :disabled="!isEditable" @click="handleOrderType('dine')" type="button" class="btn btn-alt-primary" :class="order.type == 'dine' ? 'active border-primary' : ''">Dine-in</button>
                         </div>
                         <span v-if="order.type=='dine'" class="ml-2">Table: <a href="javascript:void(0)" @click="handleChangeTable" title="Change Table" class="text-danger">{{ getTableName() }}</a></span>
                         <div class="btn-group pull-right" role="group">
