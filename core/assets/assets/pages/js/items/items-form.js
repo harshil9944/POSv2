@@ -314,7 +314,8 @@ Vue.component("item-form", {
             appStatus: 1,
             variations: [],
             isAddon: 0,
-            addons: []
+            addons: [],
+            description:null
         };
         this.populateMeta();
         if (mode === "edit") {

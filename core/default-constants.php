@@ -92,3 +92,7 @@ defined( 'CARD_PAYMENT_ID' ) OR define( 'CARD_PAYMENT_ID', 3 );
 
 //Clover
 defined( 'ALLOW_CLOVER_PAYMENT' ) OR define( 'ALLOW_CLOVER_PAYMENT', false );
+defined('ITEM_TYPES')        OR  define('ITEM_TYPES', [
+        ['value'=>'food','title'=>'Food'],
+        ['value'=>'liquor','title'=>'Liquor']
+    ]);
