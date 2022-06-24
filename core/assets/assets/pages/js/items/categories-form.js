@@ -6,6 +6,7 @@ Vue.component('category-form',{
             category: {},
 
             masters: {
+                types: [{id:'liquor',value:'Liquor'},{id:'food',value:'Food'}],
                 webStatuses: [{id:1,value:'Yes'},{id:0,value:'No'}],
                 posStatuses:[{id:1,value:'Yes'},{id:0,value:'No'}],
                 appStatuses:[{id:1,value:'Yes'},{id:0,value:'No'}]
@@ -49,6 +50,7 @@ Vue.component('category-form',{
         if(this.mode==='add') {
             this.category = {
                 title: '',
+                type: 'food',
                 sortOrder: '',
                 webStatus:1,
                 posStatus:1,

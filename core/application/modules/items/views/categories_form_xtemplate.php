@@ -24,6 +24,14 @@ $code = 'category';
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
+                                            <label for="type">Type</label>
+                                            <select id="type" class="form-control custom-select d-block w-100" v-model="category.type">
+                                               <option v-for="s in masters.types" :value="s.id">{{ s.value }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
                                             <label for="pos-status">Show in POS?</label>
                                             <select id="pos-status" class="form-control custom-select d-block w-100" v-model="category.posStatus">
                                                <option v-for="s in masters.posStatuses" :value="s.id">{{ s.value }}</option>

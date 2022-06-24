@@ -35,8 +35,19 @@ $config['theme'] = 'default';
 //Super Admin Groups
 $config['admin_groups'] = [1,3];
 
-$config['api_login_module'] = 'customers/customers_api';
-$config['api_user_module'] = 'customers/customers_api';
+$config['api_customer_module'] = 'contacts/customers_api';
+$config['api_order_module'] = 'orders/orders_api';
+$config['api_item_module'] = 'items/items_api';
 $config['api_login_method'] = '_api_login';
 
+$config['api_order_method'] = '_api_order';
+$config['api_populate_items_method'] = '_api_populate_items';
+$config['api_populate_menu_items_method'] = '_api_populate_menu_items';
+
+$config['api_validate_session_method'] = '_api_validate_session';
+
+
+
 $config['kitchen_printers'] = KITCHEN_PRINTERS;
+
+$config['retrieve_password_url'] = 'https://www.inntechfuture.com';

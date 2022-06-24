@@ -1110,6 +1110,31 @@ class Items extends MY_Controller {
         return $categories;
 
     }
+    public function _get_web_categories($params=[]) {
+
+        _model('item_category','category');
+
+        $order = (@$params['order'])?$params['order']:['order_by'=>'title','order'=>'ASC'];
+
+        $filter = (@$params['filter'] && is_array($params['filter']))?$params['filter']:[];
+
+        $this->category->order_by($order['order_by'],$order['order']);
+        $categories = $this->category->search($filter);
+
+        if($categories){
+            foreach($categories as &$c){
+                $temp[] = [
+                    'id'    =>  $c['id'],
+                    'title' =>  $c['title'],
+                    'type'  =>  $c['type']
+                ];
+            }
+            $categories = $temp;
+        }
+
+        return $categories;
+
+    }
 
     public function _get_category_items($params=[]) {
 
@@ -1159,6 +1184,65 @@ class Items extends MY_Controller {
 
     public function _uninstall() {
         return true;
+    }
+
+    public function import_items(){
+        _model('item_category');
+        _model('item');
+        _model('item_note');
+       
+       $categories= json_decode(file_get_contents('itm_category.json'),true);
+       if($categories){
+           foreach($categories as &$c){
+            $this->item_category->insert($c);
+           }
+       }
+       $items= json_decode(file_get_contents('items_saffron.json'),true);
+       if($items){
+            foreach($items as &$i){
+                $item = $i['item'];
+                $item['code'] =  _get_ref('ITM',3,6);
+                $item['created_by'] =_get_user_id();
+                $item['added'] =sql_now_datetime();
+                $this->item->insert($item);
+                $item_id = $this->item->insert_id();
+                _update_ref('ITM');
+
+                if(@$i['variant']){
+                    foreach($i['variant'] as &$v){
+                        $v['parent'] =  $item_id;
+                        $v['code'] =  _get_ref('ITM',3,6);
+                        $v['created_by'] =_get_user_id();
+                        $action['added'] =sql_now_datetime();
+                        $this->item->insert($v);
+                        _update_ref('ITM');
+                    }
+                }
+
+                if(@$i['addons']){
+                    foreach($i['addons'] as &$a){
+                        $a['parent'] =  $item_id;
+                        $a['code'] =  _get_ref('ITM',3,6);
+                        $a['created_by'] =_get_user_id();
+                        $action['added'] =sql_now_datetime();
+                        $this->item->insert($a);
+                        _update_ref('ITM');
+                    }
+                }
+                if(@$i['notes']){
+                    foreach($i['notes'] as &$n){
+                       $note = [
+                           'item_id'=>$item_id,
+                           'title'=> $n,
+                           'added'=>sql_now_datetime()
+                       ];
+                        $this->item_note->insert($note);
+                    }
+                }
+            }
+        }
+        redirect(base_url($this->module));
+      
     }
 
     protected function _load_files() {

@@ -1,7 +1,7 @@
 <b-modal v-cloak id="item-details-modal" centered size="xl" hide-header hide-footer body-class="p-0" v-cloak>
     <div class="block block-themed block-transparent mb-0">
         <div class="block-header bg-primary-dark">
-            <h3 class="block-title">{{ modal.obj.name }}</h3>
+            <h3 class="block-title">{{ modal.obj.title }}</h3>
             <div class="block-options">
                 <a :href="modal.obj.edit" class="btn-block-option"> <i class="fas fa-edit"></i></a>
                 <button type="button" class="btn-block-option" @click="$bvModal.hide('item-details-modal');" aria-label="Close">
@@ -55,24 +55,50 @@
                             <tr>
                                 <th class="text-center">Category</th>
                                 <th class="text-center">Types</th>
-                                <th class="text-center">Sale Price</th>
+                                <th class="text-center">Rate</th>
                                 <th class="text-center">Icon</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="single in modal.obj.prices">
+                            <tr>
                                 <td class="text-center">{{ getCategoryTitle }}</td>
                                 <td  class="text-center"> <img class="img-fluid h-15p" :src="getVegNVegImg(modal.obj.isVeg)" /></td>
-                                <td class="text-center"><span class="badge badge-pill badge-primary">{{ single.salePrice }}</span></td>
+                                <td class="text-center"><span class="badge badge-pill badge-primary">{{ modal.obj.rate }}</span></td>
                                 <td class="text-center" v-if="modal.obj.iconTitle">
-                                        <i class="fa-2x" :class="modal.obj.iconTitle"></i>
-                                    </td>
-                                    <td class="text-center" v-else>
+                                    <i class="fa-2x" :class="modal.obj.iconTitle"></i>
+                                </td>
+                                <td class="text-center" v-else>
                                         No Icon
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div v-if="variations.length" class="table">
+                <div class="row my-20">
+                    <div class="col-12 font-weight-600">
+                        <table class="table table-bordered table-hover table-vcenter font-13">
+                            <thead class="font-11">
+                                <tr class="bg-success-light">
+                                    <th></th>
+                                    <th>Title</th>
+                                    <th class="text-center">Type</th>
+                                    <th class="text-center">Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody >
+                                <tr v-for="(single, index) in variations">
+                                    <td class="text-center">{{ Number(index) + 1 }}</td>
+                                    <td>{{ single.title }}</td>
+                                    <td  class="text-center"> <img class="img-fluid h-15p" :src="getVegNVegImg(single.isVeg)" /></td>
+                                    <td class="text-center">
+                                        <span class="badge badge-pill badge-primary">{{ single.rate }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="table">

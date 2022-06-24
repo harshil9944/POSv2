@@ -13,7 +13,7 @@ defined('DEV_DEFAULT_TIMEZONE_VALUE')   OR  define('DEV_DEFAULT_TIMEZONE_VALUE',
 defined('LIVE_APPLICATION_DIR')         OR  define('LIVE_APPLICATION_DIR', '../core/application');
 defined('LIVE_SYSTEM_DIR')              OR  define('LIVE_SYSTEM_DIR', '../core/system');
 defined('LIVE_VIEW_DIR')                OR  define('LIVE_VIEW_DIR', '');
-defined('LIVE_ASSET_URL')               OR  define('LIVE_ASSET_URL', 'https://assets.inntechpos.com/');
+defined('LIVE_ASSET_URL')               OR  define('LIVE_ASSET_URL', 'https://assets.v2.inntechpos.com/');
 
 defined('LIVE_DEFAULT_TIMEZONE')        OR  define('LIVE_DEFAULT_TIMEZONE', 'America/Edmonton');
 defined('LIVE_DEFAULT_TIMEZONE_VALUE')  OR  define('LIVE_DEFAULT_TIMEZONE_VALUE', '-06:00');

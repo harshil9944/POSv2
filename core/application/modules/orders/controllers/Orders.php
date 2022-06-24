@@ -559,7 +559,8 @@ class Orders extends MY_Controller {
 
                     $selected_addons = $this->addon->search(['order_item_id'=>$item['id']]);
 
-                    $addons = _get_module('items','_search_addons',['parent_id'=>$item['parentId']]);
+                    $addon_parent_id = (int)$item['parentId'] != 0 ? $item['parentId']:$item['itemId'];
+                    $addons = _get_module('items','_search_addons',['parent_id'=>$addon_parent_id]);
                     if($addons) {
                         $temp = [];
                         foreach ($addons as $addon) {

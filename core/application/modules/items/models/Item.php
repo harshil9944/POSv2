@@ -30,7 +30,7 @@ class Item extends MY_Model
             'posStatus'=>'pos_status',
             'webStatus'=>'web_status',
             'appStatus'=>'app_status',
-            'created_by'=>'created_by',
+            'createdBy'=>'created_by',
             'added'=>'added'
         ];
         $this->exclude_keys = ['added'];

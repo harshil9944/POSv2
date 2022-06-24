@@ -31,7 +31,24 @@ class Reports extends MY_Controller {
         $menus = [];
 
         $reports = [];
-
+        $reports[] = [
+            'name'	    =>  'Shifts',
+            'class'     =>  '',
+            'group'     =>  '',
+            'icon'      =>  'basket-loaded',
+            'path'      =>  'reports/shifts',
+            'module'    =>  'reports/shifts',
+            'children'  =>  []
+        ];
+        $reports[] = [
+            'name'	    =>  'Hours Worked',
+            'class'     =>  '',
+            'group'     =>  '',
+            'icon'      =>  'basket-loaded',
+            'path'      =>  'reports/hours_worked',
+            'module'    =>  'reports/hours_worked',
+            'children'  =>  []
+        ];
         $reports[] = [
             'name'	    =>  'Orders',
             'class'     =>  '',
@@ -80,7 +97,7 @@ class Reports extends MY_Controller {
             'name'      => 'Reports',
             'path'      => 'reports',
             'module'    => 'reports',
-            'priority'  => 5,
+            'priority'  => 6,
             'children'  => $reports
         );
 

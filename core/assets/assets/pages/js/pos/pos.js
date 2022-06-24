@@ -552,7 +552,6 @@ var cloverPaymentMixin = {
 			CloverConnectorListener.prototype.onRefundPaymentResponse = function (
 				refundResponse,
 			) {
-				console.log(refundResponse);
 				if(refundResponse.getSuccess()){
 					bus.$emit(
 						"cloverRefundPaymentClose",
@@ -1743,7 +1742,7 @@ Vue.component("group-item-detail", {
 			this.item.variations.forEach(function (variation) {
 				var addonPrice = 0;
 				addonPrice = selectedAddons.reduce(function (total, selectedAddon) {
-					if (selectedAddon.parent === variation.parent) {
+					if (Number(selectedAddon.parent) === Number(variation.parent)) {
 						return (
 							Number(total) +
 							Number(selectedAddon.rate) * Number(selectedAddon.quantity)
@@ -1751,23 +1750,11 @@ Vue.component("group-item-detail", {
 					}
 					return Number(total);
 				}, addonPrice);
-				var generalAddonPrice = selectedAddons.reduce(function (
-					total,
-					selectedAddon,
-				) {
-					if (Number(selectedAddon.id) === 0) {
-						return (
-							Number(total) +
-							Number(selectedAddon.rate) * Number(selectedAddon.quantity)
-						);
-					}
-					return Number(total);
-				},
-				0);
+				
 				variation.salePrice =
 					Number(variation.originalPrice) +
-					Number(addonPrice) +
-					Number(generalAddonPrice);
+					Number(addonPrice)
+				
 			});
 		},
 		handleGroupItemDetailInit: function () {
@@ -1791,7 +1778,7 @@ Vue.component("group-item-detail", {
 					salePrice: this.item.rate,
 					title: this.item.title,
 					unitId: this.item.unit,
-					parentId: this.item.id,
+					parent: this.item.id,
 					type: this.item.type,
 				};
 				this.item.variations.push(variation);
@@ -1815,7 +1802,7 @@ Vue.component("group-item-detail", {
                       }
                   }
              }); */
-			if (this.item.variations.length) {
+			if (variation.type === "variant") {
 				this.item.title = this.item.baseName + " - " + variation.title;
 			} else {
 				this.item.title = this.item.baseName;
@@ -2031,6 +2018,50 @@ Vue.component("order-detail", {
 		},
 	},
 	methods: {
+		hasAddons: function (addons) {
+			console.log(addons);
+			var has = false;
+			if (addons.length) {
+				addons.forEach(function (addon) {
+					if (addon.enabled === true) {
+						has = true;
+					}
+				});
+			}
+			return has;
+		},
+		getAddons: function (addons) {
+			var string = "";
+			if (addons.length) {
+				addons.forEach(function (addon) {
+					if (addon.enabled === true) {
+						if (string !== "") {
+							string += ", " + addon.title;
+						} else {
+							string += addon.title;
+						}
+					}
+				});
+			}
+			return string;
+		},
+		getNotes: function (notes) {
+			if (typeof notes === "object") {
+				var string = "";
+				if (notes.length) {
+					notes.forEach(function (note) {
+						if (string !== "") {
+							string += ", " + note.title;
+						} else {
+							string += note.title;
+						}
+					});
+				}
+				return string;
+			} else {
+				return notes;
+			}
+		},
 		populateOrder: function () {
 			var self = this;
 			var data = {
@@ -2848,7 +2879,7 @@ Vue.component("payment", {
 });
 Vue.component("order-history", {
 	template: "#order-history-template",
-	props: ["session", "isTabletMode"],
+	props: ["session", "isTabletMode","employeeId"],
 	data: function () {
 		return {
 			modalOpen: false,
@@ -2861,7 +2892,47 @@ Vue.component("order-history", {
 			closedOrders: [],
 			cancelledOrders: [],
 			refundedOrders: [],
+			empOrders: [],
 			allowRefund: _s("allowRefund"),
+			empOrderFields: [
+				{
+					key: "sessionOrderNo",
+					label: "Order #",
+				},
+				{
+					key: "type",
+					label: "Type",
+				},
+				{
+					key: "date",
+					label: "Order Date",
+				},
+				{
+					key: "billingName",
+					label: "Customer",
+				},
+				{
+					key: "grandTotal",
+					label: "Total",
+					class: "text-right",
+				},
+				{
+					key: "orderStatus",
+					label: "Status",
+					class: "text-center",
+					tdClass: "font-weight-700",
+				},
+				{
+					key: "paymentStatus",
+					label: "Payment",
+					class: "text-center",
+				},
+				{
+					key: "id",
+					label: "Action",
+					class: "text-center",
+				},
+			],
 			confirmFields: [
 				{
 					key: "sessionOrderNo",
@@ -3064,6 +3135,7 @@ Vue.component("order-history", {
 				self.closedOrders = self.getFilteredOrders("Closed");
 				self.cancelledOrders = self.getFilteredOrders("Cancelled");
 				self.refundedOrders = self.getFilteredOrders("Refunded");
+				self.empOrders = self.getEmpOrders();
 				var partialRefund = self.getFilteredOrders("Partial_refunded");
 				if (partialRefund.length) {
 					partialRefund.forEach(function (p) {
@@ -3080,6 +3152,12 @@ Vue.component("order-history", {
 		getFilteredOrders: function (status) {
 			return this.orders.filter(function (order) {
 				return order.orderStatus === status;
+			});
+		},
+		getEmpOrders: function () {
+			var self = this;
+			return self.orders.filter(function (order) {
+				return Number(order.employeeId) === Number(self.employeeId);
 			});
 		},
 		handleOpenOrder: function (e) {
@@ -3237,7 +3315,9 @@ Vue.component("session-summary", {
 	data: function () {
 		return {
 			module: "pos",
-			session: {},
+			session: {
+				registersDetail: [],
+		    },
 			allowRefund: _s("allowRefund"),
 			allowGratuity: _s("allowGratuity"),
 			allowDiscountInSummary: _s("allowDiscountInSummary"),
@@ -5518,8 +5598,9 @@ Vue.component("employee-login", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					bus.$emit("setEmployeeId", { employeeId: response.employeeId });
-					localStorage.setItem("employeeId", response.employeeId);
+					bus.$emit("setEmployeeId", { employeeId: response.employee.id });
+					localStorage.setItem("employeeId", response.employee.id);
+					localStorage.setItem("employeeName", response.employee.name);
 				} else {
 					self.showError = true;
 					self.errorMessage = response.message;
@@ -5640,6 +5721,7 @@ Vue.component("pos", {
 				message: "",
 			},
 			employeeId: null,
+			employeeName: null,
 			employees: [],
 			registerDeviceId: null,
 			registerId: null,
@@ -5756,6 +5838,7 @@ Vue.component("pos", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status == "ok") {
+					ds_alert(response.message);
 					self.removeEmpId();
 					self.resetOrder();
 					self.updateCheck();
@@ -5767,6 +5850,7 @@ Vue.component("pos", {
 			self.employeeId = null;
 			self.employees = [];
 			localStorage.removeItem("employeeId");
+			localStorage.removeItem("employeeName");
 			self.resetOrder();
 			self.updateCheck();
 		},
@@ -5964,6 +6048,7 @@ Vue.component("pos", {
                         self.handlePrintToServer(response.printData);
                     }
 					localStorage.removeItem("employeeId");
+					localStorage.removeItem("employeeName");
 					window.location.reload(true);
 					/*if(response.printData) {
                         self.printInvoice(response.printData);
@@ -5988,6 +6073,7 @@ Vue.component("pos", {
 					//self.directPrint = ["summary"];
 					//self.handlePrintToServer(response.printData);
 					localStorage.removeItem("employeeId");
+					localStorage.removeItem("employeeName");
 					window.location.reload(true);
 				}
 			});
@@ -6520,11 +6606,18 @@ Vue.component("pos", {
 		getLocalStorageData: function () {
 			this.browserId = localStorage.getItem("browserUniqueId");
 			this.employeeId = localStorage.getItem("employeeId");
+			this.employeeName = localStorage.getItem("employeeName");
 			this.registerId = localStorage.getItem("registerId");
 			this.registerDeviceId = localStorage.getItem("registerDeviceId");
 			var type = localStorage.getItem("registerType");
 			this.isTabletMode = type === "Register" ? false : true;
 		},
+		checkEmployeeShiftOpen: function () {
+			
+		}
+			
+				
+
 	},
 	mounted: function () {
 		this.populateMeta();

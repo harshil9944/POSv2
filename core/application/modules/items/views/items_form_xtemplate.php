@@ -15,7 +15,7 @@ $group_2 = [
     ['control'=>'select','code'=>['id'=>$code.'-pos-status','title'=>'Show in POS?','attribute'=>'','vue_model'=>$code.'.posStatus','vue_for'=>'masters.statuses']],
     ['control'=>'select','code'=>['id'=>$code.'-web-status','title'=>'Show in WEB?','attribute'=>'','vue_model'=>$code.'.webStatus','vue_for'=>'masters.statuses']],
     ['control'=>'select','code'=>['id'=>$code.'-app-status','title'=>'Show in APP?','attribute'=>'','vue_model'=>$code.'.appStatus','vue_for'=>'masters.statuses']],
-    ['control'=>'number','code'=>['id'=>$code.'-rate','title'=>'Rate','attribute'=>'required','vue_model'=>$code.'.rate']],
+    ['control'=>'text','code'=>['id'=>$code.'-rate','title'=>'Rate','attribute'=>'required','vue_model'=>$code.'.rate']],
     ['control'=>'select','code'=>['id'=>$code.'-is-veg','title'=>'Veg','attribute'=>'','vue_model'=>$code.'.isVeg','vue_for'=>'masters.statuses']],
 
 ];
@@ -99,7 +99,7 @@ $group_2 = [
                                                     <th class="text-danger">Item Name*</th>
                                                     <th class="text-danger">Veg</th>
                                                     <th class="text-danger">Rate<br/><a href="#" class="font-10" @click.prevent="copyToAll('rate')">Copy to all</a></th>
-                                                    <th class="text-danger">Action</th>
+                                                    <th class="text-danger text-center">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -108,12 +108,11 @@ $group_2 = [
                                                     <td> <select  id="single-status" class="form-control" v-model="single.isVeg" required>
                                                             <option v-for="single in masters.statuses" :value="single.id">{{ single.value }}</option>
                                                         </select></td>
-                                                    <td><?php echo get_number(['id'=>'single-rate','title'=>'Rate','class'=>'text-right','attribute'=>'required data-parsley="item"','vue_model'=>'single.rate'],'number',true) ?></td>
+                                                    <td><?php echo get_text(['id'=>'single-rate','title'=>'Rate','class'=>'text-right','attribute'=>'required data-parsley="item"','vue_model'=>'single.rate'],'text',true) ?></td>
                                                     <td class="text-center"><a href="#" @click.prevent="handleRemoveVariation(single)" class="text-danger" title="Remove this Variation"><i class="fa fa-trash"></i></a></td>
                                                 </tr>
                                                 <tr v-if="!variantList.length"><td colspan="4" class="text-center">No Item</td></tr>
                                             </tbody>
-
                                         </table>
                                     </div>
                                 </div>

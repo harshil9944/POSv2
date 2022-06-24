@@ -228,6 +228,14 @@ class MY_Model extends CI_Model
         $this->db->where_in($key,$value);
     }
 
+    public function or_where_in($key = NULL, $values = NULL, $escape = NULL) {
+        $this->db->or_where_in($key,$values,$escape);
+    }
+
+    public function where_not_in($key, $value = NULL) {
+        $this->db->where_not_in($key,$value);
+    }
+
     public function where_string($string) {
         $this->db->where($string);
     }

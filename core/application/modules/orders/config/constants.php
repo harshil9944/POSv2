@@ -30,3 +30,12 @@ defined('ORDER_PROMOTION_TABLE')        OR  define('ORDER_PROMOTION_TABLE', 'ord
 
 defined('ORDER_PAYMENT_REFUND_TABLE')   OR  define('ORDER_PAYMENT_REFUND_TABLE', 'ord_payment_refund');
 defined('ORDER_PRINT_QUEUE_TABLE')      OR  define('ORDER_PRINT_QUEUE_TABLE', 'ord_print_queue');
+defined('WEB_SESSION_TABLE')            OR  define('WEB_SESSION_TABLE', 'web_session');
+
+defined('CONTACT_CUSTOMER_TABLE')                   OR  define('CONTACT_CUSTOMER_TABLE', 'con_customer');
+defined('WEB_PAYPAL_PAYMENT_METHOD_ID') OR  define('WEB_PAYPAL_PAYMENT_METHOD_ID', 4);
+defined('SO_SOURCE_WEB_ID')             OR  define('SO_SOURCE_WEB_ID', 3);
+defined('WEB_SESSION_ID')               OR  define('WEB_SESSION_ID', 9999999);
+defined('WEB_SALESPERSON_ID')           OR  define('WEB_SALESPERSON_ID', 9999999);
+
+defined('ORDER_REF')                    OR  define('ORDER_REF','ord');
