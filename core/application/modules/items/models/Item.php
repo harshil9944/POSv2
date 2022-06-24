@@ -18,6 +18,7 @@ class Item extends MY_Model
             'outletId'=>'outlet_id',
             'categoryId'=>'category_id',
             'title'=>'title',
+            'description'=>'description',
             'taxable'=>'taxable',
             'printLocation'=>'print_location',
             'unitId'=>'unit_id',

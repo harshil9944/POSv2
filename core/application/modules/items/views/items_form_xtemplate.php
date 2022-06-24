@@ -76,6 +76,13 @@ $group_2 = [
                     <div class="col-md-12">
                         <div class="block">
                             <div class="block-content block-content-full">
+                                <?php echo get_textarea( ['id' => $code . '-description', 'title' => 'Description', 'attribute' => '', 'vue_model' => $code . '.description'] ); ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="block">
+                            <div class="block-content block-content-full">
                                 <div class="row">
                                     <?php foreach ($group_2 as $item) { ?>
                                         <div class="col-md-6">

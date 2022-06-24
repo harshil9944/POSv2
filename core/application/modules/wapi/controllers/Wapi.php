@@ -112,6 +112,8 @@ class Wapi extends MY_Controller {
                         'name'        =>  $item['title'],
                         'rate'        =>  $item['rate'],
                         'type'        =>  $item['type'],
+                        'description' =>  $item['description'],
+                        'isVeg'        =>  $item['isVeg'],
                         'variations'  =>  $new_variations,
                         'categoryId'  =>  $item['categoryId'],
                     ];
