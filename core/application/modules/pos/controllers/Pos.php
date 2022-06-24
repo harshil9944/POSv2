@@ -24,7 +24,6 @@ class Pos extends MY_Controller {
 
         $this->_js_vars_setup();
 
-        
         $page = [
             'singular' => $this->singular,
             'plural'   => $this->plural,
@@ -40,8 +39,8 @@ class Pos extends MY_Controller {
 
     }
 
-    public function _js_vars_setup(){
-        
+    public function _js_vars_setup() {
+
         _model( 'pos_session' );
 
         $register_id = _get_session( 'register_id' );
@@ -145,7 +144,7 @@ class Pos extends MY_Controller {
         _set_js_var( 'managerEmail', _get_session( 'userEmail' ), 's' );
         _set_js_var( 'allowSummaryCashEmployeeTakeOut', ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT, 'b' );
 
-        _set_js_var('allowSummaryPrint',ALLOW_SUMMARY_PRINT,'b');
+        _set_js_var( 'allowSummaryPrint', ALLOW_SUMMARY_PRINT, 'b' );
 
         if ( ALLOW_CLOVER_PAYMENT ) {
             _set_js_var( 'allowCloverPayment', ALLOW_CLOVER_PAYMENT, 'b' );
@@ -484,7 +483,7 @@ class Pos extends MY_Controller {
         return true;
     }
 
-    private function _close_employee_summary( $params ) {
+    public function _close_employee_summary( $params = [] ) {
         $result = $this->_get_session_summary( $params );
         $register_session = [];
         $session = $this->_prep_summary( $register_session, $result, SUMMARY_TYPE_EMPLOYEE );
@@ -530,6 +529,9 @@ class Pos extends MY_Controller {
         if ( $register_session ) {
 
             $result = $this->_get_session_summary( $params );
+
+            $emp_tip = _db_get_query( "SELECT ee.*,SUM(oo.tip) AS tip FROM emp_employee ee INNER JOIN ord_order oo ON oo.employee_id = ee.id WHERE oo.session_id = $session_id" );
+            $result['empTips'] = $emp_tip;
 
             $session = $this->_prep_summary( $register_session, $result, SUMMARY_TYPE_REGISTER );
             return $session;
@@ -603,6 +605,15 @@ class Pos extends MY_Controller {
                     'discount'    => $discount,
                 ];
 
+            }
+        }
+        $session['empTips'] = [];
+        if ( @$result['empTips'] ) {
+            foreach ( $result['empTips'] as &$et ) {
+                $session['empTips'][] = [
+                    'empName' => $et['first_name'] . " " . $et['last_name'],
+                    'tip'     => $et['tip'],
+                ];
             }
         }
         if ( $type === SUMMARY_TYPE_EMPLOYEE ) {
@@ -714,7 +725,6 @@ class Pos extends MY_Controller {
         }
 
         if ( $register_id ) {
-
             $query .= "( SELECT SUM(so.grand_total) FROM ord_order so  WHERE so.close_register_id = $register_id AND so.order_status NOT IN ('cancelled','Refunded','Deleted') AND so.session_id = $session_id AND so.employee_id IN(SELECT es.employee_id FROM emp_shift es WHERE es.session_id = $session_id AND es.close_register_id IS NULL AND es.end_shift IS NULL ) AND so.id IN (SELECT op.order_id FROM ord_payment op WHERE op.payment_method_id IN (SELECT spm.id FROM sys_payment_method spm WHERE spm.is_cash=1)) ) AS register_to_emp_total,";
         }
 
@@ -834,7 +844,7 @@ class Pos extends MY_Controller {
             ['title' => 'Cancelled Orders', 'value' => custom_money_format( is_numeric( $summary['cancelledTransactionsTotal'] ) ? $summary['cancelledTransactionsTotal'] : 0 )],
             ['title' => 'Refunded Orders', 'value' => custom_money_format( is_numeric( $summary['refundedTransactionsTotal'] ) ? $summary['refundedTransactionsTotal'] : 0 )],
             ['title' => 'Orders', 'value' => custom_money_format( is_numeric( $summary['transactionsTotal'] ) ? $summary['transactionsTotal'] : 0 )],
-            ['title' =>'Payment','value'=>custom_money_format(is_numeric($summary['totalPaymentReceived'])?$summary['totalPaymentReceived']:0)],
+            ['title' => 'Payment', 'value' => custom_money_format( is_numeric( $summary['totalPaymentReceived'] ) ? $summary['totalPaymentReceived'] : 0 )],
             ['title' => 'Take Out', 'value' => custom_money_format( is_numeric( $summary['takeOut'] ) ? $summary['takeOut'] : 0 )],
             ['title' => 'Closing', 'value' => custom_money_format( is_numeric( $summary['closingCash'] ) ? $summary['closingCash'] : 0 )],
         ] );
@@ -1041,7 +1051,7 @@ class Pos extends MY_Controller {
                 $this->payment_refund->insert( $insert );
 
             }
-            if(@$clover_refund_obj){
+            if ( @$clover_refund_obj ) {
                 $clover_obj = [
                     'order_id'   => $order_id,
                     'payment_id' => 0,
@@ -1371,7 +1381,7 @@ class Pos extends MY_Controller {
                     }
                 }
             }
-            if($order['type'] == 'p'){
+            if ( $order['type'] == 'p' ) {
                 if ( @$obj['tableId'] ) {
                     $table_id = $obj['tableId'];
                     $this->_release_table_session( $table_id );
@@ -1561,7 +1571,7 @@ class Pos extends MY_Controller {
                                     if ( $item['type'] === 'single' ) {
                                         if ( $item['data']['prices'] ) {
                                             $prices = array_values( array_filter( $item['data']['prices'], function ( $single ) use ( $item_id, $sku_id, $unit_id ) {
-                                                return $single['itemId'] === $item_id &&  $single['unitId'] === $unit_id;
+                                                return $single['itemId'] === $item_id && $single['unitId'] === $unit_id;
                                             } ) );
 
                                             if ( $prices ) {
@@ -1573,7 +1583,7 @@ class Pos extends MY_Controller {
                                     } elseif ( $item['type'] === 'group' ) {
                                         if ( $item['data']['variations'] ) {
                                             $prices = array_values( array_filter( $item['data']['variations'], function ( $single ) use ( $item_id, $unit_id ) {
-                                                return $single['itemId'] === $item_id  && $single['unitId'] === $unit_id;
+                                                return $single['itemId'] === $item_id && $single['unitId'] === $unit_id;
                                             } ) );
                                             if ( $prices ) {
                                                 foreach ( $prices as $price ) {
@@ -1892,7 +1902,7 @@ class Pos extends MY_Controller {
                         $order['cancelOrder'] = true;
                     }
 
-                    $unset_array = ['change', 'tip', 'discount', 'adjustment', 'cancelled', 'notes', 'gratuityTotal', 'gratuityRate', 'seatUsed', 'subTotal', 'taxTotal', 'taxRate', 'promotionTotal', 'discountValue', 'discountType', 'freightTotal', 'dutyTotal', 'totalPaid', 'employeeId'];
+                    $unset_array = ['change', 'tip', 'discount', 'adjustment', 'cancelled', 'notes', 'gratuityTotal', 'gratuityRate', 'seatUsed', 'subTotal', 'taxTotal', 'taxRate', 'promotionTotal', 'discountValue', 'discountType', 'freightTotal', 'dutyTotal', 'totalPaid'];
                     if ( $unset_array ) {
                         foreach ( $unset_array as $ua ) {
                             unset( $order[$ua] );
@@ -1972,7 +1982,7 @@ class Pos extends MY_Controller {
 
         $update_data = [
             'session_id'       => $session_id,
-            'register_id'      => $register_id,
+            'opening_register_id'      => $register_id,
             'session_order_no' => $session_order_no,
             'employee_id'      => $employee_id,
         ];

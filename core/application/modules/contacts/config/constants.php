@@ -15,3 +15,4 @@ defined('CONTACT_VENDOR_ADDITIONAL_CONTACT_TABLE')  OR  define('CONTACT_VENDOR_A
 
 defined('COUNTRY_TABLE')                            OR  define('COUNTRY_TABLE', 'sys_country');
 defined('CITY_TABLE')                               OR  define('CITY_TABLE', 'sys_city');
+defined('USER_FORGOT_TABLE')                        OR  define('USER_FORGOT_TABLE', 'usr_forgot');

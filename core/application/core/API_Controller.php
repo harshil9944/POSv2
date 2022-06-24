@@ -3,23 +3,35 @@ class API_Controller extends MX_Controller {
 
     public $module;
     public $method;
+    public $model = null;
 	function __construct () {
         $this->autoload = [
             'config'    =>  ['sys_config','app_config'],
-            'helper'    =>  ['system','ajax','url'],
-            'libraries' =>  ['database','session']
+	        'helper'    =>  ['system','cache','template','plugin','url','string'],
+            'libraries' =>  ['database','session','brahma'],
         ];
         parent::__construct();
         $this->module = _input_server('HTTP_MODULE');
         $this->method = _input_server('HTTP_METHOD');
         $this->module = ($this->module)?$this->module:_input('module');
         $this->method = ($this->method)?$this->method:_input('method');
+        $this->load->driver('cache');
         /*if($this->module) {
             if (!$this->_validate_key()) {
                 die('Illegal Request');
             }
         }*/
 	}
+
+	public function _get_data_version() {
+        if($this->model) {
+            $version_var = $this->{$this->model}->version_var;
+            if($version_var) {
+                return _get_data_version($version_var);
+            }
+        }
+        return 0;
+    }
 
 	private function _validate_key() {
 	    if(_is_ajax_request()) {
@@ -148,11 +160,13 @@ class API_Controller extends MX_Controller {
     public function _search($params=[]) {
 
         $filter = $params['filter'];
+        $select = (isset($params['select']))?$params['select']:'*';
         $limit = (isset($params['limit']) && is_int($params['limit']))?$params['limit']:_get_setting('global_limit',50);
         $offset = (isset($params['offset']) && is_int($params['offset']))?$params['offset']:0;
         $orders = (isset($params['orders']) && is_array($params['orders']))?$params['orders']:[];
         $and_likes = (isset($params['and_likes']) && is_array($params['and_likes']))?$params['and_likes']:[];
         $or_likes = (isset($params['or_likes']) && is_array($params['or_likes']))?$params['or_likes']:[];
+        $where_ins = (isset($params['where_in']) && is_array($params['where_in'])) ? $params['where_in']:[];
         $exclude = false;
         $convert = false;
         if(isset($params['exclude'])) {
@@ -184,6 +198,14 @@ class API_Controller extends MX_Controller {
                 $this->{$this->model}->order_by($order['order_by'],$order['order']);
             }
         }
+
+        if($where_ins) {
+            foreach ($where_ins as $key=>$value) {
+                $this->{$this->model}->where_in($key,$value);
+            }
+        }
+
+        $this->{$this->model}->select($select);
         $records = $this->{$this->model}->search($filter,$limit,$offset);
         if($records) {
             $temp = [];

@@ -43,11 +43,18 @@ class Wapi extends MY_Controller {
 
     public function _populate_menu_items_get() {
 
+        $type = _input('type');
+        $category_cache = $type ? "web_categories_$type" : "web_categories";
+        $item_cache = $type ? "web_items_$type" : "web_items";
+
         _helper('zebra');
 
-        if(!$categories = _get_cache('web_categories')) {
-            //$params['include_select'] = true;
-            $categories = _get_module('items', '_get_categories', ['order' => ['order_by' => 'sort_order', 'order' => 'ASC'], 'filter' => ['web_status' => 1], 'select_data' => true, 'include_select' => false]);
+        if(!$categories = _get_cache($category_cache)) {
+            $filters = ['web_status' => 1];
+            if($type != null) {
+                $filters['type'] = $type;
+            }
+            $categories = _get_module('items', '_get_web_categories', ['order' => ['order_by' => 'sort_order', 'order' => 'ASC'], 'filter' => $filters]);
             $skip_categories = [];
             $skip_categories[] = OPEN_ITEM_CATEGORY_ID;
 
@@ -61,89 +68,58 @@ class Wapi extends MY_Controller {
                 }
                 $categories = $temp;
             }
-            _set_cache('web_categories', $categories);
+            _set_cache($category_cache, $categories);
         }
-
-        if(!$items = _get_cache('web_items')) {
-
-            $skip_items = [];
-            $skip_items[] = OPEN_ITEM_ID;
-
-            $fields = [
-                'ii.id', 'ii.type'
-            ];
-
-            $items = _db_get_query("SELECT " . implode(',', $fields) . " from itm_item ii LEFT JOIN itm_category ic ON ii.category_id = ic.id  WHERE ii.web_status=1 AND ii.is_addon=0 AND ii.id NOT IN (" . implode(',', $skip_items) . ")");
-
-            if ($items) {
-
-                $ids = array_column($items, 'id');
-
-                $meta = _get_module('items', '_get_items_meta', ['ids' => $ids]);
-
+       
+        if ( !$items = _get_cache($item_cache) ) {
+            $item_params = [];
+            $item_params['filter'] = ['pos_status' => 1, 'type' => 'product', 'parent' => 0];
+          
+            $item_params['limit'] = 3000;
+            $item_params['orders'] = [['order_by' => 'title', 'order' => 'ASC']];
+            $item_params['exclude'] = true;
+            $item_params['convert'] = true;
+            $items = _get_module( 'items', '_search', $item_params );
+            if ( $items ) {
                 $temp = [];
-                foreach ($items as $item) {
+                foreach ( $items as $item ) {
 
-                    $filter_params = ['id' => $item['id'], 'meta' => $meta];
+                    $variant_params = [
+                        'filter'  => [
+                            'parent' => $item['id'],
+                            'type'   => ITEM_TYPE_VARIANT,
+                        ],
+                        'exclude' => true,
+                        'convert' => true,
+                    ];
 
-                    $item_type = $item['type'];
-
-                    if ($item_type === 'single') {
-                        $item_details = _get_module('items', '_single', $filter_params);
-                    } elseif ($item_type === 'group') {
-                        $item_details = _get_module('items/item_groups', '_single', $filter_params);
-                    } else {
-                        return false;
-                    }
-
-
-                    /*$item_details = _get_module('pos','_single_item',['id'=>$item['id'],'type'=>$item['type']]);*/
-
-                    $item_details['quantity'] = 1;
-                    $item_details['rate'] = 0;
-                    $item_details['unitRate'] = 0;
-                    $item_details['unitQuantity'] = 1;
-
-                    if(@$item_details['prices'] && $item_details['type']==='single') {
-                        if (count($item_details['prices'])) {
-                            $item_details['rate'] = $item_details['prices'][0]['salePrice'];
-                            unset($item_details['prices']);
-                        }
-                        $temp[]=[
-                            'id'          =>  $item_details['id'],
-                            'name'        =>  $item_details['name'],
-                            'rate'        =>  $item_details['rate'],
-                            'type'        =>  $item_details['type'],
-                            'categoryId'  =>  $item_details['categoryId'],
-                            'isVeg'       =>  $item_details['isVeg'],
-                        ];
-                    }
-                    if($item_details['type']==='group') {
-                        $prices = array_column($item_details['variations'],'salePrice');
+                    $variations = _get_module( 'items', '_get_item_variations', $variant_params );
+                    $new_variations = [];
+                    if ( $variations ) {
+                        $prices = array_column($variations,'rate');
                         $min_price = min($prices);
-                        $item_details['rate'] = $min_price;//$item_details['variations'][0]['salePrice'];
-                        $variations = [];
-                        foreach ($item_details['variations'] as $v){
-                            $variations[] = [
+                        $item['rate'] = $min_price;
+                        foreach ($variations as $v){
+                            $new_variations[] = [
                                 'title' => $v['title'],
                                 'isVeg' =>$v['isVeg'],
-                                'rate' =>$v['salePrice']
+                                'rate' =>$v['rate']
                             ];
                         }
-                        $temp[]=[
-                            'id'          =>  $item_details['id'],
-                            'name'        =>  $item_details['name'],
-                            'rate'        =>  $item_details['rate'],
-                            'type'        =>  $item_details['type'],
-                            'variations'  =>  $variations,
-                            'categoryId'  =>  $item_details['categoryId'],
-                        ];
                     }
-
+                    $temp[]=[
+                        'id'          =>  $item['id'],
+                        'name'        =>  $item['title'],
+                        'rate'        =>  $item['rate'],
+                        'type'        =>  $item['type'],
+                        'variations'  =>  $new_variations,
+                        'categoryId'  =>  $item['categoryId'],
+                    ];
                 }
+               
                 $items = $temp;
+                _set_cache($item_cache,$items);
             }
-            _set_cache('web_items',$items);
         }
         _response_data('categories',$categories);
         _response_data('items',$items);

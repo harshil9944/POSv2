@@ -67,8 +67,8 @@ defined('DEV_DB_PASSWORD')              OR  define('DEV_DB_PASSWORD', '');
 defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'bombay_tadka_pos_db');
 
 //Production Settings
-defined('LIVE_BASE_URL')                OR  define('LIVE_BASE_URL', 'https://saffron.inntechpos.com/');
-defined('LIVE_GLOBAL_UPLOAD_PATH')      OR  define('LIVE_GLOBAL_UPLOAD_PATH', '/home2/cs1usrmz/pos2020/006-saffron/uploads/');
+defined('LIVE_BASE_URL')                OR  define('LIVE_BASE_URL', 'https://saffron.v2.inntechpos.com/');
+defined('LIVE_GLOBAL_UPLOAD_PATH')      OR  define('LIVE_GLOBAL_UPLOAD_PATH', '/var/www/vhosts/v2.inntechpos.com/006-saffron/uploads/');
 //defined('LIVE_PRINT_SERVER_URL')        OR  define('LIVE_PRINT_SERVER_URL', 'http://192.168.1.110/');
 defined('LIVE_PRINT_SERVER_URL')        OR  define('LIVE_PRINT_SERVER_URL', 'http://localhost/');
 
@@ -77,9 +77,9 @@ defined('LIVE_SYSTEM_DIR')              OR  define('LIVE_SYSTEM_DIR', '../core/s
 defined('LIVE_VIEW_DIR')                OR  define('LIVE_VIEW_DIR', '');
 
 defined('LIVE_DB_HOSTNAME')             OR  define('LIVE_DB_HOSTNAME', 'localhost');
-defined('LIVE_DB_USERNAME')             OR  define('LIVE_DB_USERNAME', 'cs1usrmz_pos_usr022021');
-defined('LIVE_DB_PASSWORD')             OR  define('LIVE_DB_PASSWORD', '4e~?W$$!q;i&');
-defined('LIVE_DB_SCHEMA')               OR  define('LIVE_DB_SCHEMA', 'cs1usrmz_pos_saffron0921');
+defined('LIVE_DB_USERNAME')             OR  define('LIVE_DB_USERNAME', '006saffron0522');
+defined('LIVE_DB_PASSWORD')             OR  define('LIVE_DB_PASSWORD', 'Zmpp74~02');
+defined('LIVE_DB_SCHEMA')               OR  define('LIVE_DB_SCHEMA', '006saffron0522');
 
 defined('CUSTOMER_CUSTOM_FIELDS')       OR  define('CUSTOMER_CUSTOM_FIELDS', ['memberNumber','fullVaccinated']);
 

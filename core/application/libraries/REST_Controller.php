@@ -387,11 +387,36 @@ abstract class REST_Controller extends MX_Controller {
      * @param string $config Configuration filename minus the file extension
      * e.g: my_rest.php is passed as 'my_rest'
      */
+
+    private function setupKeys() {
+        $headers = apache_request_headers();
+
+        $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : null;
+
+        if($token) {
+            _library('creatorjwt');
+            $decoded = $this->creatorjwt->decode_token($token);
+
+            $key = isset($decoded['key']) ? $decoded['key'] : null;
+            $id = isset($decoded['id']) ? $decoded['id'] : null;
+
+            $_SERVER['HTTP_X_API_KEY'] = $key;
+            $_SERVER['HTTP_ID'] = $id;
+            return true;
+        }
+        return false;
+    }
+
     public function __construct($config = 'rest')
     {
         parent::__construct();
-        //$this->load->config(['sys_config','app_config']);
+        $this->load->config('sys_config');
+        $this->load->config('app_config');
         $this->load->helper(['system','template','plugin','url','string','control']);
+        $this->load->library('auth');
+        $this->load->database();
+
+        $this->setupKeys();
 
         $this->preflight_checks();
 
@@ -579,6 +604,7 @@ abstract class REST_Controller extends MX_Controller {
                 ($this->config->item('allow_auth_and_keys') === TRUE && $this->_allow === TRUE)))
         {
             $rest_auth = strtolower($this->config->item('rest_auth'));
+
             switch ($rest_auth)
             {
                 case 'basic':
@@ -1087,8 +1113,13 @@ abstract class REST_Controller extends MX_Controller {
         // Find the key from server or arguments
         if (($key = isset($this->_args[$api_key_variable]) ? $this->_args[$api_key_variable] : $this->input->server($key_name)))
         {
-            if ( ! ($row = $this->rest->db->where($this->config->item('rest_key_column'), $key)->get($this->config->item('rest_keys_table'))->row()))
-            {
+            $supplied_user_id = _input_server("HTTP_ID");
+            if($supplied_user_id) {
+                if ( ! ($row = $this->rest->db->where([$this->config->item('rest_key_column')=>$key,'user_id'=>$supplied_user_id])->get($this->config->item('rest_keys_table'))->row()))
+                {
+                    return FALSE;
+                }
+            }else{
                 return FALSE;
             }
 

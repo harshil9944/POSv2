@@ -110,7 +110,7 @@ $config['rest_realm'] = 'REST API';
 |           authorization key
 |
 */
-$config['rest_auth'] = 'basic';
+$config['rest_auth'] = FALSE;
 
 /*
 |--------------------------------------------------------------------------
@@ -137,8 +137,8 @@ $config['auth_source'] = 'library';
 | requests etc), set to TRUE;
 |
 */
-$config['allow_auth_and_keys'] = TRUE;
-$config['strict_api_and_auth'] = TRUE; // force the use of both api and auth before a valid api request is made
+$config['allow_auth_and_keys'] = FALSE;
+$config['strict_api_and_auth'] = FALSE; // force the use of both api and auth before a valid api request is made
 
 /*
 |--------------------------------------------------------------------------
@@ -156,8 +156,8 @@ $config['strict_api_and_auth'] = TRUE; // force the use of both api and auth bef
 | e.g: md5('admin:REST API:1234') = '1e957ebc35631ab22d5bd6526bd14ea2'
 |
 */
-$config['auth_library_class'] = 'auth';
-$config['auth_library_function'] = 'login';
+$config['auth_library_class'] = FALSE;//'auth';
+$config['auth_library_function'] = FALSE;//'login';
 
 /*
 |--------------------------------------------------------------------------
@@ -199,8 +199,18 @@ $config['auth_library_function'] = 'login';
 |            $config['auth_override_class_method_http']['deals']['insert']['post'] = 'none';
 |            $config['auth_override_class_method_http']['deals']['*']['options'] = 'none';
 */
-$config['auth_override_class_method_http']['api']['login']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['*']['options'] = 'none';
+$config['auth_override_class_method_http']['api']['login']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['register']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['forgot']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['retrieve']['post'] = 'none';
+
+$config['auth_override_class_method_http']['api']['populate_items']['get'] = 'none';
+$config['auth_override_class_method_http']['api']['validate_session']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['order']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['logout']['post'] = 'none';
+
+
 
 // ---Uncomment list line for the wildard unit test
 // $config['auth_override_class_method_http']['wildcard_test_cases']['*']['options'] = 'basic';

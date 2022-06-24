@@ -5,6 +5,8 @@ defined('ENCRYPTION_KEY')               OR  define('ENCRYPTION_KEY', 'bXm9pGl5Et
 defined('CORE_APP_TITLE')               OR  define('CORE_APP_TITLE', 'InnTechPOS Core App');
 defined('CORE_APP_URL')                 OR  define('CORE_APP_URL', 'https://www.inntechfuture.com/');
 
+defined( 'CORE_WEB_URL' ) OR define( 'CORE_WEB_URL', 'https://www.inntechfuture.com/' );
+
 defined('CORE_PRINT_NAME')              OR  define('CORE_PRINT_NAME', 'InnTechPOS Core App');
 
 //Session Expiration Time in Seconds
@@ -119,3 +121,6 @@ defined( 'CLOVER_TIP_SUGGESTIONS' ) OR define( 'CLOVER_TIP_SUGGESTIONS', [
 ] );
 
 defined('ALLOW_SUMMARY_PRINT')                    OR  define('ALLOW_SUMMARY_PRINT', true);
+
+defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 195);
+defined('OPEN_ITEM_CATEGORY_ID')        OR  define('OPEN_ITEM_CATEGORY_ID', 20);

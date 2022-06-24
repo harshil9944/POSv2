@@ -12,6 +12,7 @@ class Item_category extends MY_Model
             'title'=>'title',
             'parent'=>'parent',
             'sortOrder'=>'sort_order',
+            'type'=>'type',
             'webStatus'=>'web_status',
             'posStatus'=>'pos_status',
             'appStatus'=>'app_status',

@@ -27,3 +27,5 @@ defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 195);
 defined('OPEN_ITEM_CATEGORY_ID')        OR  define('OPEN_ITEM_CATEGORY_ID', 20);
 
 defined('ORDER_REF')                    OR  define('ORDER_REF','ord');
+defined('EMP_TABLE')                    OR  define('EMP_TABLE','emp_employee');
+defined('EMP_SHIFT_TABLE')                    OR  define('EMP_SHIFT_TABLE','emp_shift');

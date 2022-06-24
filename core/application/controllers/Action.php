@@ -8,6 +8,9 @@ class Action extends API_Controller {
 
 	public function __construct() {
 		parent::__construct();
+        if(_get_request_method()=='options') {
+            die();
+        }
 	}
 
 	public function index() {

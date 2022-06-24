@@ -77,6 +77,7 @@ Vue.component("general-list", {
 				obj: {
 					addons: [],
 					notes: [],
+					variations:[],
 				},
 			},
 			module: "items",
@@ -110,6 +111,9 @@ Vue.component("general-list", {
 				return "Front Kitchen";
 			}
 		},
+		variations: function (){
+			return this.modal.obj.variations;
+		}
 	},
 	methods: {
 		handleAdd: function () {
