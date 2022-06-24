@@ -731,7 +731,7 @@ echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $re
                                                         </div>
                                                         <div v-if="isCustomFields('memberNumber')" class="col-md-12"><?php echo get_text( ['id' => $code . '-member-number', 'title' => 'Member Number', 'attribute' => '', 'vue_model' => $code . '.memberNumber'] ); ?></div>
                                                         <div v-if="allowCustomerNotes"  class="col-md-12">
-                                                            <?php echo get_textarea( ['id' => $code . '-member-number', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?>
+                                                            <?php echo get_textarea( ['id' => $code . '-customer-notes', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -788,7 +788,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                                                     <div class="col-sm"><?php echo get_select( ['id' => $code . '-full-vaccinated', 'title' => 'Full Vaccinated', 'attribute' => '', 'vue_model' => $code . '.fullVaccinated', 'vue_for' => 'vaccination'], [], 'value', 'id', true ); ?></div>
                                                                     </div>
                                                                 </div>
-                                                                <div v-if="isCustomFields('fullVaccinated')" class="col-sm"><?php echo get_text( ['id' => $code . '-member-number', 'title' => 'Member Number', 'attribute' => '', 'vue_model' => $code . '.memberNumber'] ); ?></div>
+                                                                <div v-if="isCustomFields('fullVaccinated')" class="col-sm"><?php echo get_text( ['id' => $code . '-full-vaccinated', 'title' => 'Member Number', 'attribute' => '', 'vue_model' => $code . '.memberNumber'] ); ?></div>
                                                             </div>
                                                         </div>
                                                         <?php if ( 1 == 2 ) {?>
@@ -1115,6 +1115,19 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                     <div class="row">
                         <div class="col-md-12">
                             <b-tabs content-class="mt-3">
+                                <b-tab title="My Orders" active>
+                                    <b-table bordered class="table-vcenter" :items="empOrders" :fields="empOrderFields">
+                                        <template slot="date" slot-scope="{row,item}">
+                                            <a href="#" @click.prevent="handleOrderDetails(item.id)">{{ item.date | beautifyDateTime }}</a>
+                                        </template>
+                                        <template slot="grandTotal" slot-scope="row">
+                                            {{ row.value | beautifyCurrency }}
+                                        </template>
+                                        <template slot="id" slot-scope="{row,item}">
+                                            <b-button variant="primary" size="sm" @click="handleOpenOrder(item.id)">Load</b-button>
+                                        </template>
+                                    </b-table>
+                                </b-tab>
                                 <b-tab title="On Hold" active>
                                     <b-table bordered class="table-vcenter" :items="onHoldOrders" :fields="confirmFields">
                                         <template slot="date" slot-scope="{row,item}">
@@ -1324,13 +1337,28 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-if="session.registersDetail" v-for="single in session.registersDetail">
+                                                        <tr v-show="session.registersDetail" v-for="single in session.registersDetail">
                                                             <td>{{ single.registerTitle }}</td>
                                                             <td class="text-right">{{ single.tip | toTwoDecimal | beautifyCurrency }}</td>
                                                             <td class="text-right">{{ single.grandTotal | toTwoDecimal | beautifyCurrency }}</td>
                                                         </tr>
-                                                        <tr else-if="session.registersDetail">
-                                                            <td colspan="3" class="text-center">No orders</td>
+                                                        <tr  v-show="!session.registersDetail" >
+                                                            <td class="text-center" colspan="3">No order</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <h6 v-if="isRegisterType" class="mb-2">Specific Employee Tip</h6>
+                                                <table v-if="isRegisterType" class="table table-bordered table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Emp</th>
+                                                            <th class="text-right">Tip</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="single in session.empTips">
+                                                            <td>{{ single.empName }}</td>
+                                                            <td class="text-right">{{ single.tip | toTwoDecimal | beautifyCurrency }}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1402,7 +1430,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         <div class="col-md-12">
                             <div class="block ">
                                 <div class="block-content h-100 ">
-                                    <div v-if="session.openOrdersCount!==0" class="alert alert-danger alert-dismissable " role="alert">
+                                    <div v-if="Number(session.openOrdersCount) > 0" class="alert alert-danger alert-dismissable " role="alert">
                                         <h3 class="alert-heading font-size-h4 font-w400 mb-0 text-center">Open Orders Found</h3>
                                         <p class="mb-0 text-center">In order to close register, please close existing orders.</p>
                                     </div>
@@ -1495,7 +1523,10 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
             <div v-if="order.customer" class="col-8">
                 <p class="mb-0 font-10">FROM</p>
                 <p class="h4 mb-5">{{ order.customer.displayName }}</p>
+                <p v-show="order.customer.email" class="h6 font-14 mb-5">Email : <small>{{ order.customer.email }}</small></p>
+                <p v-show="order.customer.phone" class="h6 font-14 mb-5">Mobile : <small>{{ order.customer.phone }}</small></p>
                 <address>
+                    
                     <span v-if="order.customer.address1">{{ order.customer.address1 }}<br/></span>
                     <span v-if="order.customer.address2">{{ order.customer.address2 }}<br/></span>
                     <span v-if="order.customer.city">{{ order.customer.city }}<br/></span>
@@ -1524,7 +1555,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                 <thead>
                 <tr>
                     <th class="text-center" style="width: 60px;"></th>
-                    <th>Product</th>
+                    <th>Item</th>
                     <th class="text-center" style="width: 90px;">Quantity</th>
                     <th class="text-right" style="width: 120px;">Rate</th>
                     <th class="text-right" style="width: 120px;">Amount</th>
@@ -1534,7 +1565,11 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                 <tr v-for="(single,index) in order.cart.items">
                     <td class="text-center">{{ Number(index) + 1 }}</td>
                     <td>
-                        <p class="font-w600 mb-5">{{ single.title }}</p>
+                        <span class="font-w600 mb-4">{{ single.title }}</span>
+                        <small v-if="hasAddons(single.addons)"><br/>{{ getAddons(single.addons) }}</small>
+                        <small v-if="single.selectedNotes.length"><br/>{{ getNotes(single.selectedNotes) }}</small>
+                        <small v-if="single.hasSpiceLevel"><br/>Spice:&nbsp;{{ single.spiceLevel }}</small>
+                        <small v-if="single.orderItemNotes.length"><br/>Note:&nbsp;{{ single.orderItemNotes }}</small>
                     </td>
                     <td class="text-center">
                         <span class="badge badge-pill badge-primary">{{ single.quantity }}</span>
@@ -1547,7 +1582,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                     <td class="text-right">{{ order.cart.totals.subTotal }}</td>
                 </tr>
                 <tr>
-                    <td colspan="4" class="font-w600 text-right">Tax ({{ order.taxRate }}%)</td>
+                    <td colspan="4" class="font-w600 text-right">Tax ({{ order.cart.totals.taxRate }}%)</td>
                     <td class="text-right">{{ order.cart.totals.taxTotal }}</td>
                 </tr>
                 <tr class="table-warning">
@@ -2393,9 +2428,9 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                             </div>
                                             <div class="col-md-12"><?php echo get_text( ['id' => 'customer-display-name', 'title' => 'Display Name', 'attribute' => 'required', 'vue_model' => 'customer.displayName'] ); ?></div>
                                             <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'mobile' ) ? 'required' : '';
-echo get_text( ['id' => 'customer-phone', 'title' => 'Mobile', 'attribute' => $required . ' ref="phone"', 'vue_model' => 'customer.phone'] );?></div>
+                                                echo get_text( ['id' => 'customer-phone', 'title' => 'Mobile', 'attribute' => $required . ' ref="phone"', 'vue_model' => 'customer.phone'] );?></div>
                                             <div class="col-md-12"><?php $required = ( _get_var( 'customer_user_field', 'mobile' ) == 'email' ) ? 'required' : '';
-echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $required . ' ref="email"', 'vue_model' => 'customer.email'], 'email' );?></div>
+                                                echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $required . ' ref="email"', 'vue_model' => 'customer.email'], 'email' );?></div>
                                             <div v-if="isCustomFields('fullVaccinated')" class="col-md-12 mb-3">
                                                 <div class="row">
                                                     <label class="col-md-3 col-form-label" for="customer-full-vaccinated">Fully Vaccinated</label>
@@ -2409,7 +2444,7 @@ echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $re
                                                     <div class="col-md-9"><?php echo get_select( ['id' => $code . '-groupId', 'title' => 'Customer Group', 'attribute' => '', 'vue_model' => $code . '.groupId', 'vue_for' => 'masters.groups'], [], 'value', 'id', true ); ?></div>
                                                 </div>
                                             </div>
-                                            <div v-if="allowCustomerNotes"  class="col-md-12"><?php echo get_textarea( ['id' => $code . '-member-number', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?></div>
+                                            <div v-if="allowCustomerNotes"  class="col-md-12"><?php echo get_textarea( ['id' => $code . '-customer-notes', 'title' => 'Notes', 'attribute' => '', 'vue_model' => $code . '.notes'] ); ?></div>
                                         </div>
                                     </div>
                                 </div>
@@ -2921,8 +2956,8 @@ echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $re
                             <div class="btn-group float-right d-block" role="group">
                                 <button type="button" class="btn btn-danger dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-fw fa-cog mr-5"></i>Options</button>
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
+                                    <div class="dropdown-item"><i class="fa fa-fw fa-user mr-5"></i>{{ employeeName }}</div>
                                     <a v-if="enableSourceSwitch && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
-                                    <div v-if="enableSourceSwitch && !isTabletMode" class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a>
                                     <a v-if="allowOpenCashDrawer() && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOpenDrawer"><i class="fa fa-fw fa-bell mr-5"></i>Cash Drawer</a>
                                     <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeLogout"><i class="si si-logout mr-5"></i>Lock Terminal</a>
@@ -2937,7 +2972,7 @@ echo get_text( ['id' => 'customer-email', 'title' => 'Email', 'attribute' => $re
                 <table-dialog></table-dialog>
                 <discount-dialog :cart="order.cart" :is-editable="isEditable"></discount-dialog>
                 <gratuity-dialog :cart="order.cart" :is-editable="isEditable"></gratuity-dialog>
-                <order-history :session="session.id" :isTabletMode="isTabletMode"></order-history>
+                <order-history :employeeId="employeeId" :session="session.id" :isTabletMode="isTabletMode"></order-history>
                 <order-details :session="session.id"></order-details>
                 <online-order-history :orders="unacceptedOrders"></online-order-history>
                 <online-order-detail :session="session.id" :register="register"></online-order-detail>

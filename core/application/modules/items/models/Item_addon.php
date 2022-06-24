@@ -26,7 +26,7 @@ class Item_addon extends MY_Model
             'icon'=>'icon',
             'hasSpiceLevel'=>'has_spice_level',
             'status'=>'status',
-            'created_by'=>'created_by',
+            'createdBy'=>'created_by',
             'added'=>'added'
         ];
         $this->exclude_keys = ['added'];

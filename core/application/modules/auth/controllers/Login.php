@@ -47,7 +47,7 @@ class Login extends MY_Controller {
                 $register = _get_module('employees','_get_register',['user_id'=>$user['id']]);
                 _set_session('logged_in', true);
                 _set_session('user_id', $user['id']);
-                _set_session('register_id',(@$register['register_id'])?$register['register_id']:1);
+                _set_session('register_id',(isset($register['register_id']))?$register['register_id']:1);
                 _set_session('group_id', $user['group_id']);
                 _set_session('rank', $user['rank']);
                 _set_session('warehouses',$user_warehouses);

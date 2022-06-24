@@ -19,7 +19,7 @@ class MY_Controller extends MX_Controller
 
 	    $this->autoload = [
 	        'config'    =>  ['sys_config','app_config'],
-	        'helper'    =>  ['system','cache','template','plugin','url','string'],
+	        'helper'    =>  ['system','cache','template','plugin','url','string','ajax'],
             'libraries' =>  ['database','session','brahma'],
         ];
         $this->load->driver('cache');
@@ -264,6 +264,8 @@ class MY_Controller extends MX_Controller
         $limit = (isset($params['limit']) && is_int($params['limit']))?$params['limit']:_get_setting('global_limit',50);
         $offset = (isset($params['offset']) && is_int($params['offset']))?$params['offset']:0;
         $orders = (isset($params['orders']) && is_array($params['orders']))?$params['orders']:[];
+        $where_ins = (isset($params['where_ins']) && is_array($params['where_ins']))?$params['where_ins']:[];
+        $or_where_ins = (isset($params['or_where_ins']) && is_array($params['or_where_ins']))?$params['or_where_ins']:[];
         $and_likes = (isset($params['and_likes']) && is_array($params['and_likes']))?$params['and_likes']:[];
         $or_likes = (isset($params['or_likes']) && is_array($params['or_likes']))?$params['or_likes']:[];
         $exclude = false;
@@ -296,6 +298,18 @@ class MY_Controller extends MX_Controller
             foreach ($orders as $order) {
                 $this->{$this->model}->order_by($order['order_by'],$order['order']);
             }
+        }
+        if($where_ins) {
+            foreach ($where_ins as $where) {
+                $this->{$this->model}->where_in($where['field'],$where['values']);
+            }
+        }
+        if($or_where_ins) {
+            $this->{$this->model}->gs();
+            foreach ($or_where_ins as $or_where) {
+                $this->{$this->model}->or_where_in($or_where['field'],$or_where['values']);
+            }
+            $this->{$this->model}->ge();
         }
         $records = $this->{$this->model}->search($filter,$limit,$offset);
         if($records) {
