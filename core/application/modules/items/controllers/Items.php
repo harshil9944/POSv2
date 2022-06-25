@@ -79,7 +79,7 @@ class Items extends MY_Controller {
                     $category = $this->category->single(['id'=>$category_id]);
                     $result['categoryTitle'] = (@$category['title'])?$category['title']:'Not Selected';
                 }
-               
+
                 $item_name = _vue_text_link($result['title'],'handleViewItem('.$result['id'].')','View Item');
 
                 $rate = [
@@ -271,7 +271,7 @@ class Items extends MY_Controller {
         if($obj) {
             $obj = (array) json_decode($obj,true);
         }
-    
+
         $this->_prep_obj($obj);
 
         $item = $obj['item_table'];
@@ -284,7 +284,7 @@ class Items extends MY_Controller {
         $item['code'] = _get_ref('ITM',3,6);
         $item['created_by'] = _get_user_id();
         $item['added'] = sql_now_datetime();
-       
+
 
         if($this->{$this->model}->insert($item)) {
             $item_id = $this->{$this->model}->insert_id();
@@ -307,7 +307,7 @@ class Items extends MY_Controller {
                         $v['created_by'] = _get_user_id();
                         $v['added'] = sql_now_datetime();
                         unset($v['removed']);
-                        $this->{$this->model}->insert($v);   
+                        $this->{$this->model}->insert($v);
                         _update_ref('ITM');
                     }
                 }
@@ -323,7 +323,7 @@ class Items extends MY_Controller {
                         $v['created_by'] = _get_user_id();
                         $v['added'] = sql_now_datetime();
                         unset($v['removed']);
-                        $this->{$this->model}->insert($v);   
+                        $this->{$this->model}->insert($v);
                         _update_ref('ITM');
                     }
                 }
@@ -388,7 +388,7 @@ class Items extends MY_Controller {
                             _update_ref('itm');
                         }
                     }
-                   
+
                 }
             }
             if(@$obj['addons_table']){
@@ -410,7 +410,7 @@ class Items extends MY_Controller {
                             _update_ref('itm');
                         }
                     }
-                   
+
                 }
             }
             $ignore = [];
@@ -615,7 +615,7 @@ class Items extends MY_Controller {
         $filter = ['id'=>$id];
         if(!$result) {
             $result = $this->{$this->model}->single($filter);
-          
+
         }
 
         if($result) {
@@ -718,7 +718,7 @@ class Items extends MY_Controller {
         }
         $notes = $this->note->search();
 
-      
+
         return [
             'variations'       => $variations,
             'notes'     =>  $notes,
@@ -755,7 +755,7 @@ class Items extends MY_Controller {
             }
         }
         $records = $this->{$this->model}->search($filter,$limit,$offset);
-        
+
         if($records) {
             $temp = [];
             foreach ($records as $single) {
@@ -771,8 +771,6 @@ class Items extends MY_Controller {
         }
         return $records;
     }
-
-   
 
     public function _find_note($params) {
 
@@ -802,7 +800,7 @@ class Items extends MY_Controller {
                     'parent'=>$a['parent']
                 ];
                 $temp[] = $addon;
-                    
+
             }
             $result = $temp;
             return $result;
@@ -835,13 +833,13 @@ class Items extends MY_Controller {
     }
 
     public function _get_single_pos($params=[]) {
-       
+
 
         $id = $params['id'];
         $warehouse_id = _get_setting('default_warehouse',1);
         $filter = ['id'=>$id];
         $result = $this->{$this->model}->single($filter);
-      
+
 
         if($result) {
             $item_keys = $this->{$this->model}->keys;
@@ -1007,7 +1005,7 @@ class Items extends MY_Controller {
         return true;
 
     }
-  
+
 
     public function _select_data_get() {
 
@@ -1155,8 +1153,8 @@ class Items extends MY_Controller {
 
     }
 
-   
-   
+
+
     public function _get_category($category_id){
         _model('item_category','category');
         $category = $this->category->single(['id'=>$category_id]);
@@ -1190,7 +1188,7 @@ class Items extends MY_Controller {
         _model('item_category');
         _model('item');
         _model('item_note');
-       
+
        $categories= json_decode(file_get_contents('itm_category.json'),true);
        if($categories){
            foreach($categories as &$c){
@@ -1242,7 +1240,7 @@ class Items extends MY_Controller {
             }
         }
         redirect(base_url($this->module));
-      
+
     }
 
     protected function _load_files() {

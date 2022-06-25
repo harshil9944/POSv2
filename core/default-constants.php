@@ -3,7 +3,7 @@
 defined('DEV_APPLICATION_DIR')          OR  define('DEV_APPLICATION_DIR', '../core/application');
 defined('DEV_SYSTEM_DIR')               OR  define('DEV_SYSTEM_DIR', '../core/system');
 defined('DEV_VIEW_DIR')                 OR  define('DEV_VIEW_DIR', '');
-defined('DEV_ASSET_URL')                OR  define('DEV_ASSET_URL', 'http://assests.inntechpos2.ci/');
+defined('DEV_ASSET_URL')                OR  define('DEV_ASSET_URL', 'http://assets.inntechpos2.ci/');
 
 defined('DEV_DEFAULT_TIMEZONE')         OR  define('DEV_DEFAULT_TIMEZONE', 'Asia/Kolkata');
 defined('DEV_DEFAULT_TIMEZONE_VALUE')   OR  define('DEV_DEFAULT_TIMEZONE_VALUE', '+05:30');

@@ -70,11 +70,10 @@ class Wapi extends MY_Controller {
             }
             _set_cache($category_cache, $categories);
         }
-       
         if ( !$items = _get_cache($item_cache) ) {
             $item_params = [];
             $item_params['filter'] = ['pos_status' => 1, 'type' => 'product', 'parent' => 0];
-          
+
             $item_params['limit'] = 3000;
             $item_params['orders'] = [['order_by' => 'title', 'order' => 'ASC']];
             $item_params['exclude'] = true;
@@ -118,7 +117,7 @@ class Wapi extends MY_Controller {
                         'categoryId'  =>  $item['categoryId'],
                     ];
                 }
-               
+
                 $items = $temp;
                 _set_cache($item_cache,$items);
             }
@@ -182,7 +181,7 @@ class Wapi extends MY_Controller {
                 }
 
                 $temp[] = $item_details;
-               
+
             }
             $items = $temp;
         }

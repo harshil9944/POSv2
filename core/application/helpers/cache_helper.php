@@ -32,8 +32,8 @@ if ( ! function_exists('_clear_item_cache')) {
         _delete_cache('pos_categories');
         _delete_cache('pos_pre_categories');
         _delete_cache('pos_icons');
-        if(ITEM_TYPES){
-            foreach($item_type as $it){
+        if(defined('ITEM_TYPES') && is_array(ITEM_TYPES)){
+            foreach(ITEM_TYPES as $it){
                 _delete_cache('web_items_'.$it['value']);
                 _delete_cache('web_categories_'.$it['value']);
             }
