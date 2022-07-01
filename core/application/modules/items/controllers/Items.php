@@ -643,6 +643,7 @@ class Items extends MY_Controller {
 
             $result['hasSpiceLevel'] = $result['hasSpiceLevel']==='1';
             $result['spiceLevel'] = DEFAULT_SPICE_LEVEL;
+            $result['lastModifyQty'] = 0;
 
 
             $result['notes'] = [];

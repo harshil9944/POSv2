@@ -540,6 +540,11 @@ class Orders extends MY_Controller {
                 }
             }
 
+            $order_item_filter = ['order_id'=>$result['id']];
+            if(!ALLOW_VOID_ITEM){
+               $order_item_filter['quantity !='] = 0 ;
+            }
+
             $items = $this->order_item->search(['order_id'=>$result['id']]);
 
             $item_titles = [];

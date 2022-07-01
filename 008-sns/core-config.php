@@ -1,5 +1,5 @@
 <?php
-defined('PROJECT_CODE')                 OR  define('PROJECT_CODE', 'saffron');
+defined('PROJECT_CODE')                 OR  define('PROJECT_CODE', 'sns');
 defined('ENCRYPTION_KEY')               OR  define('ENCRYPTION_KEY', 'HbWqncMP7qs276lSLk3tywiJKvQiBtzW');
 
 defined('CORE_APP_TITLE')   			OR define('CORE_APP_TITLE', 'Sugar N Spice');
@@ -44,6 +44,7 @@ defined('DEFAULT_SPICE_LEVEL')          OR  define('DEFAULT_SPICE_LEVEL', 'Mediu
 defined('KITCHEN_PRINTERS')             OR  define('KITCHEN_PRINTERS', [
     ['id'=>'default','value'=>'Don\'t Print'],
     ['id'=>'kitchen','value'=>'Main Kitchen'],
+    ['id'=>'tandoor','value'=>'Tandoor'],
     ['id'=>'front','value'=>'Bar']
 ]);
 
@@ -84,8 +85,8 @@ defined('LIVE_DB_SCHEMA')               OR  define('LIVE_DB_SCHEMA', '008sns0522
 defined('CUSTOMER_CUSTOM_FIELDS')       OR  define('CUSTOMER_CUSTOM_FIELDS', ['memberNumber','fullVaccinated']);
 
 defined('ALLOW_GRATUITY')               OR  define('ALLOW_GRATUITY', true );
-defined('GRATUITY_RATE')                OR  define('GRATUITY_RATE', 18);
-defined('GRATUITY_PERSONS')             OR  define('GRATUITY_PERSONS', 7);
+defined('GRATUITY_RATE')                OR  define('GRATUITY_RATE', 15);
+defined('GRATUITY_PERSONS')             OR  define('GRATUITY_PERSONS', 6);
 defined('DISPLAY_SEAT_USED_INVOICE')    OR  define('DISPLAY_SEAT_USED_INVOICE', true);
 
 defined('PRINT_QUEUE')                  OR  define('PRINT_QUEUE', true);
@@ -93,8 +94,26 @@ defined('ALLOW_RELEASE_TABLE')          OR  define('ALLOW_RELEASE_TABLE', true);
 
 defined('ALLOW_VOID_ITEM')              OR  define('ALLOW_VOID_ITEM', true);
 
-defined('ALLOW_DISCOUNT_IN_SUMMARY')     OR  define('ALLOW_DISCOUNT_IN_SUMMARY', true);
+defined('ALLOW_DISCOUNT_IN_SUMMARY')    OR  define('ALLOW_DISCOUNT_IN_SUMMARY', true);
 defined('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT')  OR  define('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT', true);
 
 defined('ALLOW_CUSTOMER_GROUP')         OR  define('ALLOW_CUSTOMER_GROUP', true);
 defined('ALLOW_CUSTOMER_NOTES')         OR  define('ALLOW_CUSTOMER_NOTES', true);
+defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',true);
+
+//Clover
+defined( 'ALLOW_CLOVER_PAYMENT' ) OR define( 'ALLOW_CLOVER_PAYMENT', false );
+defined( 'CLOVER_MERCHANT_ID' ) OR define( 'CLOVER_MERCHANT_ID', '70W8AGE61JKJ1' );
+defined( 'CLOVER_ACCESS_TOKEN' ) OR define( 'CLOVER_ACCESS_TOKEN', '74c1dd7a-0697-3fa4-1816-c74eba67c2b8' );
+defined( 'CLOVER_DEVICE_ID' ) OR define( 'CLOVER_DEVICE_ID', '98559e79-f32b-4c57-9848-74671af22c95' );
+defined( 'CLOVER_FRIENDLY_ID' ) OR define( 'CLOVER_FRIENDLY_ID', 'Primary POS' );
+defined( 'CLOVER_REMOTE_APPLICATION_ID' ) OR define( 'CLOVER_REMOTE_APPLICATION_ID', 'CLOVERDEV.655VQ41Z9CVF8' );
+defined( 'CLOVER_DOMAIN' ) OR define( 'CLOVER_DOMAIN', 'https://sandbox.dev.clover.com' );
+defined( 'CLOVER_PAYMENT_WAITING_MESSAGE' ) OR define( 'CLOVER_PAYMENT_WAITING_MESSAGE', 'Waiting For Payment' );
+defined( 'CLOVER_TIP_PERCENTAGE' ) OR define( 'CLOVER_TIP_PERCENTAGE', true );
+defined( 'CLOVER_TIP_SUGGESTIONS' ) OR define( 'CLOVER_TIP_SUGGESTIONS', [
+    ['title' => 'Acceptable', 'value' => 15],
+    ['title' => 'Good', 'value' => 18],
+    ['title' => 'Great', 'value' => 20],
+    ['title' => 'Excellent', 'value' => 25],
+] );

@@ -28,7 +28,7 @@ class Migration_orders_core extends CI_Migration {
                 'session_order_no' => [
                     'type' => 'INT',
                     'constraint' => 11,
-                    'unique' => true
+                    'unique' => false
                 ],
                 'ext_order_no' => [
                     'type' => 'VARCHAR(50)',
