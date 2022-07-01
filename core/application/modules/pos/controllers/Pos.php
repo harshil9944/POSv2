@@ -1477,7 +1477,7 @@ class Pos extends MY_Controller {
 
         $item_table = $this->order_item->table;
 
-        $sql = "UPDATE $item_table SET printed_qty=quantity WHERE order_id=$order_id";
+        $sql = "UPDATE $item_table SET printed_qty=quantity,last_modify_qty=quantity WHERE order_id=$order_id";
         if ( $part_no ) {
             $sql .= " AND part_no=$part_no";
         }
@@ -2113,10 +2113,14 @@ class Pos extends MY_Controller {
         unset( $obj['selectedNotes'] );
         unset( $obj['originalQty'] );
         if ( isset( $obj['id'] ) && $obj['id'] ) {
+            if($obj['quantity'] > $obj['last_modify_qty']){
+                $obj['last_modify_qty'] = $obj['quantity'];
+             }
             $order_item_id = $obj['id'];
             unset( $obj['id'] );
             $this->order_item->update( $obj, ['id' => $order_item_id] );
         } else {
+            $obj['last_modify_qty'] = $obj['quantity'];
             $obj['added'] = sql_now_datetime();
             if ( $this->order_item->insert( $obj ) ) {
                 $order_item_id = $this->order_item->insert_id();
@@ -2650,7 +2654,11 @@ class Pos extends MY_Controller {
             } );
 
             //unset unused variables
-            unset( $order['selectedAddons'] );
+            //unset unused variables
+            unset( $order['selectedAddons'],$order['company'],$order['promotions'] );
+            if($order['customer']){
+                unset($order['customer']['group'],$order['customer']['addresses'],$order['customer']['password']);
+            }
 
             $user_id = $order['employeeId'];
 

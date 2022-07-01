@@ -1243,7 +1243,14 @@ Vue.component("cart-accordian-view", {
 });
 Vue.component("cart-table-view", {
 	template: "#cart-table-view-template",
-	props: ["cart", "isEditable"],
+	props: ["cart", "isEditable",'orderMode'],
+    computed: {
+        cartItems: function () {
+			return this.cart.items.filter(function(i){
+				return Number(i.quantity) > 0
+			})
+        }
+    },
 	methods: {
 		hasAddons: function (addons) {
 			var has = false;
@@ -1294,35 +1301,46 @@ Vue.component("cart-table-view", {
 		getAmount: function (rate, quantity) {
 			return Number(rate) * Number(quantity);
 		},
-		handleIncrement: function (index) {
-			this.cart.items[index].quantity++;
-		},
-		handleDecrement: function (index) {
-			var item = this.cart.items[index];
-			var minQty = null;
-			var editMode = false;
-			if (!_s("allowVoidItem")) {
-				if (typeof item.originalQty !== "undefined") {
-					minQty = item.originalQty;
-					editMode = true;
-				} else {
-					minQty = 1;
-				}
-				if (this.cart.items[index].quantity > minQty) {
-					this.cart.items[index].quantity--;
-				} else {
-					if (!editMode) {
-						this.cart.items.splice(index, 1);
-					}
-				}
-			} else {
-				if (this.cart.items[index].quantity > 1) {
-					this.cart.items[index].quantity--;
-				} else {
-					this.cart.items.splice(index, 1);
-				}
-			}
-		},
+		 handleIncrement: function(index) {
+            this.cartItems[index].quantity++;
+        },
+        handleDecrement: function(index) {
+			//console.log(this.cartItems);
+			var self = this;
+            var item = self.cartItems[index];
+            var minQty = null;
+            var editMode = false;
+            if (!_s("allowVoidItem")) {
+                if (typeof item.originalQty !== "undefined") {
+                    minQty = item.originalQty;
+                    editMode = true;
+                } else {
+                    minQty = 1;
+                }
+                if (self.cartItems[index].quantity > minQty) {
+                    self.cartItems[index].quantity--;
+                } else {
+                    if (!editMode) {
+                        self.cartItems.splice(index, 1);
+                    }
+                }
+            } else {
+                if (self.cartItems[index].quantity > 1) {
+                    self.cartItems[index].quantity--;
+                } else {
+                    if(self.cartItems[index].id === null){
+						var itemIdx = self.cart.items.findIndex(function(s) {
+							return Number(s.itemId) === Number(item.itemId);
+						})
+						if(itemIdx !== -1) {
+							self.cart.items.splice(itemIdx,1);
+						}
+                    }else{
+                        self.cartItems[index].quantity = 0;
+                    }
+                }
+            }
+        },
 	},
 });
 Vue.component("item-list", {
@@ -5065,6 +5083,7 @@ Vue.component("order-details", {
 					payments: [],
 					customer: [],
 					refundPayments: [],
+					items:[],
 				},
 			},
 			paymentMethods: [],
@@ -5080,6 +5099,11 @@ Vue.component("order-details", {
 				? Number(Number(totalPaid) - Number(refundTotal)).toFixed(2)
 				: 0;
 		},
+		cartItems(){
+            return this.modal.obj.items.filter(function(i){
+                return Number(i.quantity) > 0
+            })
+        }
 	},
 	methods: {
 		getPaymentMethodName: function (id) {

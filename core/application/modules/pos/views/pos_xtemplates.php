@@ -186,7 +186,7 @@
             <h5 class="text-center m-0 py-3 border border-info">No Items</h5>
         </div>
         <div v-if="cart.items.length" class="col-md-12 overflow-y-auto" :class="getClass()">
-            <component :is="activeListType" :is-editable="isEditable" :cart="cart"></component>
+        <component :is="activeListType" :is-editable="isEditable" :order-mode="order.mode" :cart="cart"></component>
         </div>
         <div v-if="hasPromotion" class="col-12">
             <a @click.prevent="showPromoDialog" class="block block-transparent bg-earth mb-2 block-rounded" href="javascript:void(0)">
@@ -337,7 +337,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(single,index) in cart.items">
+                <tr v-for="(single,index) in cartItems">
                     <td>
                         {{ single.title }}<a v-if="isEditable && single.id === null && (single.selectedNotes.length || single.addons.length || single.hasSpiceLevel)" @click.prevent="handleEditItem(index)" class="ml-2 font-14 text-danger" title="Edit this Item" href="javascript:void(0)"><i class="fa fa-edit"></i></a>
                         <span v-if="hasAddons(single.addons)"><br/>{{ getAddons(single.addons) }}</span>
@@ -2136,7 +2136,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(single,index) in modal.obj.items">
+                            <tr v-for="(single,index) in cartItems">
                                 <td class="text-center">{{ Number(index) + 1 }}</td>
                                 <td>
                                     <span class="font-w600 mb-4">{{ single.title }}</span>

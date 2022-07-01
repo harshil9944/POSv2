@@ -23,6 +23,7 @@ class Order_item extends MY_Model
             'unitId'=>'unit_id',
             'title'=>'title',
             'quantity'=>'quantity',
+            'lastModifyQty'=>'last_modify_qty',
             'rate'=>'rate',
             'amount'=>'amount',
             'orderItemNotes'=>'notes',
