@@ -400,7 +400,7 @@ var cloverPaymentMixin = {
 			cloverConnector: null,
 			cloverTipSuggestions: _s("cloverTipSuggestions"),
 			cloverTipPercentage: _s("cloverTipPercentage"),
-			cloverPaymentObj:{}
+			cloverPaymentObj: {},
 		};
 	},
 	computed: {},
@@ -536,10 +536,12 @@ var cloverPaymentMixin = {
 				saleResponse,
 			) {
 				if (saleResponse.getSuccess()) {
-
 					var saleResponseAmount = saleResponse.getPayment().getAmount();
 					var saleResponseObj = saleResponse.getPayment();
-					ds_alert("Sale was successful for $" + saleResponseAmount * 100, "info");
+					ds_alert(
+						"Sale was successful for $" + saleResponseAmount * 100,
+						"info",
+					);
 					bus.$emit(
 						"cloverPaymentClose",
 						JSON.parse(JSON.stringify(saleResponseObj)),
@@ -552,16 +554,14 @@ var cloverPaymentMixin = {
 			CloverConnectorListener.prototype.onRefundPaymentResponse = function (
 				refundResponse,
 			) {
-				if(refundResponse.getSuccess()){
+				if (refundResponse.getSuccess()) {
 					bus.$emit(
 						"cloverRefundPaymentClose",
 						JSON.parse(JSON.stringify(refundResponse)),
 					);
-				}else{
-					console.log('Not refund');
+				} else {
+					console.log("Not refund");
 				}
-			
-				
 			};
 		},
 		setDisposalHandler: function () {
@@ -576,7 +576,7 @@ var cloverPaymentMixin = {
 		performSale: function (amount) {
 			var saleRequest = new clover.remotepay.SaleRequest();
 			var tipSuggestions = [];
-            var self = this;
+			var self = this;
 			if (this.cloverTipSuggestions.length) {
 				var tipSuggestion = null;
 				self.cloverTipSuggestions.forEach(function (tip) {
@@ -591,7 +591,7 @@ var cloverPaymentMixin = {
 					tipSuggestions.push(tipSuggestion);
 				});
 			}
-			
+
 			saleRequest.setTipSuggestions(tipSuggestions);
 			saleRequest.setTipMode("ON_SCREEN_BEFORE_PAYMENT");
 			saleRequest.setAmount(amount);
@@ -599,13 +599,13 @@ var cloverPaymentMixin = {
 			window.localStorage.setItem("lastTransactionRequestAmount", amount);
 			this.cloverConnector.sale(saleRequest);
 		},
-		makeFullRefund: function (){
-			 var refundPaymentRequest = new clover.remotepay.RefundPaymentRequest();
+		makeFullRefund: function () {
+			var refundPaymentRequest = new clover.remotepay.RefundPaymentRequest();
 			refundPaymentRequest.setPaymentId(this.cloverPaymentObj.id);
 			refundPaymentRequest.setOrderId(this.cloverPaymentObj.order.id);
 			refundPaymentRequest.setFullRefund(true);
 			this.cloverConnector.refundPayment(refundPaymentRequest);
-		}
+		},
 	},
 	mounted: function () {
 		if (_s("allowCloverPayment")) {
@@ -618,10 +618,10 @@ var cloverPaymentMixin = {
 		/* bus.$on("initCloverConnect", function (payload) {
 			self.handleCloverConnect();
 		}); */
-		 bus.$on("cloverRefundPayment", function (payload) {
+		bus.$on("cloverRefundPayment", function (payload) {
 			self.cloverPaymentObj = payload;
 			self.makeFullRefund();
-		}); 
+		});
 	},
 };
 Vue.component("clover-payment", {
@@ -633,7 +633,7 @@ Vue.component("clover-payment", {
 				isLoading: false,
 				active: false,
 			},
-			cloverPaymentMessage: _s('cloverPaymentMessage'),
+			cloverPaymentMessage: _s("cloverPaymentMessage"),
 		};
 	},
 	computed: {},
@@ -855,9 +855,25 @@ Vue.component("cart", {
 		},
 		handlePayment: function () {
 			var self = this;
-			if (self.cart.totals.grandTotal > 0) {
+			if (self.isValidOrder()) {
+				//if (self.cart.totals.grandTotal > 0) {
 				bus.$emit("payBoxInit", true);
 			}
+		},
+		isValidOrder: function () {
+			var validOrder = true;
+
+			if (Number(this.cart.totals.grandTotal) > 0) {
+				validOrder = true;
+			}
+			if (this.order.type === "p" && _s("pickupContactMandatory")) {
+				var customer_id = this.order.customer.id;
+				if (!customer_id) {
+					validOrder = false;
+					ds_alert("Customer is mandatory for Pick up", "warning");
+				}
+			}
+			return validOrder;
 		},
 		handleOpenDiscountDialog: function () {
 			if (this.cart.items.length > 0 || this.isEditable) {
@@ -1243,14 +1259,14 @@ Vue.component("cart-accordian-view", {
 });
 Vue.component("cart-table-view", {
 	template: "#cart-table-view-template",
-	props: ["cart", "isEditable",'orderMode'],
-    computed: {
-        cartItems: function () {
-			return this.cart.items.filter(function(i){
-				return Number(i.quantity) > 0
-			})
-        }
-    },
+	props: ["cart", "isEditable", "orderMode"],
+	computed: {
+		cartItems: function () {
+			return this.cart.items.filter(function (i) {
+				return Number(i.quantity) > 0;
+			});
+		},
+	},
 	methods: {
 		hasAddons: function (addons) {
 			var has = false;
@@ -1301,46 +1317,45 @@ Vue.component("cart-table-view", {
 		getAmount: function (rate, quantity) {
 			return Number(rate) * Number(quantity);
 		},
-		 handleIncrement: function(index) {
-            this.cartItems[index].quantity++;
-        },
-        handleDecrement: function(index) {
-			//console.log(this.cartItems);
+		handleIncrement: function (index) {
+			this.cartItems[index].quantity++;
+		},
+		handleDecrement: function (index) {
 			var self = this;
-            var item = self.cartItems[index];
-            var minQty = null;
-            var editMode = false;
-            if (!_s("allowVoidItem")) {
-                if (typeof item.originalQty !== "undefined") {
-                    minQty = item.originalQty;
-                    editMode = true;
-                } else {
-                    minQty = 1;
-                }
-                if (self.cartItems[index].quantity > minQty) {
-                    self.cartItems[index].quantity--;
-                } else {
-                    if (!editMode) {
-                        self.cartItems.splice(index, 1);
-                    }
-                }
-            } else {
-                if (self.cartItems[index].quantity > 1) {
-                    self.cartItems[index].quantity--;
-                } else {
-                    if(self.cartItems[index].id === null){
-						var itemIdx = self.cart.items.findIndex(function(s) {
+			var item = self.cartItems[index];
+			var minQty = null;
+			var editMode = false;
+			if (!_s("allowVoidItem")) {
+				if (typeof item.originalQty !== "undefined") {
+					minQty = item.originalQty;
+					editMode = true;
+				} else {
+					minQty = 1;
+				}
+				if (self.cartItems[index].quantity > minQty) {
+					self.cartItems[index].quantity--;
+				} else {
+					if (!editMode) {
+						self.cartItems.splice(index, 1);
+					}
+				}
+			} else {
+				if (self.cartItems[index].quantity > 1) {
+					self.cartItems[index].quantity--;
+				} else {
+					if (self.cartItems[index].id === null) {
+						var itemIdx = self.cart.items.findIndex(function (s) {
 							return Number(s.itemId) === Number(item.itemId);
-						})
-						if(itemIdx !== -1) {
-							self.cart.items.splice(itemIdx,1);
+						});
+						if (itemIdx !== -1) {
+							self.cart.items.splice(itemIdx, 1);
 						}
-                    }else{
-                        self.cartItems[index].quantity = 0;
-                    }
-                }
-            }
-        },
+					} else {
+						self.cartItems[index].quantity = 0;
+					}
+				}
+			}
+		},
 	},
 });
 Vue.component("item-list", {
@@ -1768,11 +1783,9 @@ Vue.component("group-item-detail", {
 					}
 					return Number(total);
 				}, addonPrice);
-				
+
 				variation.salePrice =
-					Number(variation.originalPrice) +
-					Number(addonPrice)
-				
+					Number(variation.originalPrice) + Number(addonPrice);
 			});
 		},
 		handleGroupItemDetailInit: function () {
@@ -2037,7 +2050,6 @@ Vue.component("order-detail", {
 	},
 	methods: {
 		hasAddons: function (addons) {
-			console.log(addons);
 			var has = false;
 			if (addons.length) {
 				addons.forEach(function (addon) {
@@ -2897,7 +2909,7 @@ Vue.component("payment", {
 });
 Vue.component("order-history", {
 	template: "#order-history-template",
-	props: ["session", "isTabletMode","employeeId"],
+	props: ["session", "isTabletMode", "employeeId"],
 	data: function () {
 		return {
 			modalOpen: false,
@@ -3335,7 +3347,7 @@ Vue.component("session-summary", {
 			module: "pos",
 			session: {
 				registersDetail: [],
-		    },
+			},
 			allowRefund: _s("allowRefund"),
 			allowGratuity: _s("allowGratuity"),
 			allowDiscountInSummary: _s("allowDiscountInSummary"),
@@ -5083,7 +5095,7 @@ Vue.component("order-details", {
 					payments: [],
 					customer: [],
 					refundPayments: [],
-					items:[],
+					items: [],
 				},
 			},
 			paymentMethods: [],
@@ -5099,13 +5111,19 @@ Vue.component("order-details", {
 				? Number(Number(totalPaid) - Number(refundTotal)).toFixed(2)
 				: 0;
 		},
-		cartItems(){
-            return this.modal.obj.items.filter(function(i){
-                return Number(i.quantity) > 0
-            })
-        }
+		cartItems() {
+			return this.modal.obj.items.filter(function (i) {
+				return Number(i.quantity) > 0;
+			});
+		},
 	},
 	methods: {
+		handleDownloadPdf: function () {
+			Object.assign(document.createElement("a"), {
+				target: "_blank",
+				href: this.modal.obj.pdfUrl,
+			}).click();
+		},
 		getPaymentMethodName: function (id) {
 			if (this.paymentMethods.length) {
 				var paymentMethod = this.paymentMethods.find(function (method) {
@@ -5350,12 +5368,15 @@ Vue.component("issue-refund", {
 			self.refundTotal = totalPaid;
 		},
 		handleConfirm: function () {
-			if (_s("allowCloverPayment") && this.checkAnyCardPayment() && this.cloverPaymentObj) {
+			if (
+				_s("allowCloverPayment") &&
+				this.checkAnyCardPayment() &&
+				this.cloverPaymentObj
+			) {
 				bus.$emit("cloverRefundPayment", this.cloverPaymentObj);
-			}else{
-               this.handleRefundPos();
+			} else {
+				this.handleRefundPos();
 			}
-			
 		},
 		checkAnyCardPayment: function () {
 			var result = false;
@@ -5375,7 +5396,7 @@ Vue.component("issue-refund", {
 			var orderId = this.order.id;
 			var status = null;
 			var self = this;
-			
+
 			var data = {
 				module: "pos",
 				method: "order_refund",
@@ -5384,7 +5405,7 @@ Vue.component("issue-refund", {
 				sessionId: self.order.sessionId,
 				orderStatus: status,
 				refundTotal: self.refundTotal,
-				cloverRefundObj:cloverRefundObj,
+				cloverRefundObj: cloverRefundObj,
 			};
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
@@ -5622,7 +5643,10 @@ Vue.component("employee-login", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					bus.$emit("setEmployeeId", { employeeId: response.employee.id });
+					bus.$emit("setEmployeeId", {
+						employeeId: response.employee.id,
+						employeeName: response.employee.name,
+					});
 					localStorage.setItem("employeeId", response.employee.id);
 					localStorage.setItem("employeeName", response.employee.name);
 				} else {
@@ -5762,6 +5786,7 @@ Vue.component("pos", {
 			openEmpShiftCount: 0,
 			closeRegister: 0,
 			openOrderCount: 0,
+			primaryRegister: false,
 		};
 	},
 	watch: {
@@ -5788,62 +5813,64 @@ Vue.component("pos", {
 		},
 	},
 	computed: {
-		canEmpLogin() {
+		canEmpLogin: function () {
 			return this.employeeId == null;
 		},
-		showRegisterSession() {
+		showRegisterSession: function () {
 			return this.registerSession == null;
 		},
-		canShowPos() {
+		canShowPos: function () {
 			return this.sessionOpen && !this.canEmpLogin && !this.showRegisterSession;
 		},
-		canShowEmpLogin() {
+		canShowEmpLogin: function () {
 			return this.canEmpLogin && !this.showRegisterSession;
 		},
-		canShowSession() {
+		canShowSession: function () {
 			return !this.sessionOpen && this.sessionChecked && !this.isTabletMode;
 		},
-		sessionOpen() {
+		sessionOpen: function () {
 			return this.session !== null;
 		},
-		registerOpen() {
+		registerOpen: function () {
 			return this.registerSession !== null;
 		},
-		anyShiftOpen() {
+		anyShiftOpen: function () {
 			return this.openEmpShiftCount > 0;
 		},
-		anyOrderOpen() {
+		anyOrderOpen: function () {
 			return this.openOrderCount > 0;
 		},
-		lastRegister() {
+		lastRegister: function () {
 			return this.openRegister !== 0
 				? Number(this.openRegister) - Number(this.closeRegister) === 1
 				: false;
 		},
-		canCloseSession() {
+		canCloseSession: function () {
 			return true;
 			//return this.lastRegister && !this.anyShiftOpen && !this.anyOrderOpen;
 			return this.lastRegister && !this.anyOrderOpen;
+		},
+		isPrimaryRegister: function () {
+			return this.primaryRegister;
 		},
 	},
 	methods: {
 		handleOrderType: function (type) {
 			if (this.isEditable) {
-					if (this.order.mode === 'add') {
-						this.order.type = type;
-					} else {
-						if (type === 'p') {
-				            if (ds_confirm('are you sure you want to pickup this order ?')) {
-								this.order.type = 'p'
-								this.order.cart.totals.gratuityTotal = 0;
-								this.order.seatUsed = 0;
-								this.handlePlaceOrder(true);
-				            }
-							   
-						} else if (type === 'dine') {
-							this.order.type = type;
+				if (this.order.mode === "add") {
+					this.order.type = type;
+				} else {
+					if (type === "p") {
+						if (ds_confirm("are you sure you want to pickup this order ?")) {
+							this.order.type = "p";
+							this.order.cart.totals.gratuityTotal = 0;
+							this.order.seatUsed = 0;
+							this.handlePlaceOrder(true);
 						}
+					} else if (type === "dine") {
+						this.order.type = type;
 					}
+				}
 			}
 		},
 		handleEmployeeShiftClose: function (payload) {
@@ -5873,8 +5900,7 @@ Vue.component("pos", {
 			var self = this;
 			self.employeeId = null;
 			self.employees = [];
-			localStorage.removeItem("employeeId");
-			localStorage.removeItem("employeeName");
+			self.handleLocalEmployeeRemove();
 			self.resetOrder();
 			self.updateCheck();
 		},
@@ -6043,7 +6069,17 @@ Vue.component("pos", {
 			this.removeEmpId();
 		},
 		handleRegisterSummary: function () {
-			bus.$emit("showSessionSummary", { mode: "register" });
+			if (this.isTabletMode) {
+				bus.$emit("showSessionSummary", { mode: "register" });
+			} else {
+				if (this.isPrimaryRegister && this.lastRegister) {
+					bus.$emit("showSessionSummary", { mode: "register" });
+				} else {
+					ds_alert("Close Other Registers!!", "warning");
+				}
+			}
+
+			//bus.$emit("showSessionSummary", { mode: "register" });
 		},
 		handleSessionSummary: function () {
 			bus.$emit("showSessionSummary", { mode: "session" });
@@ -6067,12 +6103,11 @@ Vue.component("pos", {
 					self.session = null;
 					self.sessionChecked = false;
 					self.order = {};
-					if(_s('allowSummaryPrint')){
-                        self.directPrint = ["summary"];
-                        self.handlePrintToServer(response.printData);
-                    }
-					localStorage.removeItem("employeeId");
-					localStorage.removeItem("employeeName");
+					if (_s("allowSummaryPrint")) {
+						self.directPrint = ["summary"];
+						self.handlePrintToServer(response.printData);
+					}
+					self.handleLocalEmployeeRemove();
 					window.location.reload(true);
 					/*if(response.printData) {
                         self.printInvoice(response.printData);
@@ -6096,11 +6131,14 @@ Vue.component("pos", {
 					self.order = {};
 					//self.directPrint = ["summary"];
 					//self.handlePrintToServer(response.printData);
-					localStorage.removeItem("employeeId");
-					localStorage.removeItem("employeeName");
+					self.handleLocalEmployeeRemove();
 					window.location.reload(true);
 				}
 			});
+		},
+		handleLocalEmployeeRemove: function () {
+			localStorage.removeItem("employeeId");
+			localStorage.removeItem("employeeName");
 		},
 		handlePlaceOrder: function (saveAndLoad) {
 			if (typeof saveAndLoad === "undefined") {
@@ -6331,11 +6369,11 @@ Vue.component("pos", {
 					if (self.employeeId === null && !self.employees.length) {
 						self.getEmployees();
 					}
-					if (!self.registerCheckLogin && self.registerSession === null) {
-						self.registerTitle = response.result.register.title;
-						self.registerCheckLogin =
-							response.result.register.registerCheckLogin;
-					}
+					//if (!self.registerCheckLogin && self.registerSession === null) {
+					self.registerTitle = response.result.register.title;
+					self.registerCheckLogin = response.result.register.registerCheckLogin;
+					self.primaryRegister = response.result.register.primary;
+					//}
 					self.openRegister = Number(response.result.openRegister);
 					self.closeRegister = Number(response.result.closeRegister);
 					self.openEmpShiftCount = Number(response.result.openEmpShiftCount);
@@ -6571,6 +6609,7 @@ Vue.component("pos", {
 				});
 				bus.$on("setEmployeeId", function (payload) {
 					self.employeeId = payload.employeeId;
+					self.employeeName = payload.employeeName;
 					self.updateCheck();
 					self.resetOrder();
 				});
@@ -6636,12 +6675,7 @@ Vue.component("pos", {
 			var type = localStorage.getItem("registerType");
 			this.isTabletMode = type === "Register" ? false : true;
 		},
-		checkEmployeeShiftOpen: function () {
-			
-		}
-			
-				
-
+		checkEmployeeShiftOpen: function () {},
 	},
 	mounted: function () {
 		this.populateMeta();

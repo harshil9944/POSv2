@@ -77,7 +77,7 @@ class Items extends MY_Controller {
         if (!empty($params['filter_date_end'])) {
             $sql .= " AND DATE(o.order_date) <= " . $this->db->escape($params['filter_date_end']) . "";
         }
-        $sql .= " AND o.order_status  NOT IN ('cancelled','refunded','deleted') ";
+        $sql .= " AND o.order_status  NOT IN ('cancelled','refunded','deleted') AND op.quantity > 0 ";
         $sql .= " GROUP BY op.item_id ORDER BY total DESC";
 
         if (isset($params['start']) || isset($params['limit'])) {

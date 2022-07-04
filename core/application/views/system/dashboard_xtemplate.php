@@ -165,7 +165,7 @@
                 <div class="block block-rounded block-bordered">
                     <div class="block-header block-header-default border-b">
                         <h3 class="block-title">
-                            Sales <small>This Year</small>
+                            Sales <small>Last 12 Months</small>
                         </h3>
                     </div>
                     <div class="block-content block-content-full">
@@ -191,7 +191,7 @@
                 <div class="block block-rounded block-bordered">
                     <div class="block-header block-header-default border-b">
                         <h3 class="block-title">
-                            Earnings <small>This Year</small>
+                            Earnings <small>Last 12 Months</small>
                         </h3>
                     </div>
                     <div class="block-content block-content-full">
