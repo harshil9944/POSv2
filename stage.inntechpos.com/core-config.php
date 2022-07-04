@@ -124,3 +124,5 @@ defined('ALLOW_SUMMARY_PRINT')                    OR  define('ALLOW_SUMMARY_PRIN
 
 defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 195);
 defined('OPEN_ITEM_CATEGORY_ID')        OR  define('OPEN_ITEM_CATEGORY_ID', 20);
+
+defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',true);

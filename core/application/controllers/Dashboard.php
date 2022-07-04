@@ -11,7 +11,7 @@ class Dashboard extends MY_Controller {
             _set_js_var('startDate',_input('startDate'),'s');
             _set_js_var('endDate',_input('endDate'),'s');
         }
-        $sales_data = _db_get_query("SELECT date_format(oo.order_date,'%b') as month_name,COUNT(*) as sales_count,SUM(oo.grand_total + oo.tip - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND year(oo.order_date) = year(CURDATE()) GROUP BY year(oo.order_date), MONTH(oo.order_date);");
+        $sales_data = _db_get_query("SELECT date_format(oo.order_date,'%b') as month_name,COUNT(*) as sales_count ,SUM(oo.grand_total + oo.tip - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date> now() - INTERVAL 12 month GROUP BY MONTH(oo.order_date) ORDER BY oo.order_date ASC;");
         $month_name = [];
         $sales_count = [];
         $grand_total = [];

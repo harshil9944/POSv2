@@ -1173,6 +1173,7 @@ class Pos extends MY_Controller {
         unset( $obj['addToPrintQueue'] );
 
         $this->_prep_order_obj( $obj );
+        //dd($obj);
         $order_table = $obj['order_table'];
         $payment_table = $obj['order_payment_table'];
         $promotion_table = $obj['order_promotion_table'];
@@ -1815,6 +1816,7 @@ class Pos extends MY_Controller {
         $register_data = [
             'title'              => $registerCheckLogin ? $registerCheckLogin['title'] : '',
             'registerCheckLogin' => $registerCheckLogin ? true : false,
+            'primary'            => $registerCheckLogin ? ((int)$registerCheckLogin['primary'] === 1 ? true : false) : false,
         ];
 
         $result['register'] = $register_data;

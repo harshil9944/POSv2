@@ -935,7 +935,7 @@ class Orders extends MY_Controller {
                             $c['row'] = unserialize(($c['row']));
                         }
                     } */
-                    if(@$cloverPayments){
+                    if($cloverPayments){
                         $cloverPayments['row'] = unserialize(($cloverPayments['row']));
                         $result['cloverPayment'] = $cloverPayments;
                     }
