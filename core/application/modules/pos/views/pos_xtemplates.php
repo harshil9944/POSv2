@@ -2087,6 +2087,11 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         </button>
                     </div>
                 </div>
+                <div class="row bg-black-op-10 p-3 mx-0">
+                    <div class="col text-right">
+                        <button class="btn btn-danger ml-5" @click="handleDownloadPdf" title="Download PDF"><i class="fa fa-file-pdf-o"></i></button>
+                    </div>
+                </div>
                 <div class="block-content">
                     <div class="row my-20">
                         <div class="col-4 font-weight-600 table-left">
@@ -2868,7 +2873,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                     <!-- <button type="button" class="btn btn-alt-primary" :disabled="!canCloseSession" @click="handleSessionSummary">Open Register {{ registerTitle }}</button> -->
                                 </div>
                                 <div class="block-content">
-                                    <div class="form-group row">
+                                    <div v-if="!isTabletMode" class="form-group row">
                                         <label class="col-12" for="opening-cash">Opening Amount</label>
                                         <div class="col-md-12">
                                             <input type="text" class="form-control" id="opening-cash" placeholder="Enter opening amount" v-model="newRegisterSession.openingCash">
@@ -2886,8 +2891,8 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center justify-content-center">
-                            <button type="button" class="btn btn-alt-primary" :disabled="!canCloseSession" @click="handleSessionSummary">Close Session</button>
+                        <div v-if="isPrimaryRegister" class="d-flex align-items-center justify-content-center">
+                            <button type="button" class="btn btn-alt-danger" :disabled="!canCloseSession" @click="handleSessionSummary">Close Session</button>
                         </div>
                         <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                     </div>
@@ -2898,6 +2903,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                             <div class="block block-rounded block-themed w-50">
                                 <div class="block-header bg-secondary">
                                     <h3 class="block-title">Employee Login</h3>
+                                    <a class="btn btn-danger" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a>
                                 </div>
                                 <div class="block-content">
                                     <div class="row">
@@ -2918,6 +2924,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         </div>
                     </div>
                     <employee-login></employee-login>
+                    <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                 </div>
             </div>
             <div v-if="!registerCheckLogin">
@@ -2958,7 +2965,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
                                     <div class="dropdown-item"><i class="fa fa-fw fa-user mr-5"></i>{{ employeeName }}</div>
                                     <a v-if="enableSourceSwitch && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
-                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a>
+                                   <!--  <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a> -->
                                     <a v-if="allowOpenCashDrawer() && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOpenDrawer"><i class="fa fa-fw fa-bell mr-5"></i>Cash Drawer</a>
                                     <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeLogout"><i class="si si-logout mr-5"></i>Lock Terminal</a>
                                     <a v-if="!isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeSummary"><i class="si si-logout mr-5"></i>Close Shift</a>

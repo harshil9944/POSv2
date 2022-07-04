@@ -60,9 +60,6 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
                 <?php } ?>
             </p>
         </div>
-        <div style="width:49%;float:right;text-align:right;">
-            <a href="<?php echo $company_url; ?>" title="<?php echo $company_name; ?>"><img src="<?php _ebase_url($company_logo); ?>" alt="<?php echo $company_name; ?>" style="margin-bottom:20px;border:none;width:300px;" /></a>
-        </div>
     </div>
     <div style="width:100%;color:#333;">
         <p style="margin:0;margin-bottom:5px;font-size:14px;text-align:right;text-transform: uppercase;"><strong>Sales Order</strong></p>
@@ -85,16 +82,16 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
                 <?php if($obj['billingZipCode']) { ?>
                     <?php $address .= '<br/>' . $obj['billingZipCode']; ?>
                 <?php } ?>
+                <?php } ?>
                 <?php echo $address; ?>
-                    <?php if($obj['email']) { ?>
-                        <?php if($address){ ?>
-                            <br/>
-                        <?php } ?>
-                        <br/><?php echo $obj['email']; ?>
+                <?php if($obj['customer']['email']) { ?>
+                    <?php if($address){ ?>
+                        <br/>
                     <?php } ?>
-                    <?php if($obj['phone']) { ?>
-                        <br/><?php echo $obj['phone']; ?>
-                    <?php } ?>
+                    <br/><?php echo $obj['customer']['email']; ?>
+                <?php } ?>
+                <?php if($obj['customer']['phone']) { ?>
+                    <br/><?php echo $obj['customer']['phone']; ?>
                 <?php } ?>
             </p>
         </div>
@@ -105,19 +102,9 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
                         <th style="<?php echo $th_styles; ?>">Order no</th>
                         <td style="<?php echo $td_styles_right; ?>"><?php echo $obj['orderNo']; ?></td>
                     </tr>
-                    <?php if($obj['referenceNo']){ ?>
-                    <tr>
-                        <th style="<?php echo $th_styles; ?>">Reference no</th>
-                        <td style="<?php echo $td_styles_right; ?>"><?php echo $obj['referenceNo']; ?></td>
-                    </tr>
-                    <?php } ?>
                     <tr>
                         <th style="<?php echo $th_styles; ?>">Order Date</th>
                         <td style="<?php echo $td_styles_right; ?>"><?php echo custom_date_format($obj['date'],'d/m/Y'); ?></td>
-                    </tr>
-                    <tr>
-                        <th style="<?php echo $th_styles; ?>">Expected Delivery</th>
-                        <td style="<?php echo $td_styles_right; ?>"><?php echo custom_date_format($obj['expectedDeliveryDate'],'d/m/Y'); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -126,9 +113,9 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
     <table style="border-collapse: collapse; width: 100%; border-top: 1px solid <?php echo $table_border_color; ?>; border-left: 1px solid <?php echo $table_border_color; ?>; margin-bottom: 20px;">
         <thead>
         <tr>
-            <td style="<?php echo $th_styles; ?>">Description</td>
+            <td style="<?php echo $th_styles; ?>">Item</td>
             <td style="<?php echo $th_styles_center; ?>">Quantity</td>
-            <td style="<?php echo $th_styles_right; ?>">Unit Price</td>
+            <td style="<?php echo $th_styles_right; ?>">Rate</td>
             <td style="<?php echo $th_styles_right; ?>">Amount</td>
         </tr>
         </thead>
@@ -148,17 +135,21 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
             <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['subTotal'],2),_get_setting('currency_sign','')); ?></td>
         </tr>
         <tr>
-            <th colspan="3" style="<?php echo $th_styles_right; ?>">Tax (<?php echo $obj['taxRate']; ?>%)</th>
+            <th colspan="3" style="<?php echo $th_styles_right; ?>">TAX (<?php echo $obj['taxRate']; ?>%)</th>
             <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['taxTotal'],2),_get_setting('currency_sign','')); ?></td>
         </tr>
-        <tr>
-            <th colspan="3" style="<?php echo $th_styles_right; ?>">Overheads</th>
-            <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round((float)$obj['freightTotal'] + (float)$obj['dutyTotal'],2),_get_setting('currency_sign','')); ?></td>
-        </tr>
+        <?php if((int)$obj['gratuityTotal'] > 0) { ?>
+            <tr>
+                <th colspan="3" style="<?php echo $th_styles_right; ?>">Gratuity (<?php echo $obj['gratuityRate']; ?>%)</th>
+                <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['gratuityTotal'],2),_get_setting('currency_sign','')); ?></td>
+            </tr>
+        <?php } ?>
+        <?php if((int)$obj['discount'] > 0) { ?>
         <tr>
             <th colspan="3" style="<?php echo $th_styles_right; ?>">Discount</th>
             <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['discount'],2),_get_setting('currency_sign','')); ?></td>
         </tr>
+        <?php } ?>
         <tr>
             <th colspan="3" style="<?php echo $th_styles_right; ?>">Grand Total</th>
             <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['grandTotal'],2),_get_setting('currency_sign','')); ?></td>

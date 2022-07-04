@@ -19,16 +19,19 @@ class Tables extends MY_Controller {
 	{
         _library('table');
         _model('areas/area','area');
+        $areas = [];
 
         $filters = [];
         $filters['filter'] = [];
         $filters['orders'] = [['order_by'=>'sort_order','order'=>'ASC']];
 	    $tables = $this->_search($filters);
         $area_ids =  array_values(array_unique(array_column($tables??[],'area_id')));
-        $query = "SELECT aa.title,aa.id FROM ara_area aa  WHERE aa.id IN (" . implode(',',$area_ids) . ")";
-        $areas = _db_get_query($query);
+        if($area_ids){
+            $query = "SELECT aa.title,aa.id FROM ara_area aa  WHERE aa.id IN (" . implode(',',$area_ids) . ")";
+            $areas = _db_get_query($query);
+        }
     
-
+        $body = [];
         if($tables) {
             foreach ($tables as $table) {
                 $action = _edit_link(base_url('areas/tables/edit/'.$table['id'])) . _vue_delete_link('handleRemove('.$table['id'].')');
