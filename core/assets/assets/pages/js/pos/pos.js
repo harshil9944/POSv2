@@ -560,8 +560,8 @@ var cloverPaymentMixin = {
 				}else{
 					console.log('Not refund');
 				}
-			
-				
+
+
 			};
 		},
 		setDisposalHandler: function () {
@@ -591,7 +591,7 @@ var cloverPaymentMixin = {
 					tipSuggestions.push(tipSuggestion);
 				});
 			}
-			
+
 			saleRequest.setTipSuggestions(tipSuggestions);
 			saleRequest.setTipMode("ON_SCREEN_BEFORE_PAYMENT");
 			saleRequest.setAmount(amount);
@@ -621,7 +621,7 @@ var cloverPaymentMixin = {
 		 bus.$on("cloverRefundPayment", function (payload) {
 			self.cloverPaymentObj = payload;
 			self.makeFullRefund();
-		}); 
+		});
 	},
 };
 Vue.component("clover-payment", {
@@ -1768,11 +1768,11 @@ Vue.component("group-item-detail", {
 					}
 					return Number(total);
 				}, addonPrice);
-				
+
 				variation.salePrice =
 					Number(variation.originalPrice) +
 					Number(addonPrice)
-				
+
 			});
 		},
 		handleGroupItemDetailInit: function () {
@@ -5355,7 +5355,7 @@ Vue.component("issue-refund", {
 			}else{
                this.handleRefundPos();
 			}
-			
+
 		},
 		checkAnyCardPayment: function () {
 			var result = false;
@@ -5375,7 +5375,7 @@ Vue.component("issue-refund", {
 			var orderId = this.order.id;
 			var status = null;
 			var self = this;
-			
+
 			var data = {
 				module: "pos",
 				method: "order_refund",
@@ -5839,7 +5839,7 @@ Vue.component("pos", {
 								this.order.seatUsed = 0;
 								this.handlePlaceOrder(true);
 				            }
-							   
+
 						} else if (type === 'dine') {
 							this.order.type = type;
 						}
@@ -6068,9 +6068,9 @@ Vue.component("pos", {
 					self.sessionChecked = false;
 					self.order = {};
 					if(_s('allowSummaryPrint')){
-                        self.directPrint = ["summary"];
-                        self.handlePrintToServer(response.printData);
-                    }
+						self.directPrint = ["summary"];
+						self.handlePrintToServer(response.printData);
+					}
 					localStorage.removeItem("employeeId");
 					localStorage.removeItem("employeeName");
 					window.location.reload(true);
@@ -6637,10 +6637,10 @@ Vue.component("pos", {
 			this.isTabletMode = type === "Register" ? false : true;
 		},
 		checkEmployeeShiftOpen: function () {
-			
+
 		}
-			
-				
+
+
 
 	},
 	mounted: function () {
