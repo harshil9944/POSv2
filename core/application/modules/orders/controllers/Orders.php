@@ -464,7 +464,8 @@ class Orders extends MY_Controller {
 
         $id = $params['id'];
         $only_enabled_addons = (@$params['filter_disabled_addons'])?true:false;
-
+        _model('items/item_category','item_category');
+        _model('items/item','item');
         _model('order_item','order_item');
         _model('order_item_addon','addon');
         _model('order_item_note','note');
@@ -545,8 +546,12 @@ class Orders extends MY_Controller {
                $order_item_filter['quantity !='] = 0 ;
             }
 
+            
+            $this->item->left_join(ITEM_TABLE,ITEM_TABLE.'.id='.ORDER_ITEM_TABLE.'.item_id');
+            $this->item_category->left_join(ITEM_CATEGORY_TABLE,ITEM_CATEGORY_TABLE.'.id='.ITEM_TABLE.'.category_id');
+            $this->item_category->order_by(ITEM_CATEGORY_TABLE.'.sort_order','ASC');
+            $this->order_item->select(ORDER_ITEM_TABLE.'.*');
             $items = $this->order_item->search(['order_id'=>$result['id']]);
-
             $item_titles = [];
 
             if($items) {

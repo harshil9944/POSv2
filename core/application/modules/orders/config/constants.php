@@ -39,3 +39,5 @@ defined('WEB_SESSION_ID')               OR  define('WEB_SESSION_ID', 9999999);
 defined('WEB_SALESPERSON_ID')           OR  define('WEB_SALESPERSON_ID', 9999999);
 
 defined('ORDER_REF')                    OR  define('ORDER_REF','ord');
+defined('ITEM_TABLE')           OR  define('ITEM_TABLE', 'itm_item');
+defined('ITEM_CATEGORY_TABLE')  OR  define('ITEM_CATEGORY_TABLE', 'itm_category');

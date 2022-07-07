@@ -284,6 +284,7 @@ class Items extends MY_Controller {
         $item['code'] = _get_ref('ITM',3,6);
         $item['created_by'] = _get_user_id();
         $item['added'] = sql_now_datetime();
+        $category_id = $item['category_id'];
 
 
         if($this->{$this->model}->insert($item)) {
@@ -302,6 +303,7 @@ class Items extends MY_Controller {
                         $record = $this->{$this->model}->single(['id'=>$v['id']]);
                         $v['id'] = !empty($record) ? $v['id'] : null;
                         $v['parent'] = $item_id;
+                        $v['category_id'] = $category_id;
                         $v['outlet_id'] = _get_setting('default_warehouse',1);
                         $v['code'] = _get_ref('ITM',3,6);
                         $v['created_by'] = _get_user_id();
@@ -363,6 +365,7 @@ class Items extends MY_Controller {
         $item['created_by'] = _get_user_id();
         $item['added'] = sql_now_datetime();
         $item_id = $item['id'];
+        $category_id = $item['category_id'];
         unset($item['id']);
 
         $filter=[
@@ -380,6 +383,7 @@ class Items extends MY_Controller {
                         }else{
                             $v['outlet_id'] = _get_setting('default_warehouse',1);
                             $v['parent'] = $item_id;
+                            $v['category_id'] = $category_id;
                             $v['code'] = _get_ref('itm',3,6);
                             $v['created_by'] = _get_user_id();
                             $v['added'] = sql_now_datetime();
