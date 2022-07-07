@@ -3354,6 +3354,7 @@ Vue.component("session-summary", {
 			mode: null,
 			type: null,
 			allowSummaryCashEmployeeTakeOut: _s("allowSummaryCashEmployeeTakeOut"),
+			employeeName : ''
 		};
 	},
 	watch: {
@@ -3369,14 +3370,30 @@ Vue.component("session-summary", {
 		},
 	},
 	computed: {
-		isEmployeeType() {
+		isEmployeeType: function () {
 			return this.type === "employee";
 		},
-		isRegisterType() {
+		isRegisterType: function () {
 			return this.type === "register";
 		},
+		isSessionType: function () {
+			return this.type === "session";
+		},
+		getTitle: function (){
+			var  title = ''
+			if(this.isEmployeeType){
+                title = 'Shift'
+			}else if(this.isRegisterType){
+				title = 'Register'
+			}else if(this.isSessionType){
+				title = 'Session'
+			}
+			return title;
+		},
+
 	},
 	methods: {
+		
 		populateMeta: function () {
 			var obj = {
 				sessionId: this.id,
@@ -3422,10 +3439,17 @@ Vue.component("session-summary", {
 			});
 		},
 	},
+	beforeDestroy: function (){
+		//bus.$off("showSessionSummary");
+	},
 	created: function () {
 		var self = this;
 		bus.$on("showSessionSummary", function (payload) {
+			console.log('po');
 			self.type = payload.mode;
+			if(self.type === 'employee'){
+               self.employeeName = localStorage.getItem("employeeName")
+			}
 			self.$bvModal.show("session-summary-modal");
 			self.populateMeta();
 		});
@@ -3531,6 +3555,11 @@ Vue.component("print-server-dialog", {
 			this.handleCloseModal(this.modal);
 		},
 	},
+	beforeDestroy: function(){
+		bus.$off("initDirectPrint");
+		bus.$off("initQueuePrint");
+		bus.$off("initPrintServerDialog");
+	},
 	created: function () {
 		var self = this;
 		bus.$on("initPrintServerDialog", function (payload) {
@@ -3538,6 +3567,7 @@ Vue.component("print-server-dialog", {
 			self.initComponent();
 		});
 		bus.$on("initDirectPrint", function (payload) {
+			console.log(payload);
 			self.handleDirectPrint(payload);
 		});
 		bus.$on("initQueuePrint", function (payload) {
@@ -5708,6 +5738,9 @@ Vue.component("user-login", {
 						self.errorMessage = response.message;
 						self.showMessage = true;
 					}
+				})
+				.finally(function(){
+					self.handleCancel();
 				});
 			} else {
 				self.sendingRequest = false;
@@ -5719,6 +5752,9 @@ Vue.component("user-login", {
 				(this.errorMessage = ""),
 				(this.showMessage = false);
 		},
+	},
+	beforeDestroy: function (){
+		bus.$off("setUserLogin");
 	},
 	created: function () {
 		var self = this;
@@ -5891,8 +5927,6 @@ Vue.component("pos", {
 				if (response.status == "ok") {
 					ds_alert(response.message);
 					self.removeEmpId();
-					self.resetOrder();
-					self.updateCheck();
 				}
 			});
 		},
@@ -6069,23 +6103,28 @@ Vue.component("pos", {
 			this.removeEmpId();
 		},
 		handleRegisterSummary: function () {
+			var event = false;
 			if (this.isTabletMode) {
-				bus.$emit("showSessionSummary", { mode: "register" });
+				event = true;
 			} else {
 				if (this.isPrimaryRegister && this.lastRegister) {
-					bus.$emit("showSessionSummary", { mode: "register" });
+					event = true;
 				} else {
 					ds_alert("Close Other Registers!!", "warning");
 				}
 			}
-
-			//bus.$emit("showSessionSummary", { mode: "register" });
+			if(event){
+				this.showSummary('register');
+			}
 		},
 		handleSessionSummary: function () {
-			bus.$emit("showSessionSummary", { mode: "session" });
+			this.showSummary('session');
 		},
 		handleEmployeeSummary: function () {
-			bus.$emit("showSessionSummary", { mode: "employee" });
+			this.showSummary('employee');
+		},
+		showSummary: function(type){
+			bus.$emit("showSessionSummary", { mode: type });
 		},
 		handleOrderSwitch: function () {
 			bus.$emit("showOrderSwitch", true);
@@ -6126,11 +6165,13 @@ Vue.component("pos", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
+					if (_s("allowSummaryPrint")) {
+						self.directPrint = ["summary"];
+						self.handlePrintToServer(response.printData);
+				    }
 					self.registerSession = null;
 					self.registerCheckLogin = false;
 					self.order = {};
-					//self.directPrint = ["summary"];
-					//self.handlePrintToServer(response.printData);
 					self.handleLocalEmployeeRemove();
 					window.location.reload(true);
 				}
@@ -6179,13 +6220,14 @@ Vue.component("pos", {
 			}
 		},
 		handlePrintToServer: function (printData) {
-			if (this.directPrint !== false) {
-				var payload = { printData: printData, directPrint: this.directPrint };
+			var self = this;
+			if (self.directPrint !== false) {
+				var payload = { printData: printData, directPrint: self.directPrint };
 				bus.$emit("initDirectPrint", payload);
 			} else {
 				bus.$emit("initPrintServerDialog", printData);
 			}
-			this.directPrint = false;
+			self.directPrint = false;
 		},
 		handlePrintOrder: function (orderId) {
 			bus.$emit("posBusyStart", true);
@@ -6664,6 +6706,7 @@ Vue.component("pos", {
 			bus.$off("initEditAddress");
 			bus.$off("showSessionSummary");
 			bus.$off("showUserLogin");
+			bus.$off("initDirectPrint");
 			return true;
 		},
 		getLocalStorageData: function () {

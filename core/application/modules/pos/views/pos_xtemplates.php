@@ -1243,7 +1243,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
         <b-modal no-fade centered id="session-summary-modal" size="xl" hide-header hide-footer body-class="p-0">
             <div id="session-summary-block" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
-                    <h3 class="block-title">Close {{ type ==='employee'?'Shift': 'Register'}}</h3>
+                    <h3 class="block-title">Close {{ getTitle }} {{ }}</h3>
                     <div class="block-options">
                         <button type="button" class="btn-block-option" @click="$bvModal.hide('session-summary-modal');" aria-label="Close">
                             <i class="si si-close"></i>
@@ -1449,7 +1449,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                         </div>
                                     </div>
                                     <div v-if="session.openOrdersCount===0" class="form-group text-center">
-                                        <button :disabled="session.openOrdersCount!==0" type="button" class="btn btn-alt-danger" @click="handleCloseRegister">Close {{ type ==='employee'?'Shift': 'Register'}}</button>
+                                        <button :disabled="session.openOrdersCount!==0" type="button" class="btn btn-alt-danger" @click="handleCloseRegister">Close {{ getTitle }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -2895,6 +2895,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                             <button type="button" class="btn btn-alt-danger" :disabled="!canCloseSession" @click="handleSessionSummary">Close Session</button>
                         </div>
                         <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                        <print-server-dialog></print-server-dialog>
                     </div>
                 </div>
                 <div v-if="canShowEmpLogin">
@@ -2903,7 +2904,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                             <div class="block block-rounded block-themed w-50">
                                 <div class="block-header bg-secondary">
                                     <h3 class="block-title">Employee Login</h3>
-                                    <a class="btn btn-danger" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a>
+                                    <a class="btn btn-danger" href="javascript:void(0)" @click.prevent="handleRegisterSummary">Close Register</a>
                                 </div>
                                 <div class="block-content">
                                     <div class="row">
@@ -2925,6 +2926,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                     </div>
                     <employee-login></employee-login>
                     <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                    <print-server-dialog></print-server-dialog>
                 </div>
             </div>
             <div v-if="!registerCheckLogin">
