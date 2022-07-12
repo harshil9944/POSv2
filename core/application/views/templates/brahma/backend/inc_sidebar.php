@@ -24,6 +24,10 @@ $cb = $this->brahma;
             <ul class="nav-main">
                 <?php $cb->build_nav(); ?>
             </ul>
+            <hr>
+            <div class="text-center">
+                <p><small><?php echo CORE_APP_TITLE . ' v' . CORE_VERSION; ?></small></p>
+            </div>
             <?php if(_get_setting('sidebar_darkmode_support',false)) { ?>
             <hr>
             <div class="text-center">
