@@ -26,6 +26,12 @@ Vue.component("report-orders", {
 				fields: [
 					{ key: "date", label: "Date" },
 					{ key: "type", label: "Type" },
+					{ 
+						key: "sessionOrderNo",
+					 	label: "Session Order No",
+					 	tdClass: "text-center w-180p",
+						thClass: "text-center w-180p"
+				    },
 					{ key: "orderStatus", label: "Status" },
 					{ key: "billingName", label: "Customer" },
 					{

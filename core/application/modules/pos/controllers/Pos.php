@@ -145,6 +145,8 @@ class Pos extends MY_Controller {
         _set_js_var( 'allowSummaryCashEmployeeTakeOut', ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT, 'b' );
 
         _set_js_var( 'allowSummaryPrint', ALLOW_SUMMARY_PRINT, 'b' );
+        _set_js_var( 'allowRegisterPrint', ALLOW_REGISTER_PRINT, 'b' );
+        _set_js_var( 'allowShiftPrint', ALLOW_SHIFT_PRINT, 'b' );
 
         if ( ALLOW_CLOVER_PAYMENT ) {
             _set_js_var( 'allowCloverPayment', ALLOW_CLOVER_PAYMENT, 'b' );
@@ -530,7 +532,7 @@ class Pos extends MY_Controller {
 
             $result = $this->_get_session_summary( $params );
 
-            $emp_tip = _db_get_query( "SELECT ee.*,SUM(oo.tip) AS tip FROM emp_employee ee INNER JOIN ord_order oo ON oo.employee_id = ee.id WHERE oo.session_id = $session_id" );
+            $emp_tip = _db_get_query( "SELECT ee.*,SUM(oo.tip) AS tip FROM emp_employee ee LEFT JOIN ord_order oo ON oo.employee_id = ee.id WHERE oo.session_id = $session_id" );
             $result['empTips'] = $emp_tip;
 
             $session = $this->_prep_summary( $register_session, $result, SUMMARY_TYPE_REGISTER );
@@ -784,6 +786,24 @@ class Pos extends MY_Controller {
         return true;
 
     }
+    public function _close_shift_summary_get(){
+        $obj = _input('obj');
+        $session_id = $obj['sessionId'];
+        $employee_id = $obj['employeeId'];
+
+        $summary = $this->_close_employee_summary( ['session_id' => $session_id, 'enableRefunded' => ALLOW_REFUND, 'employee_id' => $employee_id] );
+        $employee = _db_get_query("SELECT * FROM emp_employee ee LEFT JOIN emp_shift es ON ee.id=es.employee_id WHERE ee.id = $employee_id AND es.session_id = $session_id",true);
+       
+        $name = $employee['first_name'] ." ".$employee['last_name'];
+        $summary['openingDate'] = $employee['start_shift'];
+        $summary['openingEmployee'] = $name;
+        $summary['closingDate']=$employee['end_shift'];
+        $summary['closingEmployee'] = $name;
+        $obj = $this->_prep_print_summary( $summary );
+        _response_data( 'printData', $obj );
+        return true;
+
+    }
 
     private function _prep_print_summary( &$summary ) {
         $payments = [];
@@ -1027,6 +1047,7 @@ class Pos extends MY_Controller {
         $order_id = _input( 'orderId' );
         $refundPayments = _input( 'refundPayments' );
         $session_id = _input( 'sessionId' );
+        $register_id = _input( 'registerId' );
         $status = _input( 'orderStatus' );
         $refundTotal = _input( 'refundTotal' );
         $clover_refund_obj = _input( 'cloverRefundObj' );
@@ -1065,6 +1086,7 @@ class Pos extends MY_Controller {
             $params['order_id'] = $order_id;
             $params['status'] = $status;
             $params['session_id'] = $session_id;
+            $params['register_id'] = $register_id;
             $result = $this->_manage_order_status_change( $params );
             return $result;
         }
@@ -1106,10 +1128,12 @@ class Pos extends MY_Controller {
         $order_id = _input( 'id' );
         $status = _input( 'orderStatus' );
         $session_id = _input( 'sessionId' );
+        $register_id = _input( 'registerId' );
         $params = [];
         $params['order_id'] = $order_id;
         $params['status'] = $status;
         $params['session_id'] = $session_id;
+        $params['register_id'] = $register_id;
         $result = $this->_manage_order_status_change( $params );
         return $result;
     }
@@ -1118,6 +1142,7 @@ class Pos extends MY_Controller {
         $order_id = $params['order_id'];
         $status = $params['status'];
         $session_id = $params['session_id'];
+        $register_id = $params['register_id'];
         $order = false;
         if ( $status == 'Cancelled' || $status == 'Closed' || $status == 'Refunded' || $status == "Partial_refunded" ) {
             $order = _get_module( 'orders', '_single', ['id' => $order_id] );
@@ -1125,16 +1150,15 @@ class Pos extends MY_Controller {
 
         $filter = [
             'id'         => $order_id,
-            'session_id' => $session_id,
         ];
         $data = [
             'order_status' => $status,
+            'close_register_id' => $register_id,
         ];
 
         if ( $status === 'Cancelled' ) {
             $data['cancelled'] = 1;
         }
-
         $this->order->update( $data, $filter );
         if ( $this->order->affected_rows() ) {
             if ( $order ) {
@@ -2716,7 +2740,7 @@ class Pos extends MY_Controller {
             if ( $split ) {
 
                 $order['sessionOrderNo'] .= ' (SPLIT)';
-
+                $order['tip'] = dsRound( $split['tip'] );
                 $order['change'] = dsRound( $split['change'] );
                 $order['discount'] = dsRound( $split['discount'] );
                 $order['subTotal'] = dsRound( $split['subTotal'] );
@@ -2763,10 +2787,17 @@ class Pos extends MY_Controller {
                     }
                     $order['items'] = $temp;
                 }
+                if($order['payments']){
+                    if($split['payments']){
+                        $order['payments'] = $split['payments'];
+                    }
+                }
+              
                 unset( $order['split'] );
             }
 
         }
+        //dd($order);
         return $order;
     }
 

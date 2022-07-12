@@ -777,7 +777,8 @@ class Orders extends MY_Controller {
 
             $split['items'] = $invoice_items;
 
-            $split_payments = $this->split_payment->search(['order_id' => $order_id]);
+            $split_payments = $this->split_payment->search(['order_id' => $order_id,'split_id'=>$split_id]);
+            
             if ($split_payments) {
                 $invoice_payment_ids = array_column(array_values(array_filter($split_payments, function ($single) use ($split_id) {
                     return $split_id == $single['split_id'];

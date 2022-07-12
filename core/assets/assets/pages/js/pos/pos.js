@@ -2522,6 +2522,9 @@ Vue.component("payment", {
 		},
 	},
 	methods: {
+		getOutstanding:function(){
+			return Number(this.total.grandTotal) - Number(this.getTotalPaid());
+		},
 		getPrinters: function () {
 			var printer = [];
 			var selectedPrinter = this.printers.filter(function (p) {
@@ -2807,6 +2810,7 @@ Vue.component("payment", {
 			this.modal.active = false;
 			this.stopPaymentLoader();
 			this.handleCloseModal(this.modal.id);
+			this.printers = [];
 		},
 		startPaymentLoader() {
 			this.modal.isLoading = true;
@@ -2859,10 +2863,24 @@ Vue.component("payment", {
 			};
 			var request = submitRequest(data, "post");
 			request.then(function (res) {
-				bus.$emit("splitPaymentCompleted", res.split);
+				bus.$emit("splitPaymentCompleted",{split:res.split , printers: self.getPrinters()});
 				self.handleModalHidden();
 			});
 		},
+		getCashierPrinter:function(){
+			return {
+				selected: _s("defaultCashierPrint"),
+				value: "cashier",
+				title: "Cashier",
+			}
+		},
+		getKitchenPrinter:function(){
+			return {
+				selected: _s("defaultKitchenPrint"),
+				value: "kitchen",
+				title: "Kitchen",
+			}
+		}
 	},
 	created: function () {
 		var self = this;
@@ -2878,24 +2896,16 @@ Vue.component("payment", {
 			self.split = null;
 			if (self.order.splitType !== "none") {
 				self.split = payload.split;
+				self.printers.push(self.getCashierPrinter());
+			}else{
+				self.printers.push(self.getCashierPrinter());
+				self.printers.push(self.getKitchenPrinter());
 			}
 			if (typeof payload.totals !== "undefined") {
 				self.total = payload.totals;
 			} else {
 				self.total = self.order.cart.totals;
 			}
-			self.printers = [
-				{
-					selected: _s("defaultCashierPrint"),
-					value: "cashier",
-					title: "Cashier",
-				},
-				{
-					selected: _s("defaultKitchenPrint"),
-					value: "kitchen",
-					title: "Kitchen",
-				},
-			];
 			self.handlePayBoxInit();
 		});
 		bus.$on("cloverPaymentClose", function (payload) {
@@ -2909,7 +2919,7 @@ Vue.component("payment", {
 });
 Vue.component("order-history", {
 	template: "#order-history-template",
-	props: ["session", "isTabletMode", "employeeId"],
+	props: ["session", "isTabletMode", "employeeId","registerId"],
 	data: function () {
 		return {
 			modalOpen: false,
@@ -3234,11 +3244,13 @@ Vue.component("order-history", {
 			});
 		},
 		handleChangeStatus: function (id, status) {
+			console.log('po');
 			var self = this;
 			var data = {
 				module: "pos",
 				method: "order_status",
 				sessionId: self.session,
+				registerId: self.registerId,
 				id: id,
 				orderStatus: status,
 			};
@@ -3341,7 +3353,7 @@ Vue.component("online-order-history", {
 });
 Vue.component("session-summary", {
 	template: "#session-summary-template",
-	props: ["id", "employeeId", "registerId", "registerSessionId"],
+	props: ["id", "employeeId", "registerId", "registerSessionId","objectId"],
 	data: function () {
 		return {
 			module: "pos",
@@ -3354,7 +3366,8 @@ Vue.component("session-summary", {
 			mode: null,
 			type: null,
 			allowSummaryCashEmployeeTakeOut: _s("allowSummaryCashEmployeeTakeOut"),
-			employeeName : ''
+			employeeName : '',
+			limitedShow :true,
 		};
 	},
 	watch: {
@@ -3379,7 +3392,7 @@ Vue.component("session-summary", {
 		isSessionType: function () {
 			return this.type === "session";
 		},
-		getTitle: function (){
+		getTitle: function ( ){
 			var  title = ''
 			if(this.isEmployeeType){
                 title = 'Shift'
@@ -3388,12 +3401,13 @@ Vue.component("session-summary", {
 			}else if(this.isSessionType){
 				title = 'Session'
 			}
+			if(this.limitedShow){
+				title = 'Close '+title
+			}
 			return title;
 		},
-
 	},
 	methods: {
-		
 		populateMeta: function () {
 			var obj = {
 				sessionId: this.id,
@@ -3418,6 +3432,10 @@ Vue.component("session-summary", {
 				Codebase.blocks("#session-summary-block", "state_normal");
 			});
 		},
+		closeModal: function() {
+			bus.$off("showSessionSummary-"+ this.objectId);
+			this.$bvModal.hide('session-summary-modal' + this.objectId);
+		},
 		handleCloseRegister: function () {
 			var obj = this.prepObject();
 			if (this.type !== "register") {
@@ -3425,6 +3443,7 @@ Vue.component("session-summary", {
 			} else {
 				bus.$emit("showUserLogin", { type: "Close" });
 			}
+			bus.$off("showSessionSummary-"+ this.objectId);
 		},
 		prepObject: function () {
 			var closingCash = !isNaN(this.session.closingCash)
@@ -3440,17 +3459,18 @@ Vue.component("session-summary", {
 		},
 	},
 	beforeDestroy: function (){
-		//bus.$off("showSessionSummary");
+		//bus.$off("showSessionSummary-"+ this.objectId);
 	},
 	created: function () {
 		var self = this;
-		bus.$on("showSessionSummary", function (payload) {
-			console.log('po');
+		
+		bus.$on("showSessionSummary-"+ this.objectId, function (payload) {
 			self.type = payload.mode;
+			self.limitedShow = payload.show;
 			if(self.type === 'employee'){
                self.employeeName = localStorage.getItem("employeeName")
 			}
-			self.$bvModal.show("session-summary-modal");
+			self.$bvModal.show("session-summary-modal" + self.objectId);
 			self.populateMeta();
 		});
 		bus.$on("setUserLogin", function (payload) {
@@ -3567,7 +3587,6 @@ Vue.component("print-server-dialog", {
 			self.initComponent();
 		});
 		bus.$on("initDirectPrint", function (payload) {
-			console.log(payload);
 			self.handleDirectPrint(payload);
 		});
 		bus.$on("initQueuePrint", function (payload) {
@@ -4284,11 +4303,12 @@ Vue.component("split-order", {
 			});
 		},
 
-		handlePrintSplitOrder: function () {
+		handlePrintSplitOrder: function (printers) {
 			var split = this.order.split[this.activeInvoice];
 			var payload = {
 				splitId: split.id,
 				orderId: this.order.id,
+				printers: printers
 			};
 			bus.$emit("printSplitOrderReceipt", payload);
 		},
@@ -4535,9 +4555,11 @@ Vue.component("split-order", {
 			self.anyPaymentDone = false;
 		});
 		bus.$on("splitPaymentCompleted", function (payload) {
-			self.order.split[self.activeInvoice] = payload;
+			self.order.split[self.activeInvoice] = payload.split;
 			bus.$emit("setOrderEditable", false);
-			self.handlePrintSplitOrder();
+			if(Number(payload.printers.length) > 0){
+				self.handlePrintSplitOrder(payload.printers);
+			}
 			var nextActiveIndex = Number(self.activeInvoice) + 1;
 			if (nextActiveIndex < self.order.split.length) {
 				self.activeInvoice++;
@@ -5126,6 +5148,7 @@ Vue.component("order-details", {
 					customer: [],
 					refundPayments: [],
 					items: [],
+					split: [],
 				},
 			},
 			paymentMethods: [],
@@ -5146,8 +5169,31 @@ Vue.component("order-details", {
 				return Number(i.quantity) > 0;
 			});
 		},
+		isSplitOrder:function(){
+			return this.modal.obj.splitType != 'none';
+		},
+		splitOrderTitle:function(){
+			return this.isSplitOrder ? ' ( Split Order )' : '';
+		},
+		splitOrderList:function(){
+			return this.modal.obj.split;
+		}
 	},
 	methods: {
+		handleSplitPrint:function(split){
+			if(ds_confirm("Are You Sure, You Want To Print This Split Order?")){
+				var payload = {
+					splitId: split.id,
+					orderId: this.modal.obj.id,
+					printers: ["cashiers"]
+				};
+				bus.$emit("printSplitOrderReceipt", payload);
+			}
+			
+		},
+		getSplitAmount:function(split){
+			return split.title+" - " + _s("currencySign") + " " + Number(split.grandTotal).toFixed(2);
+		},
 		handleDownloadPdf: function () {
 			Object.assign(document.createElement("a"), {
 				target: "_blank",
@@ -5335,6 +5381,7 @@ Vue.component("order-source-switch", {
 });
 Vue.component("issue-refund", {
 	template: "#issue-refund-template",
+	props: ["registerId"],
 	data: function () {
 		return {
 			module: "pos",
@@ -5433,6 +5480,7 @@ Vue.component("issue-refund", {
 				orderId: orderId,
 				refundPayments: self.refundPayments,
 				sessionId: self.order.sessionId,
+				registerId: self.registerId,
 				orderStatus: status,
 				refundTotal: self.refundTotal,
 				cloverRefundObj: cloverRefundObj,
@@ -5606,6 +5654,7 @@ Vue.component("issue-refund", {
 				method: "order_status",
 				sessionId: self.order.sessionId,
 				id: id,
+				registerId: self.registerId,
 				orderStatus: status,
 			};
 			var request = submitRequest(data, "post");
@@ -5926,7 +5975,25 @@ Vue.component("pos", {
 			request.then(function (response) {
 				if (response.status == "ok") {
 					ds_alert(response.message);
-					self.removeEmpId();
+					self.handleShiftDataPrint(obj);
+				}
+			});
+		},
+		handleShiftDataPrint:function(obj){
+			var self = this;
+			var data = {
+				module: this.module,
+				method: "close_shift_summary",
+				obj: obj,
+			};
+			var request = submitRequest(data, "get");
+			request.then(function (response) {
+				if (response.status === "ok") {
+					if (_s("allowShiftPrint")) {
+						self.directPrint = ["summary"];
+						self.handlePrintToServer(response.printData);
+					}
+					self.removeEmpId(); 
 				}
 			});
 		},
@@ -6114,17 +6181,21 @@ Vue.component("pos", {
 				}
 			}
 			if(event){
-				this.showSummary('register');
+				this.showSummary('register',true);
 			}
 		},
+		handlePosRegisterSummary: function () {
+			this.showSummary('register',false);
+		},
 		handleSessionSummary: function () {
-			this.showSummary('session');
+			this.showSummary('session',true);
 		},
 		handleEmployeeSummary: function () {
-			this.showSummary('employee');
+			this.showSummary('employee',true);
 		},
-		showSummary: function(type){
-			bus.$emit("showSessionSummary", { mode: type });
+		showSummary: function(type,show){
+			console.log("showSessionSummary-"+type);
+			bus.$emit("showSessionSummary-"+type, { mode: type ,show:show});
 		},
 		handleOrderSwitch: function () {
 			bus.$emit("showOrderSwitch", true);
@@ -6165,7 +6236,7 @@ Vue.component("pos", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					if (_s("allowSummaryPrint")) {
+					if (_s("allowRegisterPrint")) {
 						self.directPrint = ["summary"];
 						self.handlePrintToServer(response.printData);
 				    }
@@ -6250,21 +6321,22 @@ Vue.component("pos", {
 				bus.$emit("posBusyStop", false);
 			});
 		},
-		handlePrintSplitOrderReceipt: function (splitId, orderId) {
+		handlePrintSplitOrderReceipt: function (payload) {
 			bus.$emit("posBusyStart", true);
 			var self = this;
 			var data = {
 				module: self.module,
 				method: "split_order_print",
-				split_order_id: splitId,
-				order_id: orderId,
+				split_order_id: payload.splitId,
+				order_id: payload.orderId,
 			};
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
 					if (response.printData) {
-						self.directPrint = ["cashier"];
+						self.directPrint = payload.printers;
 						self.handlePrintToServer(response.printData);
+						
 					}
 				}
 				bus.$emit("posBusyStop", false);
@@ -6603,9 +6675,10 @@ Vue.component("pos", {
 					}
 				});
 				bus.$on("printSplitOrderReceipt", function (payload) {
-					var splitId = payload.splitId;
+				/* var splitId = payload.splitId;
 					var orderId = payload.orderId;
-					self.handlePrintSplitOrderReceipt(splitId, orderId);
+					var orderId = payload.printers; */
+					self.handlePrintSplitOrderReceipt(payload);
 				});
 				bus.$on("saveAsDraft", function () {
 					bus.$emit("posBusyStart", true);

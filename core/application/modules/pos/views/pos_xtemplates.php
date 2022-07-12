@@ -934,7 +934,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
 </script>
 <script type="text/x-template" id="payment-template">
     <div>
-        <b-modal no-fade centered id="payment-modal" @hidden="handleModalHidden" size="lg" hide-header hide-footer body-class="p-0" v-cloak>
+        <b-modal no-fade centered id="payment-modal" @hidden="handleModalHidden" no-close-on-backdrop size="lg" hide-header hide-footer body-class="p-0" v-cloak>
             <div id="payment-modal-block" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
                     <h3 class="block-title">Order Payment</h3>
@@ -983,9 +983,13 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                             <th class="w-60">Net Payable</th>
                                             <td class="text-right">{{ total.grandTotal | toTwoDecimal | beautifyCurrency }}</td>
                                         </tr>
-                                        <tr class="font-18 bg-gray-lighter">
+                                        <tr v-if="Number(getTotalPaid()) > 0" class="font-18 bg-gray-lighter">
                                             <th class="w-60">Paid</th>
                                             <td class="text-right">{{ getTotalPaid() | toTwoDecimal | beautifyCurrency }}</td>
+                                        </tr>
+                                        <tr v-if="Number(getOutstanding()) > 0" class="font-18 bg-gray-lighter">
+                                            <th class="w-60">Outstanding</th>
+                                            <td class="text-right">{{ getOutstanding() | toTwoDecimal | beautifyCurrency }}</td>
                                         </tr>
                                         <tr class="font-18 bg-gray-lighter">
                                             <th class="w-60">Change <a v-if="canConvertToTip" class="font-11 text-right" @click.prevent="handleConvertToTip" href="javascript:void(0);">to Tip</a></th>
@@ -1010,8 +1014,8 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                     </tbody>
                                 </table>
                                 <div class="col-md-12">
-                                    <div class="row">
-                                        <table v-if="!isSplitPayment" class="table-bordered table table-sm text-black table-vcenter col-md-4">
+                                    <div class="row flex">
+                                        <table class="table-bordered table table-sm text-black table-vcenter col-md-4">
                                             <tr>
                                                 <th class="w-50 text-center">Print</th>
                                             </tr>
@@ -1240,12 +1244,12 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
 </script>
 <script type="text/x-template" id="session-summary-template">
     <div>
-        <b-modal no-fade centered id="session-summary-modal" size="xl" hide-header hide-footer body-class="p-0">
+        <b-modal no-fade centered :id="'session-summary-modal' + objectId" size="xl" hide-header hide-footer body-class="p-0">
             <div id="session-summary-block" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
-                    <h3 class="block-title">Close {{ getTitle }} {{ }}</h3>
+                    <h3 class="block-title">{{ getTitle }}</h3>
                     <div class="block-options">
-                        <button type="button" class="btn-block-option" @click="$bvModal.hide('session-summary-modal');" aria-label="Close">
+                        <button type="button" class="btn-block-option" @click="closeModal" aria-label="Close">
                             <i class="si si-close"></i>
                         </button>
                     </div>
@@ -1427,7 +1431,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12">
+                        <div v-show="limitedShow" class="col-md-12">
                             <div class="block ">
                                 <div class="block-content h-100 ">
                                     <div v-if="Number(session.openOrdersCount) > 0" class="alert alert-danger alert-dismissable " role="alert">
@@ -1926,7 +1930,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                     </div>
                                     <div class="col-12 text-center">
                                         <button :disabled="isActivePaymentDone" @click="handlePayment" class="btn btn-danger mr-2"><i class="fa fa-dollar"></i> Make Payment</button>
-                                        <button  @click="handlePrintSplitOrder" class="btn btn-secondary"><i class="fa fa-print"></i> Print</button>
+                                        <button  @click="handlePrintSplitOrder(['cashier'])" class="btn btn-secondary"><i class="fa fa-print"></i> Print</button>
                                     </div>
                                 </div>
                             </div>
@@ -2190,7 +2194,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                             <div class="row">
                                 <div class="col-md-8">
                                    <div class="table-responsive">
-                                       <h6 class="mb-2">Payment History</h6>
+                                       <h6 class="mb-2">Payment History {{ splitOrderTitle}}</h6>
                                         <table class="table table-sm table-bordered font-12">
                                             <thead>
                                                 <tr>
@@ -2269,6 +2273,25 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                             </tr>
                                         </tfoot>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="isSplitOrder" class="col-md-12">
+                           <h6 class="mb-2">Splits</h6>
+                            <!-- <div class="row">
+                                <div v-for="(single,index) in splitOrderList" class="col-xl-3 col-lg-12 col-md-12 col-sm-6">
+                                    <div @click="handleSplitClick(single.id)" class="block block-bordered block-rounded bg-primary cursor-pointer mb-2">
+                                        <div class="block-header">
+                                            <div class="font-w600 text-black float-left">
+                                                {{ single.title }} - {{ single.grandTotal | beautifyCurrency }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <div class="row justify-content-left">
+                                <div v-for="(single,index) in splitOrderList" @click="handleSplitPrint(single)" class="col-md-auto mb-20">
+                                    <button class="btn btn-lg btn-success text-center w-100">{{ getSplitAmount(single) }}</button>
                                 </div>
                             </div>
                         </div>
@@ -2792,7 +2815,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                     <div class="form-group row">
                         <div class="col-12">
                             <div class="form-material floating">
-                                <input id="login-password" class="form-control" type="password" v-model="login.password" required data-parsley-required-message="Password is required">
+                                <input id="login-password" class="form-control" @keyup.enter="handleSubmit" type="password" v-model="login.password" required data-parsley-required-message="Password is required">
                                 <label for="login-password">Password</label>
                             </div>
                         </div>
@@ -2894,7 +2917,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         <div v-if="isPrimaryRegister" class="d-flex align-items-center justify-content-center">
                             <button type="button" class="btn btn-alt-danger" :disabled="!canCloseSession" @click="handleSessionSummary">Close Session</button>
                         </div>
-                        <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                        <session-summary object-id="session" :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                         <print-server-dialog></print-server-dialog>
                     </div>
                 </div>
@@ -2925,7 +2948,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         </div>
                     </div>
                     <employee-login></employee-login>
-                    <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                    <session-summary object-id="register" :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                     <print-server-dialog></print-server-dialog>
                 </div>
             </div>
@@ -2967,7 +2990,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
                                     <div class="dropdown-item"><i class="fa fa-fw fa-user mr-5"></i>{{ employeeName }}</div>
                                     <a v-if="enableSourceSwitch && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
-                                   <!--  <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Close Register</a> -->
+                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handlePosRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Register Summary</a>
                                     <a v-if="allowOpenCashDrawer() && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOpenDrawer"><i class="fa fa-fw fa-bell mr-5"></i>Cash Drawer</a>
                                     <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeLogout"><i class="si si-logout mr-5"></i>Lock Terminal</a>
                                     <a v-if="!isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeSummary"><i class="si si-logout mr-5"></i>Close Shift</a>
@@ -2981,16 +3004,17 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                 <table-dialog></table-dialog>
                 <discount-dialog :cart="order.cart" :is-editable="isEditable"></discount-dialog>
                 <gratuity-dialog :cart="order.cart" :is-editable="isEditable"></gratuity-dialog>
-                <order-history :employeeId="employeeId" :session="session.id" :isTabletMode="isTabletMode"></order-history>
+                <order-history :employeeId="employeeId" :registerId="registerId" :session="session.id" :isTabletMode="isTabletMode"></order-history>
                 <order-details :session="session.id"></order-details>
                 <online-order-history :orders="unacceptedOrders"></online-order-history>
                 <online-order-detail :session="session.id" :register="register"></online-order-detail>
-                <session-summary :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                <session-summary object-id="employee" :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
+                <session-summary object-id="register" :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                 <print-server-dialog></print-server-dialog>
                 <div class="block">
                     <div class="block-content block-content-full py-10">
                         <order-source-switch v-if="enableSourceSwitch"></order-source-switch>
-                        <issue-refund v-if="allowRefund"></issue-refund>
+                        <issue-refund v-if="allowRefund" :registerId="registerId"></issue-refund>
                         <customer :customer="order.customer" :is-editable="isEditable" :cart="order.cart"></customer>
                         <add-customer :is-editable="isEditable" mode="add"></add-customer>
                         <info-customer :customer="order.customer" @updated="onCustomerUpdated" :is-editable="isEditable"></info-customer>

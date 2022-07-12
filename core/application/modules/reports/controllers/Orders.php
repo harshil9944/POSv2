@@ -74,7 +74,7 @@ class Orders extends MY_Controller {
 
         $order_table = ORDER_TABLE;
 
-        $sql = "SELECT oo.id,oo.order_date,oo.type,oo.billing_name,oo.sub_total,oo.discount,oo.tax_total,(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total,oo.order_status FROM $order_table oo";
+        $sql = "SELECT oo.id,oo.session_order_no,oo.order_date,oo.type,oo.billing_name,oo.sub_total,oo.discount,oo.tax_total,(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total,oo.order_status FROM $order_table oo";
 
         if (!empty($params['filter_date_start'])) {
             $sql .= " WHERE DATE(oo.order_date) >= " . $this->db->escape($params['filter_date_start']) . "";
