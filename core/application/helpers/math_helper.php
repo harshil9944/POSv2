@@ -5,7 +5,7 @@ if( ! function_exists('get_sum')) {
     }
 }
 if( ! function_exists('get_multiply')) {
-    function get_sum($a = 0,$b=0) {
+    function get_multiply($a = 0,$b=0) {
         return $a * $b;
     }
 }
@@ -32,18 +32,18 @@ if( ! function_exists('get_area_of_circle')) {
             case 'radius':
             default:
               $radius = $number;
-        
+
               break;
-        
+
             case 'diameter':
               $radius = $number / 2;
-        
+
               break;
           }
-        
+
 
         return pi() * $radius * $radius;
-       
+
     }
 }
 if( ! function_exists('get_area_of_rectangle')) {
@@ -79,18 +79,18 @@ if( ! function_exists('get_area_of_circle')) {
             case 'radius':
             default:
               $radius = $number;
-        
+
               break;
-        
+
             case 'diameter':
               $radius = $number / 2;
-        
+
               break;
           }
-        
+
 
         return pi() * $radius * $radius;
-       
+
     }
 }
 if( ! function_exists('get_area_of_rectangle')) {
