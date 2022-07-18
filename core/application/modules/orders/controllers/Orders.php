@@ -734,6 +734,29 @@ class Orders extends MY_Controller {
 
     }
 
+    public function _single_order_get(){
+        $order_id = _input('id');
+
+        $order_exclude_fields = $this->{$this->model}->exclude_keys;
+
+        $order_keys = $this->{$this->model}->keys;
+
+        $filter = ['id'=>$order_id];
+        $result = $this->{$this->model}->single($filter);
+        if($result){
+            $result = filter_array_keys($result,$order_exclude_fields);
+            foreach ($order_keys as $new=>$old) {
+                change_array_key($old,$new,$result);
+            }
+            _response_data('obj', $result);
+
+        }else{
+            _set_message('The requested details could not be found.', 'warning');
+            _response_data('obj', []);
+        }
+        return true;
+    }
+
     public function _get_split($params) {
 
         _model('order_item','order_item');

@@ -72,6 +72,11 @@
                         </button>
                     </div>
                 </div>
+                <div class="row bg-black-op-10 p-3 mx-0">
+                    <div class="col text-right">
+                        <button class="btn btn-danger ml-5" @click="handleDownloadPdf" title="Download PDF"><i class="fa fa-file-pdf-o"></i></button>
+                    </div>
+                </div>
                 <div class="block-content">
                     <div class="row my-20">
                         <div class="col-4 font-weight-600 table-left">

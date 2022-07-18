@@ -144,9 +144,12 @@ class Pos extends MY_Controller {
         _set_js_var( 'managerEmail', _get_session( 'userEmail' ), 's' );
         _set_js_var( 'allowSummaryCashEmployeeTakeOut', ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT, 'b' );
 
-        _set_js_var( 'allowSummaryPrint', ALLOW_SUMMARY_PRINT, 'b' );
-        _set_js_var( 'allowRegisterPrint', ALLOW_REGISTER_PRINT, 'b' );
+        _set_js_var( 'defaultSummaryPrint', DEFAULT_SUMMARY_PRINT, 'b' );
+        _set_js_var( 'defaultRegisterPrint', DEFAULT_REGISTER_PRINT, 'b' );
         _set_js_var( 'allowShiftPrint', ALLOW_SHIFT_PRINT, 'b' );
+        _set_js_var( 'allowConvertChangeToTip', ALLOW_CONVERT_CHANGE_TO_TIP, 'b' );
+        _set_js_var( 'onlineOrderPaymentIds', ONLINE_ORDER_PAYMENT_IDS, 'j' );
+        _set_js_var( 'allowOrderEdit', ALLOW_ORDER_EDIT, 'b' );
 
         if ( ALLOW_CLOVER_PAYMENT ) {
             _set_js_var( 'allowCloverPayment', ALLOW_CLOVER_PAYMENT, 'b' );
@@ -172,7 +175,6 @@ class Pos extends MY_Controller {
 
         $register_id = _input( 'register_id' );
         $deviceRegisterId = _input( 'deviceRegisterId' );
-
         $tables = _get_module( 'areas/tables', '_search', [] );
 
         $session = $this->pos_session->get_open( $register_id );
@@ -750,7 +752,7 @@ class Pos extends MY_Controller {
 
         $obj = _input( 'obj' );
 
-        unset( $obj['type'] );
+        unset( $obj['type'] ,$obj['printers']);
 
         $this->_vue_to_sql( $obj, $this->pos_session->keys );
 
@@ -880,7 +882,7 @@ class Pos extends MY_Controller {
 
         $obj = _input( 'obj' );
 
-        unset( $obj['type'] );
+        unset( $obj['type'] ,$obj['printers']);
 
         $this->_vue_to_sql( $obj, $this->prs->keys );
 
@@ -1586,45 +1588,21 @@ class Pos extends MY_Controller {
                     } elseif ( $key == 'items' ) {
                         if ( count( $value ) ) {
                             $temp = [];
-                            foreach ( $value as $item ) {
-                                $item_id = $item['itemId'];
-                                $unit_id = $item['saleUnitId'];
+                            foreach ( $value as &$item ) {
+                                $item['id'] = null;
+                                $item['lastModifyQty'] = 0;
                                 $item['hasSpiceLevel'] = ( $item['hasSpiceLevel'] === '1' ) ? true : false;
                                 $item['isPriceEditable'] = ( (int) $item['itemId'] === (int) _get_setting( 'open_item_id', OPEN_ITEM_ID ) ) ? true : false;
                                 $item['data'] = $this->_single_item( ['id' => $item['itemId'], 'type' => $item['type']] );
                                 if ( $item['data'] ) {
-                                    if ( $item['type'] === 'single' ) {
-                                        if ( $item['data']['prices'] ) {
-                                            $prices = array_values( array_filter( $item['data']['prices'], function ( $single ) use ( $item_id, $sku_id, $unit_id ) {
-                                                return $single['itemId'] === $item_id && $single['unitId'] === $unit_id;
-                                            } ) );
-
-                                            if ( $prices ) {
-                                                foreach ( $prices as $price ) {
-                                                    $item['rate'] = $price['salePrice'];
-                                                }
-                                            }
-                                        }
-                                    } elseif ( $item['type'] === 'group' ) {
-                                        if ( $item['data']['variations'] ) {
-                                            $prices = array_values( array_filter( $item['data']['variations'], function ( $single ) use ( $item_id, $unit_id ) {
-                                                return $single['itemId'] === $item_id && $single['unitId'] === $unit_id;
-                                            } ) );
-                                            if ( $prices ) {
-                                                foreach ( $prices as $price ) {
-                                                    $item['rate'] = $price['salePrice'];
-                                                }
-                                            }
-                                        }
-                                    }
                                     $addons = $item['addons'];
                                     $addonPrice = 0;
                                     if ( $addons ) {
                                         foreach ( $addons as $addon ) {
-                                            $addon['salePrice'] = $addon['salePrice'] * $addon['quantity'];
+                                            $addon['rate'] = $addon['rate'] * $addon['quantity'];
                                             $enabled = @$addon['enabled'] == true;
                                             if ( $enabled && $addon['quantity'] > 0 ) {
-                                                $addonPrice += (float) $addon['salePrice'];
+                                                $addonPrice += (float) $addon['rate'];
                                             }
                                         }
                                     }
@@ -1655,6 +1633,23 @@ class Pos extends MY_Controller {
             _response_data( 'message', ['text' => 'The requested details could not be found.', 'type' => 'warning'] );
             return false;
         }
+    }
+
+    public function _update_change_and_tip_post(){
+        _model( 'orders/order', 'order' );
+        $order_id = _input( 'orderId' );
+        $obj = _input( 'obj' );
+       // $order = $this->order->single(['id'=>$order_id]);
+
+      // dd($this->order->affected_rows());
+        if($this->order->update( ['tip'=>$obj['tip'],'change'=>$obj['change']], ['id' => $order_id] )){
+            _response_data( 'message', ['text' => 'The Successfully Change And Tip.'] ); 
+        }else{
+            _response_data( 'message', ['text' => 'The Change And Tip Failed.', 'type' => 'warning'] );
+        }
+       
+        return true;
+        
     }
 
     public function _cache_items_get() {
@@ -1805,7 +1800,7 @@ class Pos extends MY_Controller {
                             (SELECT COUNT(*)  FROM pos_register_session prs WHERE prs.session_id = $session_id AND prs.closing_user_id IS NOT NULL AND prs.closing_date IS NOT NULL) AS closeRegister,
                             (SELECT COUNT(*) AS openRegister FROM pos_register_session prs WHERE prs.session_id = $session_id) AS openRegister,
                             (SELECT COUNT(*) FROM emp_shift es WHERE  es.session_id = $session_id AND es.close_register_id IS NULL AND es.end_shift IS NULL) AS  openEmpShiftCount,
-                            (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = 1 AND oo.order_status IN ('Confirmed','Preparing','Ready'))  AS openOrderCount,
+                            (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = $session_id AND oo.order_status IN ('Confirmed','Preparing','Ready'))  AS openOrderCount,
                             (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = $web_session_id AND oo.source_id=$source_id) AS onlineOrderCount
                           FROM dual";
 

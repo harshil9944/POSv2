@@ -249,7 +249,7 @@ class Employees extends MY_Controller {
                 };
 
             }
-            _response_data( 'message', 'Invalid Employee or code.' );
+            _response_data( 'message', 'Already Shift Closed.' );
             return false;
 
         }
