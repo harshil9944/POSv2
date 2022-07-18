@@ -73,7 +73,7 @@ class Sales extends MY_Controller {
         $order_item_table = ORDER_ITEM_TABLE;
 
         //$sql = "SELECT oo.order_date AS orderDate, COUNT(oo.id) totalOrders, SUM(oo.grand_total) AS totalAmount, SUM((SELECT SUM(op.quantity) FROM `$order_item_table` op WHERE op.order_id = oo.id GROUP BY op.order_id)) AS totalItems, SUM(oo.tax_total) AS totalTax,SUM(oo.sub_total) AS subTotal,SUM(oo.discount) AS discount FROM $order_table oo WHERE (DATE(oo.order_date)>='$filter_start_date' AND DATE(oo.order_date)<='$filter_end_date') GROUP BY CAST(oo.order_date AS date)";
-        $sql = "SELECT oo.order_date AS orderDate, COUNT(oo.id) totalOrders, SUM(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS totalAmount, SUM(oo.tax_total) AS totalTax,SUM(oo.sub_total) AS subTotal,SUM(oo.discount) AS discount FROM $order_table oo WHERE (DATE(oo.order_date)>='$filter_start_date' AND DATE(oo.order_date)<='$filter_end_date') AND oo.order_status  NOT IN ('cancelled','refunded','deleted') GROUP BY CAST(oo.order_date AS date)";
+        $sql = "SELECT oo.order_date AS orderDate, COUNT(oo.id) totalOrders, SUM(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS totalAmount, SUM(oo.tax_total) AS totalTax,SUM(oo.sub_total) AS subTotal,SUM(oo.discount) AS discount,SUM(oo.tip) AS tip FROM $order_table oo WHERE (DATE(oo.order_date)>='$filter_start_date' AND DATE(oo.order_date)<='$filter_end_date') AND oo.order_status  NOT IN ('cancelled','refunded','deleted') GROUP BY CAST(oo.order_date AS date)";
 
         if (isset($params['start']) || isset($params['limit'])) {
             if ($params['start'] < 0) {
@@ -287,6 +287,7 @@ class Sales extends MY_Controller {
                         'orderDate'      =>	custom_date_format($report['orderDate'],'d/m/Y'),
                         'totalOrders'	    =>	$report['totalOrders'],
                         'subTotal'	=>	$report['subTotal'],
+                        'tip'	=>	$report['tip'],
                         'discount'	=>	$report['discount'],
                         'totalTax'	=>	$report['totalTax'],
                         'totalAmount'	=>	$report['totalAmount'],
@@ -298,6 +299,7 @@ class Sales extends MY_Controller {
                 'Date',
                 'Orders',
                 'Sub Total',
+                'Tip',
                 'Discount',
                 'Tax',
                 'Amount',

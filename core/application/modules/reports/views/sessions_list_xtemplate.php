@@ -56,6 +56,10 @@
                             <span v-if="row.value>0" class="text-right">{{ row.value | toTwoDecimal }}</span>
                             <span v-if="row.value<=0">0</span>
                         </template>
+                        <template slot="tipTotal" slot-scope="row">
+                            <span v-if="row.value>0" class="text-right">{{ row.value | toTwoDecimal }}</span>
+                            <span v-if="row.value<=0">0</span>
+                        </template>
                         <template slot="taxTotal" slot-scope="row">
                             <span v-if="row.value>0" class="text-right">{{ row.value | toTwoDecimal }}</span>
                             <span v-if="row.value<=0">0</span>
@@ -81,8 +85,10 @@
                             <th colspan="2" class="text-right">Total</th>
                             <th class="text-right">{{ getSum('ordersCount') }}</th>
                             <th class="text-right">{{ getSum('openingCash') | toTwoDecimal | beautifyCurrency }}</th>
-                            <th class="text-right">{{ getSum('taxTotal') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('transactionsTotal') | toTwoDecimal | beautifyCurrency }}</th>
+                            <th class="text-right">{{ getSum('discountTotal') | toTwoDecimal | beautifyCurrency }}</th>
+                            <th class="text-right">{{ getSum('tipTotal') | toTwoDecimal | beautifyCurrency }}</th>
+                            <th class="text-right">{{ getSum('taxTotal') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('takeOut') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('closingCash') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('expectedClosingCash') | toTwoDecimal | beautifyCurrency }}</th>

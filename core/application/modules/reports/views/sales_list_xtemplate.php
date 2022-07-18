@@ -39,6 +39,9 @@
                         <template slot="subTotal" slot-scope="row">
                             <span class="text-right">{{ row.value | beautifyCurrency }}</span>
                         </template>
+                        <template slot="tip" slot-scope="row">
+                            <span class="text-right">{{ row.value | beautifyCurrency }}</span>
+                        </template>
                         <template slot="discount" slot-scope="row">
                             <span class="text-right">{{ row.value | beautifyCurrency }}</span>
                         </template>
@@ -52,6 +55,7 @@
                             <th  class="text-right">Total</th>
                             <th class="text-right">{{ getSum('totalOrders') }}</th>
                             <th class="text-right">{{ getSum('subTotal') | toTwoDecimal | beautifyCurrency }}</th>
+                            <th class="text-right">{{ getSum('tip') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('discount') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('totalTax') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('totalAmount') | toTwoDecimal | beautifyCurrency }} </th>

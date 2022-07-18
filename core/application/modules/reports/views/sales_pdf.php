@@ -31,6 +31,7 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
             <td style="<?php echo $th_styles; ?>">Order Date</td>
             <td style="<?php echo $th_styles_right; ?>">Total Orders</td>
             <td style="<?php echo $th_styles_right; ?>">Sub Total</td>
+            <td style="<?php echo $th_styles_right; ?>">Tip</td>
             <td style="<?php echo $th_styles_right; ?>">Discount</td>
             <td style="<?php echo $th_styles_right; ?>">Total Tax</td>
             <td style="<?php echo $th_styles_right; ?>">Total Amount</td>
@@ -42,6 +43,7 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
                 <td style="<?php echo $td_styles; ?>"><?php echo custom_date_format($single['orderDate'],'d/m/Y'); ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['totalOrders']; ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['subTotal']; ?></td>
+                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['tip']; ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['discount']; ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['totalTax']; ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['totalAmount']; ?></td>
@@ -54,6 +56,9 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
         }, $obj));
         $sub_total = array_sum(array_map(function($item) {
             return $item['subTotal'];
+        }, $obj));
+        $tip_total = array_sum(array_map(function($item) {
+            return $item['tip'];
         }, $obj));
         $discount = array_sum(array_map(function($item) {
             return $item['discount'];
@@ -69,10 +74,11 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
         <tr>
             <td style="<?php echo $th_styles_right; ?>">Total</td>
             <td style="<?php echo $th_styles_right; ?>"><?php echo $total_orders; ?></td>
-            <td style="<?php echo $th_styles_right; ?>"><?php echo $sub_total; ?></td>
-            <td style="<?php echo $th_styles_right; ?>"><?php echo $discount; ?></td>
-            <td style="<?php echo $th_styles_right; ?>"><?php echo $total_tax; ?></td>
-            <td style="<?php echo $th_styles_right; ?>"><?php echo $total_amount; ?></td>
+            <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($sub_total); ?></td>
+            <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($tip_total); ?></td>
+            <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($discount); ?></td>
+            <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($total_tax); ?></td>
+            <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($total_amount); ?></td>
         </tr>
         </tfoot>
     </table>

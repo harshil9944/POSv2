@@ -44,23 +44,23 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
         </tr>
         </thead>
         <tbody>
-        <?php foreach($obj as $single){ ?>
-            <tr>
-                <td style="<?php echo $td_styles; ?>"><?php echo $single['status']; ?></td>
-                <td style="<?php echo $td_styles; ?>"><?php echo custom_date_format($single['openingDate']); ?></td>
-                <td style="<?php echo $td_styles; ?>"><?php echo $single['openingEmployee']; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['openingCash']?$single['openingCash']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['ordersCount']?$single['ordersCount']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['taxTotal']?$single['taxTotal']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['transactionsTotal']?$single['transactionsTotal']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['discountTotal']?$single['discountTotal']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['changeTotal']?$single['changeTotal']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['tipTotal']?$single['tipTotal']:0; ?></td>
-                <td style="<?php echo $td_styles_right; ?>"><?php echo $single['expectedClosingCash']?$single['expectedClosingCash']:0; ?></td>
-                <td style="<?php echo $td_styles; ?>"><?php echo ($single['status']==='Close')?custom_date_format($single['closingDate']):''; ?></td>
-                <td style="<?php echo $td_styles; ?>"><?php echo $single['closingEmployee']; ?></td>
-            </tr>
-        <?php } ?>
+            <?php foreach($obj as $single){ ?>
+                <tr>
+                    <td style="<?php echo $td_styles; ?>"><?php echo $single['status']; ?></td>
+                    <td style="<?php echo $td_styles; ?>"><?php echo custom_date_format($single['openingDate']); ?></td>
+                    <td style="<?php echo $td_styles; ?>"><?php echo $single['openingEmployee']; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['openingCash']?$single['openingCash']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['ordersCount']?$single['ordersCount']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['taxTotal']?$single['taxTotal']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['transactionsTotal']?$single['transactionsTotal']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['discountTotal']?$single['discountTotal']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['changeTotal']?$single['changeTotal']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['tipTotal']?$single['tipTotal']:0; ?></td>
+                    <td style="<?php echo $td_styles_right; ?>"><?php echo $single['expectedClosingCash']?$single['expectedClosingCash']:0; ?></td>
+                    <td style="<?php echo $td_styles; ?>"><?php echo ($single['status']==='Close')?custom_date_format($single['closingDate']):''; ?></td>
+                    <td style="<?php echo $td_styles; ?>"><?php echo $single['closingEmployee']; ?></td>
+                </tr>
+            <?php } ?>
         </tbody>
     </table>
 </div>

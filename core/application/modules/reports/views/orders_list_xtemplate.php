@@ -40,7 +40,7 @@
                             {{ row.value | beautifyCurrency }}
                         </template>
                         <template slot="bottom-row">
-                            <th colspan="4" class="text-right">Total</th>
+                            <th colspan="5" class="text-right">Total</th>
                             <th class="text-right">{{ getSum('subTotal') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('discount') | toTwoDecimal | beautifyCurrency }}</th>
                             <th class="text-right">{{ getSum('taxTotal') | toTwoDecimal | beautifyCurrency }}</th>
