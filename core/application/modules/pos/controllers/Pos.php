@@ -666,7 +666,7 @@ class Pos extends MY_Controller {
                 $session['expectedClosingCash'] = $session['expectedClosingCash'] - $session['cashRefundTransactionsTotal'];
             }
         }
-        if ( ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT ) {
+        if (!ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT ) {
             $session['transactionsTotal'] = $session['transactionsTotal'] - $session['gratuityTotal'];
             if ( @$session['expectedClosingCash'] ) {
                 $session['expectedClosingCash'] = $session['expectedClosingCash'] - $session['cashGratuityTotal'];
@@ -714,15 +714,15 @@ class Pos extends MY_Controller {
             foreach ( $payment_methods as $method ) {
                 $method_id = $method['id'];
                 $code = $method['code'];
-                $query .= "( SELECT SUM(sp.amount) FROM $order_payment_table sp WHERE sp.payment_method_id=$method_id AND sp.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status!='Refunded') ) AS {$code}_transactions_total,";
+                $query .= "( SELECT SUM(sp.amount) FROM $order_payment_table sp WHERE sp.payment_method_id= $method_id AND sp.order_id IN (SELECT so.id FROM $order_table so WHERE so.session_id=$session_id " . $condition . " AND so.order_status!='Refunded') ) AS {$code}_transactions_total,";
             }
         }
         if ( $order_source ) {
             foreach ( $order_source as $source ) {
                 $source_id = $source['id'];
                 $query .= "( SELECT COUNT(*) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id AND so.order_status NOT IN ('Cancelled','Refunded','Deleted')) AS source_{$source_id}_orders_count,";
-                $query .= "( SELECT SUM(so.grand_total) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id AND so.order_status NOT IN ('Refunded','Deleted')) AS source_{$source_id}_amount,";
-                $query .= "( SELECT SUM(so.discount) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id  AND so.order_status NOT IN ('Refunded','Deleted')) AS source_{$source_id}_discount,";
+                $query .= "( SELECT SUM(so.grand_total) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id AND so.order_status NOT IN ('Cancelled','Refunded','Deleted')) AS source_{$source_id}_amount,";
+                $query .= "( SELECT SUM(so.discount) FROM $order_table so  WHERE so.session_id=$session_id " . $condition . " AND so.source_id=$source_id  AND so.order_status NOT IN ('Cancelled','Refunded','Deleted')) AS source_{$source_id}_discount,";
             }
         }
 
@@ -1595,7 +1595,7 @@ class Pos extends MY_Controller {
                                 if ( $item['data'] ) {
                                     if ( $item['type'] === 'single' ) {
                                         if ( $item['data']['prices'] ) {
-                                            $prices = array_values( array_filter( $item['data']['prices'], function ( $single ) use ( $item_id, $sku_id, $unit_id ) {
+                                            $prices = array_values( array_filter( $item['data']['prices'], function ( $single ) use ( $item_id, $unit_id ) {
                                                 return $single['itemId'] === $item_id && $single['unitId'] === $unit_id;
                                             } ) );
 

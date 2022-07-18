@@ -44,6 +44,12 @@ Vue.component("report-sales", {
 						thClass: "text-right w-180p",
 					},
 					{
+						key: "tip",
+						label: "Tip",
+						tdClass: "text-right w-180p",
+						thClass: "text-right w-180p",
+					},
+					{
 						key: "discount",
 						label: "Discount",
 						tdClass: "text-right w-180p",

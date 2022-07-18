@@ -52,7 +52,6 @@ defined('KITCHEN_PRINTERS')             OR  define('KITCHEN_PRINTERS', [
 defined('CUSTOMER_USERNAME_FIELD')      OR  define('CUSTOMER_USERNAME_FIELD', 'mobile');
 defined('CUSTOMER_AUTOFILL_FIELD')      OR  define('CUSTOMER_AUTOFILL_FIELD', 'phone');
 
-defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 438);
 defined('ENABLE_SPLIT_ORDERS')          OR  define('ENABLE_SPLIT_ORDERS', true);
 defined('POS_LOAD_ADDON_ITEMS')         OR  define('POS_LOAD_ADDON_ITEMS', false);
 defined('ENABLE_SOURCE_SWITCH')         OR  define('ENABLE_SOURCE_SWITCH', true);
