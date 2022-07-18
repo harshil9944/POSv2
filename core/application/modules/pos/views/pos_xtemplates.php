@@ -1244,7 +1244,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
 </script>
 <script type="text/x-template" id="session-summary-template">
     <div>
-        <b-modal no-fade centered :id="'session-summary-modal' + objectId" size="xl" hide-header hide-footer body-class="p-0">
+        <b-modal no-fade centered :id="modalId" size="xl" hide-header hide-footer body-class="p-0">
             <div id="session-summary-block" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
                     <h3 class="block-title">{{ getTitle }}</h3>
@@ -1423,6 +1423,12 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                                     <tr v-if="!isEmployeeType" class="alert-success">
                                                         <th>Take Out Cash</th>
                                                         <th class="text-right">{{ session.takeOut | toTwoDecimal | beautifyCurrency }}</th>
+                                                    </tr>
+                                                    <tr v-if="showPrinter">
+                                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                                            <input type="checkbox" class="css-control-input" v-model="printers.selected">
+                                                            <span class="css-control-indicator"></span>&nbsp;{{ printers.title }}
+                                                        </label>
                                                     </tr>
                                                 </table>
                                             </div>
@@ -2180,8 +2186,8 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 <td colspan="4" class="font-w600 text-right">Tip</td>
                                 <td class="text-right">{{ modal.obj.tip | beautifyCurrency }}</td>
                             </tr>
-                            <tr v-if="Number(modal.obj.change) !== 0">
-                                <td colspan="4" class="font-w600 text-right">Change</td>
+                            <tr v-if="Number(modal.obj.change) > 0">
+                                <td colspan="4" class="font-w600 text-right">Change <a v-if="!isClosedOrder && allowConvertChangeToTip" class="font-11 text-right" @click="handleConvertToTip" href="javascript:void(0);">Convert to Tip</a></td>
                                 <td class="text-right">{{ modal.obj.change | beautifyCurrency }}</td>
                             </tr>
                             <tr class="table-warning">
@@ -2831,6 +2837,51 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
         </div>
     </b-modal>
 </script>
+<script type="text/x-template" id="convert-tip-template">
+     <b-modal id="convert-tip-modal" size="md"   hide-header hide-footer body-class="p-0" v-cloak>
+        <div class="block block-themed block-transparent mb-0">
+            <div class="block-header bg-primary-dark">
+                <h3 class="block-title">{{order.orderNo}}</h3>
+                <div class="block-options">
+                    <button type="button" class="btn-block-option" @click="handleCancel" aria-label="Close">
+                        <i class="si si-close"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="block block-content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="table">
+                            <table class="table-bordered table f-s-12 text-black">
+                                <tbody>
+                                    <tr>
+                                        <th colspan="2" class="text-center">Cart Details</th>
+                                    </tr>
+                                    <tr class="font-18 bg-gray-lighter">
+                                        <th class="w-60">Change <a v-if="canConvertToTip"class="font-11 text-right" @click.prevent="handleConvertToTip" href="javascript:void(0);">to Tip</a></th>
+                                        <td class="text-right">{{ total.change | toTwoDecimal | beautifyCurrency }}</td>
+                                    </tr>
+                                    <tr class="font-18 bg-gray-lighter">
+                                        <th class="w-60">Tip <a v-if="isTipAllow" class="font-11 text-right" @click.prevent="reverseTip" href="javascript:void(0);">Clear</a></th>
+                                        <td class="text-right">
+                                            <input type="number" :disabled="!canConvertToTip" class="form-control text-right" v-model="total.tip">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="text-center">
+                            <button  type="button" @click="handleConfirm" class="btn btn-primary mr-2">Confirm</button>
+                            <button type="button" @click="handleCancel" class="btn btn-danger">Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </b-modal>
+</script>
 <script type="text/x-template" id="clover-payment-template">
     <b-modal no-fade centered id="clover-payment-modal" size="lg" :no-close-on-backdrop="true"  hide-header hide-footer body-class="p-0" v-cloak>
         <div id="clover-payment-block" class="block">
@@ -3006,6 +3057,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                 <gratuity-dialog :cart="order.cart" :is-editable="isEditable"></gratuity-dialog>
                 <order-history :employeeId="employeeId" :registerId="registerId" :session="session.id" :isTabletMode="isTabletMode"></order-history>
                 <order-details :session="session.id"></order-details>
+                <convert-tip></convert-tip>
                 <online-order-history :orders="unacceptedOrders"></online-order-history>
                 <online-order-detail :session="session.id" :register="register"></online-order-detail>
                 <session-summary object-id="employee" :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>

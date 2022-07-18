@@ -94,6 +94,12 @@ Vue.component("report-orders", {
 		},
 	},
 	methods: {
+		handleDownloadPdf: function () {
+			Object.assign(document.createElement("a"), {
+				target: "_blank",
+				href: this.modal.obj.pdfUrl,
+			}).click();
+		},
 		getPaymentMethodName: function (id) {
 			if (this.paymentMethods.length) {
 				var paymentMethod = this.paymentMethods.find(function (method) {

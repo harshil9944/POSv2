@@ -3244,7 +3244,6 @@ Vue.component("order-history", {
 			});
 		},
 		handleChangeStatus: function (id, status) {
-			console.log('po');
 			var self = this;
 			var data = {
 				module: "pos",
@@ -3368,6 +3367,11 @@ Vue.component("session-summary", {
 			allowSummaryCashEmployeeTakeOut: _s("allowSummaryCashEmployeeTakeOut"),
 			employeeName : '',
 			limitedShow :true,
+			printers:{
+				selected: false,
+				value: "summary",
+				title: "Print",
+			}
 		};
 	},
 	watch: {
@@ -3383,6 +3387,9 @@ Vue.component("session-summary", {
 		},
 	},
 	computed: {
+		modalId: function () {
+			return "session-summary-modal-" + this.objectId;
+		},
 		isEmployeeType: function () {
 			return this.type === "employee";
 		},
@@ -3406,6 +3413,9 @@ Vue.component("session-summary", {
 			}
 			return title;
 		},
+		showPrinter: function () {
+			return this.limitedShow ? (this.isRegisterType || this.isSessionType) : false
+		}
 	},
 	methods: {
 		populateMeta: function () {
@@ -3433,17 +3443,17 @@ Vue.component("session-summary", {
 			});
 		},
 		closeModal: function() {
-			bus.$off("showSessionSummary-"+ this.objectId);
-			this.$bvModal.hide('session-summary-modal' + this.objectId);
+		   // bus.$off("showSessionSummary-"+ this.objectId);
+			this.$bvModal.hide('session-summary-modal-' + this.objectId);
 		},
 		handleCloseRegister: function () {
 			var obj = this.prepObject();
 			if (this.type !== "register") {
 				bus.$emit("closeRegister", obj);
 			} else {
-				bus.$emit("showUserLogin", { type: "Close" });
+				bus.$emit("showUserLogin", { type: "Close" ,obj });
 			}
-			bus.$off("showSessionSummary-"+ this.objectId);
+			//bus.$off("showSessionSummary-"+ this.objectId);
 		},
 		prepObject: function () {
 			var closingCash = !isNaN(this.session.closingCash)
@@ -3455,23 +3465,31 @@ Vue.component("session-summary", {
 				takeOut: this.session.takeOut,
 				closingNote: this.session.closingNote,
 				type: this.type,
+				printers:this.printers.selected ? [ this.printers.value ] : [],
 			});
 		},
+		setPrinter:function(){
+			if(this.type === "register"){
+                this.printers.selected = _s("defaultRegisterPrint");
+			}else if(this.type === "session"){
+				this.printers.selected = _s("defaultSummaryPrint");
+			}
+		}
 	},
-	beforeDestroy: function (){
+	/* beforeDestroy: function (){
 		//bus.$off("showSessionSummary-"+ this.objectId);
-	},
+	}, */
 	created: function () {
 		var self = this;
-		
 		bus.$on("showSessionSummary-"+ this.objectId, function (payload) {
 			self.type = payload.mode;
 			self.limitedShow = payload.show;
 			if(self.type === 'employee'){
                self.employeeName = localStorage.getItem("employeeName")
 			}
-			self.$bvModal.show("session-summary-modal" + self.objectId);
+			self.setPrinter();
 			self.populateMeta();
+			self.$bvModal.show("session-summary-modal-" + self.objectId);
 		});
 		bus.$on("setUserLogin", function (payload) {
 			if (payload.type === "Close") {
@@ -3575,11 +3593,11 @@ Vue.component("print-server-dialog", {
 			this.handleCloseModal(this.modal);
 		},
 	},
-	beforeDestroy: function(){
+	/* beforeDestroy: function(){
 		bus.$off("initDirectPrint");
 		bus.$off("initQueuePrint");
 		bus.$off("initPrintServerDialog");
-	},
+	}, */
 	created: function () {
 		var self = this;
 		bus.$on("initPrintServerDialog", function (payload) {
@@ -5156,6 +5174,7 @@ Vue.component("order-details", {
 			},
 			paymentMethods: [],
 			allowGratuity: _s("allowGratuity"),
+			allowConvertChangeToTip:_s('allowConvertChangeToTip')
 		};
 	},
 	computed: {
@@ -5180,9 +5199,15 @@ Vue.component("order-details", {
 		},
 		splitOrderList:function(){
 			return this.modal.obj.split;
+		},
+		isClosedOrder:function(){
+			return this.modal.obj.orderStatus === 'Closed'
 		}
 	},
 	methods: {
+		handleConvertToTip: function () {
+			bus.$emit("initConvertToTip", { orderId: this.modal.obj.id });
+		},
 		handleSplitPrint:function(split){
 			if(ds_confirm("Are You Sure, You Want To Print This Split Order?")){
 				var payload = {
@@ -5307,6 +5332,113 @@ Vue.component("order-details", {
 		bus.$on("initOrderDetails", function (payload) {
 			self.populateMeta();
 			self.handleViewOrder(payload.id);
+		});
+		bus.$on("updateChangeAndTip",function(payload){
+			self.populateMeta();
+			self.handleViewOrder(payload.id);
+		});
+	},
+});
+Vue.component("convert-tip", {
+	template: "#convert-tip-template",
+	data: function () {
+		return {
+			module: "orders",
+			paymentMethods: [],
+			order:{},
+			total:{
+				tip:0,
+				change:0
+			},
+			tipConverted: false,
+		};
+	},
+	computed: {
+		changeAmount: function () {
+			return Number(this.order.change).toFixed(2);
+		},
+		canConvertToTip: function() {
+            return Number(this.total.change) > Number(this.total.tip);
+        },
+		isTipAllow: function() {
+            return Number(this.total.tip) > 0;
+        },
+	},
+	watch: {
+		"total.tip": {
+			handler: function (after, before) {
+				var self = this;
+				if (after > self.changeAmount) {
+					self.total.tip = before;
+				}
+				self.total.change = Math.abs(
+					Number(self.changeAmount) - Number(self.total.tip),
+				);
+			},
+			deep: true,
+		},
+	},
+	methods: {
+		handleCancel:function(){
+			this.total= this.getTotalObj();
+			this.$bvModal.hide("convert-tip-modal");
+		},
+		handleConfirm:function(){
+			var obj={
+				tip : this.total.tip,
+				change :this.total.change,
+			}
+			var self = this;
+			var data = {
+				module: "pos",
+				method: "update_change_and_tip",
+				orderId: this.order.id,
+				obj: obj,
+			};
+			var request = submitRequest(data, "post");
+			request.then(function (response) {
+				bus.$emit("updateChangeAndTip",{id:self.order.id});
+				self.$bvModal.hide("convert-tip-modal");
+			});
+		},
+		reverseTip: function () {
+			this.tipConverted = false;
+			this.total.tip = 0;
+			this.total.change = this.changeAmount;
+
+		},
+		handleConvertToTip: function () {
+			this.tipConverted = true;
+			this.total.tip = this.changeAmount;
+			this.total.change = 0;
+		},
+		handleViewOrder: function (id) {
+			var self = this;
+			var data = {
+				module: this.module,
+				method: "single_order",
+				id: id,
+			};
+			var request = submitRequest(data, "get");
+			request.then(function (response) {
+				self.order = response.obj;
+				self.total.change = response.obj.change,
+				self.total.tip = response.obj.tip,
+				self.$bvModal.show("convert-tip-modal");
+			});
+		},
+		getTotalObj:function(){
+			return {
+				total:0,
+				tip:0,
+			}
+		}
+	},
+	created: function () {
+		var self = this;
+		bus.$on("initConvertToTip", function (payload) {
+			self.total=self.getTotalObj();
+			self.handleViewOrder(payload.orderId);
 		});
 	},
 });
@@ -5806,7 +5938,7 @@ Vue.component("user-login", {
 		},
 	},
 	beforeDestroy: function (){
-		bus.$off("setUserLogin");
+		//bus.$off("setUserLogin");
 	},
 	created: function () {
 		var self = this;
@@ -5992,10 +6124,10 @@ Vue.component("pos", {
 			var request = submitRequest(data, "get");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					if (_s("allowShiftPrint")) {
-						self.directPrint = ["summary"];
+					/* if(obj.printers.length > 0) {
+						self.directPrint = obj.printers;
 						self.handlePrintToServer(response.printData);
-					}
+					} */
 					self.removeEmpId(); 
 				}
 			});
@@ -6043,6 +6175,7 @@ Vue.component("pos", {
 				method: "populate",
 				register_id: this.register,
 				deviceRegisterId: this.registerId,
+				employeeId: this.employeeId,
 			};
 			var request = submitRequest(data, "get");
 			request.then(function (response) {
@@ -6177,10 +6310,18 @@ Vue.component("pos", {
 			if (this.isTabletMode) {
 				event = true;
 			} else {
-				if (this.isPrimaryRegister && this.lastRegister) {
-					event = true;
-				} else {
-					ds_alert("Close Other Registers!!", "warning");
+				if(this.anyOrderOpen){
+					ds_alert("Close Open Orders", "warning");
+				}else{
+					if(this.anyShiftOpen){
+						ds_alert("Close Shifts", "warning");
+					}else{
+						if (this.isPrimaryRegister && this.lastRegister) {
+							event = true;
+						} else {
+							ds_alert("Close Other Registers", "warning");
+						}
+					}
 				}
 			}
 			if(event){
@@ -6197,8 +6338,7 @@ Vue.component("pos", {
 			this.showSummary('employee',true);
 		},
 		showSummary: function(type,show){
-			console.log("showSessionSummary-"+type);
-			bus.$emit("showSessionSummary-"+type, { mode: type ,show:show});
+			bus.$emit("showSessionSummary-"+ type, { mode: type ,show:show});
 		},
 		handleOrderSwitch: function () {
 			bus.$emit("showOrderSwitch", true);
@@ -6216,8 +6356,8 @@ Vue.component("pos", {
 					self.session = null;
 					self.sessionChecked = false;
 					self.order = {};
-					if (_s("allowSummaryPrint")) {
-						self.directPrint = ["summary"];
+					if(obj.printers.length > 0) {
+						self.directPrint = obj.printers;
 						self.handlePrintToServer(response.printData);
 					}
 					self.handleLocalEmployeeRemove();
@@ -6239,10 +6379,10 @@ Vue.component("pos", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					if (_s("allowRegisterPrint")) {
-						self.directPrint = ["summary"];
+					if(obj.printers.length > 0) {
+						self.directPrint = obj.printers;
 						self.handlePrintToServer(response.printData);
-				    }
+				   }
 					self.registerSession = null;
 					self.registerCheckLogin = false;
 					self.order = {};
@@ -6567,6 +6707,9 @@ Vue.component("pos", {
 					self.order.type = "p";
 					self.order.sourceId = _s("posSourceId");
 					self.order.print = _s("defaultCashierPrint");
+					self.order.cart.items.forEach(function(i){
+						i.id = null;
+					})
 				} else {
 					ds_alert(response.message.text, response.message.type);
 				}
@@ -6621,7 +6764,23 @@ Vue.component("pos", {
 			},
 			0);
 			this.paymentAllowed = paidTotal < grandTotal;
-			this.isEditable = paidTotal === 0;
+			if(!_s('allowOrderEdit')){
+				this.isEditable = paidTotal === 0;
+			}else{
+				var onlinePaymentIds = _s('onlineOrderPaymentIds');
+				var filteredArray = this.order.cart.totals.payments.filter(function(p) {
+					return onlinePaymentIds.indexOf(Number(p.paymentMethodId)) !== -1;
+				});
+				if(filteredArray.length > 0){
+					if(this.order.orderStatus ==='Closed'){
+						this.isEditable = false;
+					}else{
+						this.isEditable = true;
+					}
+				}else{
+					this.isEditable = paidTotal === 0;
+				}
+			}
 		},
 		setupEvents: function () {
 			var self = this;
@@ -6780,7 +6939,6 @@ Vue.component("pos", {
 			bus.$off("splitPaymentCompleted");
 			bus.$off("initTableSelection");
 			bus.$off("initEditAddress");
-			bus.$off("showSessionSummary");
 			bus.$off("showUserLogin");
 			bus.$off("initDirectPrint");
 			return true;

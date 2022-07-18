@@ -124,4 +124,7 @@ defined('ALLOW_SUMMARY_PRINT')                    OR  define('ALLOW_SUMMARY_PRIN
 defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 195);
 defined('OPEN_ITEM_CATEGORY_ID')        OR  define('OPEN_ITEM_CATEGORY_ID', 20);
 
-defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',true);
+defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',false);
+defined('ALLOW_CONVERT_CHANGE_TO_TIP')  OR  define('ALLOW_CONVERT_CHANGE_TO_TIP', true);
+defined( 'ONLINE_ORDER_PAYMENT_IDS' ) OR define( 'ONLINE_ORDER_PAYMENT_IDS', [5,6] );
+defined( 'ALLOW_ORDER_EDIT' ) OR define( 'ALLOW_ORDER_EDIT', true );

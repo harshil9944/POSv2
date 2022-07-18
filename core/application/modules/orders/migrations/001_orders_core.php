@@ -226,6 +226,10 @@ class Migration_orders_core extends CI_Migration {
                 'type' => 'DECIMAL',
                 'constraint' => '16,2'
             ],
+            'last_modify_qty' => [
+                'type' => 'DECIMAL',
+                'constraint' => '16,2'
+            ],
             'rate' => [
                 'type' => 'DECIMAL',
                 'constraint' => '16,2'

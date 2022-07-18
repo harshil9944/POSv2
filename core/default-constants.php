@@ -37,6 +37,7 @@ defined('DEFAULT_WEB_ORDER_SOUND')      OR  define('DEFAULT_WEB_ORDER_SOUND','au
 defined('ALLOW_REFUND')                 OR  define('ALLOW_REFUND', true);
 defined('ENABLE_REPEAT_ORDER')          OR  define('ENABLE_REPEAT_ORDER',true);
 defined('ALLOW_CUSTOMER_GROUP')         OR  define('ALLOW_CUSTOMER_GROUP', false);
+defined('ALLOW_CONVERT_CHANGE_TO_TIP')  OR  define('ALLOW_CONVERT_CHANGE_TO_TIP', false);
 
 //Print
 defined('KITCHEN_PRINTERS')             OR  define('KITCHEN_PRINTERS', [
@@ -73,8 +74,8 @@ defined('DEFAULT_CITY_ID')              OR  define('DEFAULT_CITY_ID', 31);
 defined('ALLOW_DISCOUNT_IN_SUMMARY')              OR  define('ALLOW_DISCOUNT_IN_SUMMARY', false);
 defined('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT')  OR  define('ALLOW_GRATUITY_IN_TOTAL_ORDERS_AMOUNT', false);
 defined('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT')  OR  define('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT', true);
-defined('ALLOW_SUMMARY_PRINT')                    OR  define('ALLOW_SUMMARY_PRINT', true);
-defined('ALLOW_REGISTER_PRINT')                    OR  define('ALLOW_REGISTER_PRINT', true);
+defined('DEFAULT_SUMMARY_PRINT')                    OR  define('DEFAULT_SUMMARY_PRINT', false);
+defined('DEFAULT_REGISTER_PRINT')                    OR  define('DEFAULT_REGISTER_PRINT', false);
 defined('ALLOW_SHIFT_PRINT')                    OR  define('ALLOW_SHIFT_PRINT', true);
 
 //Payment
@@ -98,3 +99,5 @@ defined('ITEM_TYPES')        OR  define('ITEM_TYPES', [
         ['value'=>'food','title'=>'Food'],
         ['value'=>'liquor','title'=>'Liquor']
     ]);
+defined( 'ONLINE_ORDER_PAYMENT_IDS' ) OR define( 'ONLINE_ORDER_PAYMENT_IDS', [] );
+defined( 'ALLOW_ORDER_EDIT' ) OR define( 'ALLOW_ORDER_EDIT', false );
