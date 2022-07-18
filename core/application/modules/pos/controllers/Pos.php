@@ -2787,11 +2787,7 @@ class Pos extends MY_Controller {
                     }
                     $order['items'] = $temp;
                 }
-                if($order['payments']){
-                    if($split['payments']){
-                        $order['payments'] = $split['payments'];
-                    }
-                }
+                $order['payments'] = $split['payments'];
               
                 unset( $order['split'] );
             }

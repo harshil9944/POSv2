@@ -4312,6 +4312,9 @@ Vue.component("split-order", {
 			};
 			bus.$emit("printSplitOrderReceipt", payload);
 		},
+		printSplitOrder:function(){
+			this.handlePrintSplitOrder(['cashier']);
+		},
 		handleCloseOrder: function () {
 			this.order.close = true;
 			bus.$emit("saveOrder", true);

@@ -777,8 +777,8 @@ class Orders extends MY_Controller {
 
             $split['items'] = $invoice_items;
 
-            $split_payments = $this->split_payment->search(['order_id' => $order_id,'split_id'=>$split_id]);
-            
+            $split_payments = $this->split_payment->search(['order_id' => $order_id]);
+            $split['payments'] = [];
             if ($split_payments) {
                 $invoice_payment_ids = array_column(array_values(array_filter($split_payments, function ($single) use ($split_id) {
                     return $split_id == $single['split_id'];
@@ -789,7 +789,16 @@ class Orders extends MY_Controller {
                         $invoice_payments[] = $payment;
                     }
                 }
-                $split['payments'] = $invoice_payments;
+                if($invoice_payments){
+                    $temp=[];
+                    foreach($invoice_payments as &$ip){
+                        $temp[] = [
+                            'title'  => $ip['paymentMethodName'],
+                            'amount' => dsRound( $ip['amount'] ),
+                        ];
+                    }
+                   $split['payments'] = $temp;
+                }
             }
 
             $this->_exclude_keys($split, $this->split->exclude_keys);
