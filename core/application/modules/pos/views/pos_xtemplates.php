@@ -1936,7 +1936,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                     </div>
                                     <div class="col-12 text-center">
                                         <button :disabled="isActivePaymentDone" @click="handlePayment" class="btn btn-danger mr-2"><i class="fa fa-dollar"></i> Make Payment</button>
-                                        <button  @click="handlePrintSplitOrder(['cashier'])" class="btn btn-secondary"><i class="fa fa-print"></i> Print</button>
+                                        <button  @click="printSplitOrder" class="btn btn-secondary"><i class="fa fa-print"></i> Print</button>
                                     </div>
                                 </div>
                             </div>
@@ -2012,7 +2012,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                     </div>
                                     <div class="col-12 text-center">
                                         <button :disabled="isActivePaymentDone" @click="handlePayment" class="btn btn-danger mr-2"><i class="fa fa-dollar"></i> Make Payment</button>
-                                        <button :disabled="hasNonAddedItems" @click="handlePrintSplitOrder" class="btn btn-secondary"><i class="fa fa-print"></i> Print</button>
+                                        <button :disabled="hasNonAddedItems" @click="printSplitOrder" class="btn btn-secondary"><i class="fa fa-print"></i> Print</button>
                                     </div>
                                 </div>
                             </div>

@@ -6,8 +6,8 @@
                     <p class="mb-0 font-weight-700">Filters</p>
                     <div class="row no-gutters">
                         <div class="col-10">
-                            <div class="row">
-                                <div class="col-12 col-md-3">
+                            <div class="row no-gutters">
+                                <div class="col-12 col-md-3 mr-2">
                                     <date-range-picker
                                         class="d-inline-block"
                                         opens="right"
@@ -15,20 +15,20 @@
                                         :auto-apply="true"
                                     ></date-range-picker>
                                </div>
-                                <div class="col-12 col-md-3 mr-1">
-                                    <select  id="employeeId" class="form-control d-block mr-1" v-model="employeeId">
+                                <div class="col-12 col-md-3 mr-2">
+                                    <select  id="employeeId" class="form-control d-inline-block" v-model="employeeId">
                                         <option value="" selected>Select employee</option>
                                         <option v-for="single in employees" :value="single.id">{{ single.name }}</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-4 mr-2 ml-2">
+                                <div class="col-12 col-md-4">
                                     <button class="btn btn-primary" @click="handleFilter"><i class="fa fa-search"></i>&nbsp;Filter</button>
-                                    <button class="btn btn-danger ml-2" @click="handleClearFilter">Clear</button>
+                                    <button class="btn btn-danger" @click="handleClearFilter">Clear</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-2">
-                            <div class="btn-group float-right d-block" role="group">
+                            <div class="btn-group float-right d-inline-block" role="group">
                                 <button type="button" class="btn btn-primary dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>Exports</button>
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
                                     <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportPDF"></i>PDF</a>
