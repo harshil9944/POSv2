@@ -76,6 +76,7 @@ Vue.component("report-sales", {
 			enableFilterBtn: true,
 			reportsCount: null,
 			reports: [],
+			pageOptions: [ 10, 20, 50,100],
 		};
 	},
 	computed: {
@@ -84,6 +85,9 @@ Vue.component("report-sales", {
 		},
 	},
 	methods: {
+		handleChangeLimit: function (){
+			this.filterData(1)
+		},
 		handleFilter: function () {
 			this.totalReports();
 			this.filterData(1);
@@ -102,6 +106,7 @@ Vue.component("report-sales", {
 				filterStartDate: startDate,
 				filterEndDate: endDate,
 				currentPage: this.params.itemCurrentPage,
+				limit: this.params.perPage,
 			};
 			var response = await submitRequest(data, "get");
 			if (response.status === "ok") {

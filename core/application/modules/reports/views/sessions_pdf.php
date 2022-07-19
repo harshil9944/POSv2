@@ -62,6 +62,47 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
                 </tr>
             <?php } ?>
         </tbody>
+        <?php
+        $opening_cash = array_sum(array_map(function($item) {
+            return $item['openingCash'];
+        }, $obj));
+        $orders_count = array_sum(array_map(function($item) {
+            return $item['ordersCount'];
+        }, $obj));
+        $tax_total = array_sum(array_map(function($item) {
+            return $item['taxTotal'];
+        }, $obj));
+        $transactions_total = array_sum(array_map(function($item) {
+            return $item['transactionsTotal'];
+        }, $obj));
+        $discount_total = array_sum(array_map(function($item) {
+            return $item['discountTotal'];
+        }, $obj));
+        $change_total = array_sum(array_map(function($item) {
+            return $item['changeTotal'];
+        }, $obj));
+        $tip_total = array_sum(array_map(function($item) {
+            return $item['tipTotal'];
+        }, $obj));
+        $expectedClosingCash = array_sum(array_map(function($item) {
+            return $item['expectedClosingCash'];
+        }, $obj));
+        ?>
+        <tfoot>
+            <tr>
+                <td  colspan="3" style="<?php echo $th_styles_right; ?>">Total</td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo $opening_cash; ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo $orders_count; ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($tax_total); ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($transactions_total); ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($discount_total); ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($change_total); ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($tip_total); ?></td>
+                <td style="<?php echo $th_styles_right; ?>"><?php echo dsRound($expectedClosingCash); ?></td>
+                <td style="<?php echo $th_styles_right; ?>"></td>
+                <td style="<?php echo $th_styles_right; ?>"></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 </body>
