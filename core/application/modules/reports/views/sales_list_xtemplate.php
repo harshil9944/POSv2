@@ -61,16 +61,26 @@
                             <th class="text-right">{{ getSum('totalAmount') | toTwoDecimal | beautifyCurrency }} </th>
                         </template>
                     </b-table>
-                    <b-pagination
-                        @change="filterData"
-                        :current-page="params.itemCurrentPage"
-                        v-model="params.itemCurrentPage"
-                        :total-rows="itemRows"
-                        :per-page="params.perPage"
-                        aria-controls="item-list-table"
-                        align="center"
-                        v-if="reports.length"
-                    ></b-pagination>
+                    <div class="row">
+                        <div class="col-1 text-right mt-1">
+                            <span v-if="reports.length">Total {{ itemRows }}</span>
+                        </div>
+                        <div class="col-1">
+                            <b-form-select size="sm"  v-model="params.perPage"  @change="handleChangeLimit"  :options="pageOptions"></b-form-select>
+                        </div>
+                        <div class="col-10">
+                            <b-pagination
+                                @change="filterData"
+                                :current-page="params.itemCurrentPage"
+                                v-model="params.itemCurrentPage"
+                                :total-rows="itemRows"
+                                :per-page="params.perPage"
+                                aria-controls="item-list-table"
+                                align="right"
+                                v-if="reports.length"
+                            ></b-pagination>
+                        </div>
+                    </div>
                     <h4 v-if="!reports.length" class="text-center">No Items</h4>
                 </div>
             </div>

@@ -96,6 +96,7 @@ Vue.component("report-sessions", {
 			session: {},
 			enableRefunded: _s("enableRefunded"),
 			allowGratuity: _s("allowGratuity"),
+			pageOptions: [ 10, 20, 50,100],
 		};
 	},
 	computed: {
@@ -122,6 +123,9 @@ Vue.component("report-sessions", {
 			this.totalReports();
 			this.filterData(1);
 		},
+		handleChangeLimit: function (){
+			this.filterData(1)
+		},
 		filterData: async function (currentPage) {
 			this.enableFilterBtn = false;
 			this.params.itemCurrentPage = currentPage;
@@ -136,6 +140,7 @@ Vue.component("report-sessions", {
 				filterStartDate: startDate,
 				filterEndDate: endDate,
 				currentPage: this.params.itemCurrentPage,
+				limit: this.params.perPage,
 			};
 			var response = await submitRequest(data, "get");
 			if (response.status === "ok") {

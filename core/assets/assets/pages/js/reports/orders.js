@@ -78,6 +78,7 @@ Vue.component("report-orders", {
 			},
 			paymentMethods: [],
 			allowGratuity: _s("allowGratuity"),
+			pageOptions: [ 10, 20, 50,100],
 		};
 	},
 	computed: {
@@ -94,6 +95,9 @@ Vue.component("report-orders", {
 		},
 	},
 	methods: {
+		handleChangeLimit: function (){
+			this.filterData(1)
+		},
 		handleDownloadPdf: function () {
 			Object.assign(document.createElement("a"), {
 				target: "_blank",
@@ -216,6 +220,7 @@ Vue.component("report-orders", {
 				filterStartDate: startDate,
 				filterEndDate: endDate,
 				currentPage: this.params.itemCurrentPage,
+				limit: this.params.perPage,
 			};
 			var response = await submitRequest(data, "get");
 			if (response.status === "ok") {

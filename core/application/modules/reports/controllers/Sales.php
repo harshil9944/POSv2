@@ -16,7 +16,7 @@ class Sales extends MY_Controller {
     }
     public function index() {
 
-        _set_js_var('paginationLimit',_get_setting('pagination_limit',10),'s');
+        _set_js_var('paginationLimit',DEFAULT_PAGINATION_LIMIT,'s');
         _set_js_var('ordersReportUrl',base_url('reports/orders'),'s');
         _set_js_var('salesReportPDFUrl',base_url('reports/sales/pdf'),'s');
         _set_js_var('salesReportCSVUrl',base_url('reports/sales/csv'),'s');
@@ -34,7 +34,11 @@ class Sales extends MY_Controller {
         $filter_start_date = _input('filterStartDate');
         $filter_end_date = _input('filterEndDate');
 
-        $limit = _get_setting('pagination_limit',10);
+       // $limit = _get_setting('pagination_limit',10);
+       $limit = _input('limit');
+       if(!$limit){
+        $limit = DEFAULT_PAGINATION_LIMIT;
+       }
 
         $params = [
             'filter_date_start' =>  $filter_start_date,
