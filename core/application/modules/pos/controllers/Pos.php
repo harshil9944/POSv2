@@ -2447,7 +2447,7 @@ class Pos extends MY_Controller {
                 $item_duty = ((float)$temp['amount'] * (float)$duty) / (float)$obj['order_table']['sub_total'];
                 $temp['duty_total'] = $item_duty;
                 } */
-
+                unset($temp['categoryId']);
                 $obj['order_item_table'][] = $temp;
             }
             unset( $obj['cart']['items'] );
@@ -2673,8 +2673,15 @@ class Pos extends MY_Controller {
                     $v['spiceLevel'] = 'medium';
                 }
             } );
+            $order['continue'] = false;
+            if($order['items']){
+                foreach ($order['items'] as &$item) {
+                    if((int)$item['printedQty'] > 0){
+                        $order['continue'] = true;
+                    }
+                }
+            }
 
-            //unset unused variables
             //unset unused variables
             unset( $order['selectedAddons'],$order['company'],$order['promotions'] );
             if($order['customer']){
