@@ -551,6 +551,7 @@ class Orders extends MY_Controller {
             $this->item_category->left_join(ITEM_CATEGORY_TABLE,ITEM_CATEGORY_TABLE.'.id='.ITEM_TABLE.'.category_id');
             $this->item_category->order_by(ITEM_CATEGORY_TABLE.'.sort_order','ASC');
             $this->order_item->select(ORDER_ITEM_TABLE.'.*');
+            $this->order_item->select('`itm_item`.category_id AS categoryId');
             $items = $this->order_item->search(['order_id'=>$result['id']]);
             $item_titles = [];
 
