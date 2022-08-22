@@ -243,6 +243,9 @@ class Items_api extends API_Controller
             $this->_sql_to_vue($result);
 
             $result['hasSpiceLevel'] = $result['hasSpiceLevel']==='1';
+            $result['isVegan'] = $result['isVegan']==='1';
+            $result['isGlutenFree'] = $result['isGlutenFree']==='1';
+            $result['isDairyFree'] = $result['isDairyFree']==='1';
             $result['spiceLevel'] = DEFAULT_SPICE_LEVEL;
             $result['originalPrice'] = $result['rate'];
             $result['orderItemNotes'] = null;

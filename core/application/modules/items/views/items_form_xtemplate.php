@@ -17,6 +17,7 @@ $group_2 = [
     ['control'=>'select','code'=>['id'=>$code.'-app-status','title'=>'Show in APP?','attribute'=>'','vue_model'=>$code.'.appStatus','vue_for'=>'masters.statuses']],
     ['control'=>'text','code'=>['id'=>$code.'-rate','title'=>'Rate','attribute'=>'required','vue_model'=>$code.'.rate']],
     ['control'=>'select','code'=>['id'=>$code.'-is-veg','title'=>'Veg','attribute'=>'','vue_model'=>$code.'.isVeg','vue_for'=>'masters.statuses']],
+    ['control'=>'select','code'=>['id'=>$code.'-spiciness','title'=>'Spiciness','attribute'=>'','vue_model'=>$code.'.spiciness','vue_for'=>'masters.spiciness']],
 
 ];
 
@@ -80,6 +81,7 @@ $group_2 = [
                             </div>
                         </div>
                     </div>
+                    
                     <div class="col-md-12">
                         <div class="block">
                             <div class="block-content block-content-full">
@@ -90,6 +92,32 @@ $group_2 = [
                                             <?php echo $func($item['code']); ?>
                                         </div>
                                     <?php } ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                            <input type="checkbox" class="css-control-input" v-model="item.isVegan">
+                                            <span class="css-control-indicator"></span>&nbsp;Is Vegan ?
+                                        </label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                            <input type="checkbox" class="css-control-input" v-model="item.isDairyFree">
+                                            <span class="css-control-indicator"></span>&nbsp;Is Dairy Free ?
+                                        </label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                            <input type="checkbox" class="css-control-input" v-model="item.isGlutenFree">
+                                            <span class="css-control-indicator"></span>&nbsp;Is Gluten Free ?
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
