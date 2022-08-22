@@ -134,7 +134,10 @@ $group_2 = [
                                                     <th class="text-danger">Item Name*</th>
                                                     <th class="text-danger">Veg</th>
                                                     <th class="text-danger">Rate<br/><a href="#" class="font-10" @click.prevent="copyToAll('rate')">Copy to all</a></th>
-                                                    <th class="text-danger text-center">Action</th>
+                                                    <th>Is Vegan ?</th>
+                                                    <th>Is Dairy Free ?</th>
+                                                    <th>Is Gluten Free ?</th>
+                                                    <th>Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -144,9 +147,28 @@ $group_2 = [
                                                             <option v-for="single in masters.statuses" :value="single.id">{{ single.value }}</option>
                                                         </select></td>
                                                     <td><?php echo get_text(['id'=>'single-rate','title'=>'Rate','class'=>'text-right','attribute'=>'required data-parsley="item"','vue_model'=>'single.rate'],'text',true) ?></td>
+                                                    <td>
+                                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                                            <input type="checkbox" class="css-control-input" v-model="single.isVegan">
+                                                            <span class="css-control-indicator"></span>&nbsp;
+                                                        </label>
+                                                    </td>
+                                                    <td> 
+                                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                                            <input type="checkbox" class="css-control-input" v-model="single.isDairyFree">
+                                                            <span class="css-control-indicator"></span>&nbsp;
+                                                        </label>
+                                                    </td>
+                                                    <td>
+                                                        <label class="css-control css-control css-control-primary css-checkbox">
+                                                            <input type="checkbox" class="css-control-input" v-model="single.isGlutenFree">
+                                                            <span class="css-control-indicator"></span>&nbsp;
+                                                       </label>
+                                                    </td>
                                                     <td class="text-center"><a href="#" @click.prevent="handleRemoveVariation(single)" class="text-danger" title="Remove this Variation"><i class="fa fa-trash"></i></a></td>
+                                               
                                                 </tr>
-                                                <tr v-if="!variantList.length"><td colspan="4" class="text-center">No Item</td></tr>
+                                                <tr v-if="!variantList.length"><td colspan="7" class="text-center">No Item</td></tr>
                                             </tbody>
                                         </table>
                                     </div>

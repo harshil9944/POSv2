@@ -278,6 +278,9 @@ Vue.component("item-form", {
                 posStatus: this.item.posStatus ? this.item.posStatus : 1,
                 appStatus: this.item.appStatus ? this.item.appStatus : 1,
                 isAddon: 0,
+                isVegan:false,
+                isDairyFree:false,
+                isGlutenFree:false,
                 removed: false,
             }
         }
