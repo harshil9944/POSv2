@@ -315,9 +315,9 @@ class Items extends MY_Controller {
                         $v['code'] = _get_ref('ITM',3,6);
                         $v['created_by'] = _get_user_id();
                         $v['added'] = sql_now_datetime();
-                        $v['is_dairy_free'] = $item['is_dairy_free'] ? 1:0;
-                        $v['is_vegan'] = $item['is_vegan'] ? 1:0;
-                        $v['is_gluten_free'] = $item['is_gluten_free'] ? 1:0;
+                        $v['is_dairy_free'] = $v['is_dairy_free'] ? 1:0;
+                        $v['is_vegan'] = $v['is_vegan'] ? 1:0;
+                        $v['is_gluten_free'] = $v['is_gluten_free'] ? 1:0;
                         unset($v['removed']);
                         $this->{$this->model}->insert($v);
                         _update_ref('ITM');
@@ -400,9 +400,9 @@ class Items extends MY_Controller {
                             $v['code'] = _get_ref('itm',3,6);
                             $v['created_by'] = _get_user_id();
                             $v['added'] = sql_now_datetime();
-                            $v['is_dairy_free'] = $item['is_dairy_free'] ? 1:0;
-                            $v['is_vegan'] = $item['is_vegan'] ? 1:0;
-                            $v['is_gluten_free'] = $item['is_gluten_free'] ? 1:0;
+                            $v['is_dairy_free'] = $v['is_dairy_free'] ? 1:0;
+                            $v['is_vegan'] = $v['is_vegan'] ? 1:0;
+                            $v['is_gluten_free'] = $v['is_gluten_free'] ? 1:0;
                             unset($v['removed'],$v['spiceLevel']);
                             $this->{$this->model}->insert($v);
                             _update_ref('itm');
@@ -704,6 +704,9 @@ class Items extends MY_Controller {
                     $this->_sql_to_vue($v);
                     $v['removed'] = false;
                     $v['hasSpiceLevel'] = $v['hasSpiceLevel']==='1';
+                    $v['isVegan'] = $v['isVegan']==='1';
+                    $v['isGlutenFree'] = $v['isGlutenFree']==='1';
+                    $v['isDairyFree'] = $v['isDairyFree']==='1';
                     $v['spiceLevel'] = DEFAULT_SPICE_LEVEL;
                 }
             }
