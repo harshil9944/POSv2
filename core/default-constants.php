@@ -102,3 +102,9 @@ defined('ITEM_TYPES')        OR  define('ITEM_TYPES', [
 defined( 'ONLINE_ORDER_PAYMENT_IDS' ) OR define( 'ONLINE_ORDER_PAYMENT_IDS', [] );
 defined( 'ALLOW_ORDER_EDIT' ) OR define( 'ALLOW_ORDER_EDIT', false );
 defined( 'DEFAULT_PAGINATION_LIMIT' ) OR define( 'DEFAULT_PAGINATION_LIMIT', 10 );
+
+defined('ITEM_SPICINESS')        OR  define('ITEM_SPICINESS', [
+    ['id'=>'none','value'=>'None'],
+    ['id'=>'s','value'=>'Spicy'],
+    ['id'=>'es','value'=>'Extra Spicy']
+]);

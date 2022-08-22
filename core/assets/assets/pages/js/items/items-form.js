@@ -94,6 +94,7 @@ Vue.component("item-form", {
                 units: [],
                 subUnits: [{ id: "", value: "Select Unit first" }],
                 printLocations: [],
+                spiciness: [],
                 icons: [],
                 statuses: [
                     { id: 1, value: "Yes" },
@@ -150,6 +151,7 @@ Vue.component("item-form", {
                     self.masters.units = response.units;
                     self.masters.icons = response.icons;
                     self.masters.printLocations = response.printLocations;
+                    self.masters.spiciness = response.spiciness;
                 }
             });
         },
@@ -315,7 +317,11 @@ Vue.component("item-form", {
             variations: [],
             isAddon: 0,
             addons: [],
-            description:null
+            description:null,
+            spiciness:'none',
+            isVegan:false,
+            isDairyFree:false,
+            isGlutenFree:false,
         };
         this.populateMeta();
         if (mode === "edit") {

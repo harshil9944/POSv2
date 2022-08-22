@@ -254,10 +254,13 @@ class Items extends MY_Controller {
             $printLocations = KITCHEN_PRINTERS;
         }
 
+        $spiciness = ITEM_SPICINESS;
+
         _response_data('categories',$categories);
         _response_data('units',$units);
         _response_data('icons',$icons);
         _response_data('printLocations',$printLocations);
+        _response_data('spiciness',$spiciness);
         return true;
 
     }
@@ -286,6 +289,10 @@ class Items extends MY_Controller {
         $item['added'] = sql_now_datetime();
         $category_id = $item['category_id'];
 
+        $item['is_dairy_free'] = $item['is_dairy_free'] ? 1:0;
+        $item['is_vegan'] = $item['is_vegan'] ? 1:0;
+        $item['is_gluten_free'] = $item['is_gluten_free'] ? 1:0;
+
 
         if($this->{$this->model}->insert($item)) {
             $item_id = $this->{$this->model}->insert_id();
@@ -308,6 +315,9 @@ class Items extends MY_Controller {
                         $v['code'] = _get_ref('ITM',3,6);
                         $v['created_by'] = _get_user_id();
                         $v['added'] = sql_now_datetime();
+                        $v['is_dairy_free'] = $item['is_dairy_free'] ? 1:0;
+                        $v['is_vegan'] = $item['is_vegan'] ? 1:0;
+                        $v['is_gluten_free'] = $item['is_gluten_free'] ? 1:0;
                         unset($v['removed']);
                         $this->{$this->model}->insert($v);
                         _update_ref('ITM');
@@ -364,6 +374,9 @@ class Items extends MY_Controller {
         $item['outlet_id'] = _get_setting('default_warehouse',1);
         $item['created_by'] = _get_user_id();
         $item['added'] = sql_now_datetime();
+        $item['is_dairy_free'] = $item['is_dairy_free'] ? 1:0;
+        $item['is_vegan'] = $item['is_vegan'] ? 1:0;
+        $item['is_gluten_free'] = $item['is_gluten_free'] ? 1:0;
         $item_id = $item['id'];
         $category_id = $item['category_id'];
         unset($item['id']);
@@ -387,6 +400,9 @@ class Items extends MY_Controller {
                             $v['code'] = _get_ref('itm',3,6);
                             $v['created_by'] = _get_user_id();
                             $v['added'] = sql_now_datetime();
+                            $v['is_dairy_free'] = $item['is_dairy_free'] ? 1:0;
+                            $v['is_vegan'] = $item['is_vegan'] ? 1:0;
+                            $v['is_gluten_free'] = $item['is_gluten_free'] ? 1:0;
                             unset($v['removed'],$v['spiceLevel']);
                             $this->{$this->model}->insert($v);
                             _update_ref('itm');
@@ -646,6 +662,9 @@ class Items extends MY_Controller {
             $this->_sql_to_vue($result);
 
             $result['hasSpiceLevel'] = $result['hasSpiceLevel']==='1';
+            $result['isVegan'] = $result['isVegan']==='1';
+            $result['isGlutenFree'] = $result['isGlutenFree']==='1';
+            $result['isDairyFree'] = $result['isDairyFree']==='1';
             $result['spiceLevel'] = DEFAULT_SPICE_LEVEL;
             $result['lastModifyQty'] = 0;
 
