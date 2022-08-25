@@ -82,7 +82,6 @@ class Wapi extends MY_Controller {
             if ( $items ) {
                 $temp = [];
                 foreach ( $items as $item ) {
-
                     $variant_params = [
                         'filter'  => [
                             'parent' => $item['id'],
@@ -101,8 +100,11 @@ class Wapi extends MY_Controller {
                         foreach ($variations as $v){
                             $new_variations[] = [
                                 'title' => $v['title'],
-                                'isVeg' =>$v['isVeg'],
-                                'rate' =>$v['rate']
+                                'isVeg' =>$v['isVeg'] == '1',
+                                'rate' =>$v['rate'],
+                                'isVegan' => $v['isVegan'] == '1',
+                                'isGlutenFree' => $v['isGlutenFree'] == '1',
+                                'isDairyFree' => $v['isDairyFree'] == '1',
                             ];
                         }
                     }
@@ -112,7 +114,10 @@ class Wapi extends MY_Controller {
                         'rate'        =>  $item['rate'],
                         'type'        =>  $item['type'],
                         'description' =>  $item['description'],
-                        'isVeg'        =>  $item['isVeg'],
+                        'isVeg'        =>  $item['isVeg'] == '1',
+                        'isVegan'       => $item['isVegan'] == '1',
+                        'isGlutenFree' => $item['isGlutenFree'] == '1',
+                        'isDairyFree' => $item['isDairyFree'] == '1',
                         'variations'  =>  $new_variations,
                         'categoryId'  =>  $item['categoryId'],
                     ];
