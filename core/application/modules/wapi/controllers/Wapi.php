@@ -72,7 +72,7 @@ class Wapi extends MY_Controller {
         }
         if ( !$items = _get_cache($item_cache) ) {
             $item_params = [];
-            $item_params['filter'] = ['pos_status' => 1, 'type' => 'product', 'parent' => 0];
+            $item_params['filter'] = ['web_status' => 1, 'type' => 'product', 'parent' => 0];
 
             $item_params['limit'] = 3000;
             $item_params['orders'] = [['order_by' => 'title', 'order' => 'ASC']];
