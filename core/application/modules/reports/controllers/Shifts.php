@@ -83,7 +83,7 @@ class Shifts extends MY_Controller {
         $filter_start_date = ( isset( $params['filter_date_start'] ) && $params['filter_date_start'] ) ? $params['filter_date_start'] : '2000-01-01';
         $filter_end_date = ( isset( $params['filter_date_end'] ) && $params['filter_date_end'] ) ? $params['filter_date_end'] : sql_now_date();
 
-        $sql = "SELECT es.*,ee.* , SUM(oo.tip) AS tip,COUNT(oo.id) as totalOrder FROM emp_shift es LEFT JOIN emp_employee ee ON ee.id = es.employee_id LEFT JOIN ord_order oo ON es.session_id = oo.session_id AND oo.employee_id = es.employee_id   WHERE (DATE(es.start_shift)>='$filter_start_date' AND DATE(es.start_shift)<='$filter_end_date') ";
+        $sql = "SELECT es.*,ee.* , SUM(oo.tip) AS tip,COUNT(oo.id) as totalOrder FROM emp_shift es LEFT JOIN emp_employee ee ON ee.id = es.employee_id LEFT JOIN ord_order oo ON es.session_id = oo.session_id AND oo.employee_id = es.employee_id AND oo.order_status  NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')  WHERE (DATE(es.start_shift)>='$filter_start_date' AND DATE(es.start_shift)<='$filter_end_date') ";
         if ( $params['employee_id'] != '' ) {
             $sql .= " AND es.employee_id = '" . $params['employee_id'] . "'";
         }

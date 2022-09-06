@@ -176,11 +176,6 @@
                                                         <th>Overall Payment Received</th>
                                                         <th class="text-right">{{ session.totalPaymentReceived | toTwoDecimal | beautifyCurrency }}</th>
                                                     </tr>
-                                                    <tr>
-                                                        <td>Expected Closing Cash</td>
-                                                        <td class="text-right">{{ session.expectedClosingCash | toTwoDecimal | beautifyCurrency }}</td>
-                                                    </tr>
-                                                   
                                                 </table>
                                             </div>
                                         </div>

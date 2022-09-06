@@ -92,6 +92,8 @@
 							var e = jQuery(".js-flot-line"),
 								t = jQuery(".js-flot-line2"),
 								p = jQuery(".js-flot-line3");
+								l = jQuery(".js-flot-last-30-days");
+								m = jQuery(".js-flot-last-30-earnings");
 							e.length &&
 								new Chart(e, {
 									type: "line",
@@ -122,47 +124,47 @@
 										},
 									},
 								}),
-								t.length &&
-									new Chart(t, {
-										type: "line",
-										data: {
-											labels: _s("this_year_months"),
-											datasets: [
+							t.length &&
+								new Chart(t, {
+									type: "line",
+									data: {
+										labels: _s("this_year_months"),
+										datasets: [
+											{
+												label: "This Year",
+												fill: !0,
+												backgroundColor: "rgba(247,93,129,.15)",
+												borderColor: "rgba(247,93,129,.5)",
+												pointBackgroundColor: "rgba(247,93,129,.5)",
+												pointBorderColor: "#fff",
+												pointHoverBackgroundColor: "#fff",
+												pointHoverBorderColor: "rgba(247,93,129,.5)",
+												data: _s("this_year_earning"),
+											},
+										],
+									},
+									options: {
+										scales: {
+											yAxes: [
 												{
-													label: "This Year",
-													fill: !0,
-													backgroundColor: "rgba(247,93,129,.15)",
-													borderColor: "rgba(247,93,129,.5)",
-													pointBackgroundColor: "rgba(247,93,129,.5)",
-													pointBorderColor: "#fff",
-													pointHoverBackgroundColor: "#fff",
-													pointHoverBorderColor: "rgba(247,93,129,.5)",
-													data: _s("this_year_earning"),
+													ticks: {
+														suggestedMax: 1000,
+														callback: function (value, index, values) {
+															return "$" + value;
+														},
+													},
 												},
 											],
 										},
-										options: {
-											scales: {
-												yAxes: [
-													{
-														ticks: {
-															suggestedMax: 1000,
-															callback: function (value, index, values) {
-																return "$" + value;
-															},
-														},
-													},
-												],
-											},
-											tooltips: {
-												callbacks: {
-													label: function (e, t) {
-														return " $ " + e.yLabel;
-													},
+										tooltips: {
+											callbacks: {
+												label: function (e, t) {
+													return " $ " + e.yLabel;
 												},
 											},
 										},
-									});
+									},
+								});
 							p.length &&
 								new Chart(p, {
 									type: "line",
@@ -204,6 +206,88 @@
 										},
 									},
 								});
+							l.length &&
+							new Chart(l, {
+								type: "line",
+								data: {
+									labels: _s("last_30_days"),
+									datasets: [
+										{
+											label: "This Year",
+											fill: !0,
+											backgroundColor: "rgba(249,126,54,.15)",
+											borderColor: "rgba(249,126,54,.5)",
+											pointBackgroundColor: "rgba(249,126,54,.5)",
+											pointBorderColor: "#fff",
+											pointHoverBackgroundColor: "#fff",
+											pointHoverBorderColor: "rgba(249,126,54,.5)",
+											data: _s("last_30_days_orders"),
+										},
+									],
+								},
+								options: {
+									scales: {
+										yAxes: [
+											{
+												ticks: {
+													suggestedMax: 10,
+													callback: function (value, index, values) {
+														return " "+ value;
+													},
+												},
+											},
+										],
+									},
+									tooltips: {
+										callbacks: {
+											label: function (e, t) {
+												return " "+ e.yLabel + " orders";
+											},
+										},
+									},
+								},
+							});
+							m.length &&
+							new Chart(m, {
+								type: "line",
+								data: {
+									labels: _s("last_30_days"),
+									datasets: [
+										{
+											label: "This Year",
+											fill: !0,
+											backgroundColor: "rgba(249,126,54,.15)",
+											borderColor: "rgba(249,126,54,.5)",
+											pointBackgroundColor: "rgba(249,126,54,.5)",
+											pointBorderColor: "#fff",
+											pointHoverBackgroundColor: "#fff",
+											pointHoverBorderColor: "rgba(249,126,54,.5)",
+											data: _s("last_30_days_earings"),
+										},
+									],
+								},
+								options: {
+									scales: {
+										yAxes: [
+											{
+												ticks: {
+													suggestedMax: 100,
+													callback: function (value, index, values) {
+														return " "+ value;
+													},
+												},
+											},
+										],
+									},
+									tooltips: {
+										callbacks: {
+											label: function (e, t) {
+												return "$ "+ e.yLabel;
+											},
+										},
+									},
+								},
+							});
 						},
 					},
 					{
@@ -293,6 +377,7 @@ Vue.component("dashboard", {
 					totalEarnings: 0,
 				},
 				items: [],
+				mostVisitedCustomers:[],
 				lastOrders: [],
 				yearlyData: _s("yearlyData"),
 			},
@@ -354,8 +439,26 @@ Vue.component("dashboard", {
 		refundTotal: function () {
 			return Number(this.dashData.summary.refundTotal);
 		},
+		avgOrder: function () {
+			return Number(this.dashData.summary.avgOrder);
+		},
+		avgPayOrder: function () {
+			return Number(this.dashData.summary.avgPayOrder);
+		},
+		dineOrder: function () {
+			return Number(this.dashData.summary.dineOrder);
+		},
+		pickUpOrder: function () {
+			return Number(this.dashData.summary.pickUpOrder);
+		},
+		totalCustomers: function () {
+			return Number(this.dashData.summary.totalCustomers);
+		},
 		items: function () {
 			return this.dashData.items;
+		},
+		mostVisitedCustomers: function () {
+			return this.dashData.mostVisitedCustomers;
 		},
 		lastOrders: function () {
 			return this.dashData.lastOrders;
@@ -496,6 +599,7 @@ Vue.component("dashboard", {
 				self.dashData.summary = response.dashboard;
 				self.dashData.items = response.items;
 				self.dashData.lastOrders = response.lastOrders;
+				self.dashData.mostVisitedCustomers = response.mostVisitedCustomers;
 				self.pieChartOrders.chartData.datasets[0].data = Object.values(
 					response.pieChartOrders,
 				);

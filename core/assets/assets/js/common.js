@@ -300,6 +300,13 @@ Vue.filter("beautifyCurrency", function(value) {
         return value;
     }
 });
+Vue.filter("beautifyUSCurrency", function(value) {
+    if (!isNaN(value)) {
+        return _s("currencySign") + (value).replace(/\d(?=(\d{3})+\.)/g, '$&,'); 
+    } else {
+        return value;
+    }
+});
 Vue.filter("beautifyDate", function(date) {
     if (date != null) {
         var format = _s("mDateFormat");

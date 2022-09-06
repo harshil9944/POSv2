@@ -108,3 +108,4 @@ defined('ITEM_SPICINESS')        OR  define('ITEM_SPICINESS', [
     ['id'=>'s','value'=>'Spicy'],
     ['id'=>'es','value'=>'Extra Spicy']
 ]);
+defined( 'AVOID_DASHBOARD_CUSTOMER_ID' ) OR define( 'AVOID_DASHBOARD_CUSTOMER_ID', 1 );
