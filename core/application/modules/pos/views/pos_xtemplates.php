@@ -1412,7 +1412,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                                         <th>Overall Payment Received</th>
                                                         <th class="text-right">{{ session.totalPaymentReceived | toTwoDecimal | beautifyCurrency }}</th>
                                                     </tr>
-                                                    <tr>
+                                                    <tr v-if="!isEmployeeType">
                                                         <td>Expected Closing Cash</td>
                                                         <td class="text-right">{{ session.expectedClosingCash | toTwoDecimal | beautifyCurrency }}</td>
                                                     </tr>

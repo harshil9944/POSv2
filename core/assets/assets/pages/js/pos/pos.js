@@ -3676,12 +3676,12 @@ Vue.component("table-list", {
 		switchArea: function (id) {
 			this.areaId = id;
 			this.filtered.tables = this.masters.tables.filter(function (table) {
-				return table.areaId === id;
+				return Number(table.areaId) === Number(id);
 			});
 		},
 		getTable: function (id) {
 			return this.masters.tables.filter(function (table) {
-				return table.id === id;
+				return Number(table.id) === Number(id);
 			});
 		},
 		handleTableSelection: function (table) {
@@ -4108,10 +4108,10 @@ Vue.component("split-order", {
 		},
 		getItemTotalQty: function (items, compareItem) {
 			var item = items.find(function (i) {
-				return compareItem.id === i.orderItemId;
+				return Number(compareItem.id) === Number(i.orderItemId);
 			});
 			if (typeof item !== "undefined") {
-				return item.quantity;
+				return Number(item.quantity);
 			}
 			return 0;
 		},
@@ -4184,6 +4184,7 @@ Vue.component("split-order", {
 			if (this.order.split.length > _s("minSplitInvoices")) {
 				this.order.split.splice(this.order.split.length - 1, 1);
 				this.calculate();
+				this.activeInvoice = this.order.split.length - 1
 			}
 		},
 		blankInvoice: function () {
@@ -4236,7 +4237,7 @@ Vue.component("split-order", {
 			await asyncForEach(self.nonAddedCartItems, async (i) => {
 				if (Number(i.quantity) > 0) {
 					var cartItem = self.order.cart.items.find(function (ci) {
-						return ci.itemId === i.itemId;
+						return Number(ci.itemId) === Number(i.itemId);
 					});
 					var splitItem = self.blankItem();
 					splitItem.orderItemId = cartItem.id;
@@ -4246,11 +4247,24 @@ Vue.component("split-order", {
 					splitItem.title = cartItem.title;
 					splitItem.taxable = cartItem.taxable;
 					splitItem.rate = Number(cartItem.rate).toFixed(2);
-					splitItem.quantity = i.quantity;
+					splitItem.quantity = Number(i.quantity);
 					splitItem.amount = Number(
 						Number(splitItem.quantity) * Number(splitItem.rate),
 					).toFixed(2);
-					self.order.split[self.activeInvoice].items.push(splitItem);
+
+					var itemIndex = self.order.split[self.activeInvoice].items.findIndex(
+						function (si) {
+							return Number(si.orderItemId) === Number(splitItem.orderItemId);
+						},
+					);
+					if (itemIndex === -1) {
+						self.order.split[self.activeInvoice].items.push(splitItem);
+					} else {
+						console.log(splitItem.quantity);
+						self.order.split[self.activeInvoice].items[itemIndex].quantity = Number(splitItem.quantity) + Number(self.order.split[self.activeInvoice].items[itemIndex].quantity);
+					}
+					
+					//self.order.split[self.activeInvoice].items.push(splitItem);
 				}
 			});
 			self.calculate();
@@ -4260,10 +4274,9 @@ Vue.component("split-order", {
 
 			var itemIndex = this.order.split[this.activeInvoice].items.findIndex(
 				function (si) {
-					return si.orderItemId === item.id;
+					return Number(si.orderItemId) === Number(item.id);
 				},
 			);
-
 			if (itemIndex === -1) {
 				var cartItem = this.order.cart.items.find(function (ci) {
 					return ci.itemId === itemId;
@@ -4284,13 +4297,22 @@ Vue.component("split-order", {
 				).toFixed(2);
 				this.order.split[this.activeInvoice].items.push(splitItem);
 			} else {
-				var totalQuantityAdded = this.getSplitInvoicesItemTotalQty(itemId);
-				var existingQty = this.getItemTotalQty(this.order.cart.items, itemId);
+				var totalQuantityAdded = this.getSplitInvoicesItemTotalQty(item);
+				var existingQty = this.getExistingQty(this.order.cart.items, item);
 				if (existingQty > totalQuantityAdded) {
 					this.order.split[this.activeInvoice].items[itemIndex].quantity++;
 				}
 			}
 			this.calculate();
+		},
+		getExistingQty: function (items, compareItem) {
+			var item = items.find(function (i) {
+				return Number(compareItem.id) === Number(i.id);
+			});
+			if (typeof item !== "undefined") {
+				return Number(item.quantity);
+			}
+			return 0;
 		},
 		handlePayment: function () {
 			var split = this.order.split[this.activeInvoice];

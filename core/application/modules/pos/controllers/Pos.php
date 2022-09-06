@@ -622,6 +622,8 @@ class Pos extends MY_Controller {
         }
         if ( $type === SUMMARY_TYPE_EMPLOYEE ) {
             $session['openingCash'] = 0;
+            $session['takeOut'] = 0;
+            $session['closingCash'] = 0;
         }
 
         if ( $type === SUMMARY_TYPE_REGISTER || $type === SUMMARY_TYPE_SESSION ) {
