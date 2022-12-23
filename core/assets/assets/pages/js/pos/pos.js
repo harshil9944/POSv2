@@ -3527,7 +3527,8 @@ Vue.component("print-server-dialog", {
 			return new Promise(function (resolve) {
 				var printed = [];
 				self.printers = ["kitchen"];
-				queue.forEach(function (q) {
+				asyncForEach(queue, async (q) => {
+					/* queue.forEach(function (q) { */
 					self.printData = q.order;
 					self.printToServer();
 					printed.push(q.id);
@@ -3535,6 +3536,19 @@ Vue.component("print-server-dialog", {
 				resolve(printed);
 			});
 		},
+		/*printOrderQueue: function (queue) {
+			var self = this;
+			return new Promise(function (resolve) {
+				var printed = [];
+				self.printers = ["kitchen"];
+				queue.forEach(function (q) {
+					self.printData = q.order;
+					self.printToServer();
+					printed.push(q.id);
+				});
+				resolve(printed);
+			});
+		},*/
 		printToServer: function () {
 			var self = this;
 			return new Promise(function (resolve) {
@@ -4263,7 +4277,7 @@ Vue.component("split-order", {
 						console.log(splitItem.quantity);
 						self.order.split[self.activeInvoice].items[itemIndex].quantity = Number(splitItem.quantity) + Number(self.order.split[self.activeInvoice].items[itemIndex].quantity);
 					}
-					
+
 					//self.order.split[self.activeInvoice].items.push(splitItem);
 				}
 			});
@@ -5239,7 +5253,7 @@ Vue.component("order-details", {
 				};
 				bus.$emit("printSplitOrderReceipt", payload);
 			}
-			
+
 		},
 		getSplitAmount:function(split){
 			return split.title+" - " + _s("currencySign") + " " + Number(split.grandTotal).toFixed(2);
@@ -6150,7 +6164,7 @@ Vue.component("pos", {
 						self.directPrint = obj.printers;
 						self.handlePrintToServer(response.printData);
 					} */
-					self.removeEmpId(); 
+					self.removeEmpId();
 				}
 			});
 		},
@@ -6501,7 +6515,7 @@ Vue.component("pos", {
 					if (response.printData) {
 						self.directPrint = payload.printers;
 						self.handlePrintToServer(response.printData);
-						
+
 					}
 				}
 				bus.$emit("posBusyStop", false);

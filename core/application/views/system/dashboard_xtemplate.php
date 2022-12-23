@@ -128,7 +128,7 @@
                 </div>
             </div>
             <div class="col-xl-4">
-                <div class="content-heading">Top 10 Selling Products<small class="pull-right">{{ dateRange }}</small></div>
+                <div class="content-heading" style="min-height:83px;">Top 10 Selling Products<small class="pull-right">{{ dateRange }}</small></div>
                 <div class="block block-fx-shadow block-rounded dashboard-filter-block">
                     <div class="block-content">
                         <table class="table table-borderless table-striped">
@@ -156,7 +156,7 @@
                 </div>
             </div>
             <div class="col-xl-4">
-                <div class="content-heading">Most Visited Customers<small class="pull-right">{{ dateRange }}</small></div>
+                <div class="content-heading" style="min-height:83px;">Most Visited Customers<small class="pull-right">{{ dateRange }}</small></div>
                 <div class="block block-fx-shadow block-rounded dashboard-filter-block">
                     <div class="block-content">
                         <table class="table table-borderless table-striped">

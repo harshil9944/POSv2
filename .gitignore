@@ -1,4 +1,5 @@
 .idea
+.ssh
 core/vendor
 core/projects
 /001-delhi86/uploads/**/*
@@ -7,6 +8,8 @@ core/projects
 /004-mulani/uploads/**/*
 /005-bollywood/uploads/**/*
 /006-saffron/uploads/**/*
+/008-sns/uploads/**/*
+/008-sns/.well-known/**/*
 /999-cs1-us/uploads/**/*
 /live.inntechpos.com/uploads/**/*
 /dev.bombay-tadka.pos/uploads/**/*
