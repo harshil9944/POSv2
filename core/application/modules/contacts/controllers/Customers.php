@@ -28,13 +28,11 @@ class Customers extends MY_Controller {
         $table = $this->{$this->model}->table;
         _library('table');
         _set_js_var('exportUrl',base_url('contacts/customers/export'));
-        //$results = $this->{$this->model}->get_list();
+        _set_js_var('detailUrl',base_url($this->module . '/details'),'s');
+      //  $results = $this->{$this->model}->get_list();
         $filter_dropdown_value = _input('filterDropdown');
         $offset = (_input('offset') && is_int((int)_input('offset')))?(int)_input('offset'):0;
         $searchString = trim(_input('search'));
-        if(!$searchString) {
-            $search_in_vendors = false;
-        }
         $searchFields = [$table.'.display_name',$table.'.phone',$table.'.email'];
 
         $filters = [];
@@ -55,8 +53,9 @@ class Customers extends MY_Controller {
         $filters['limit'] = true;
         $results = $this->_search($filters);
 
-        $count = _db_get_query('SELECT COUNT(*) as total FROM con_customer cc',true);
-        $total_rows = ($count != false) ? $count['total'] : 0;
+        $total_items = $this->{$this->model}->get_list_count($filters);
+
+        $total_rows = ($total_items)?$total_items['total_rows']:0;
         $per_page = (int)_get_setting('global_limit',50);
         $paginate_url = base_url($this->module);
 
@@ -100,7 +99,7 @@ class Customers extends MY_Controller {
                         }
                     }
                 }
-                $customer_name = _vue_text_link($result['display_name'],'handleAddAddress('.$result['id'].')','Add Address');
+                $customer_name = _vue_text_link($result['display_name'],'handleViewCustomer('.$result['id'].')','Add Address');
                 //$customer_name = $result['display_name'];
 
                 $arr = [];
@@ -136,8 +135,6 @@ class Customers extends MY_Controller {
         }
         $filter_dropdown = true;
         if($filter_dropdown) {
-
-
             $filter_groups = [];
             if($groups) {
                 foreach ($groups as $g) {
@@ -182,15 +179,11 @@ class Customers extends MY_Controller {
     }
 
     public function add() {
-
         $this->_add();
-
     }
 
     public function edit($id) {
-
         $this->_edit($id);
-
     }
 
     public function remove($id) {
@@ -244,7 +237,6 @@ class Customers extends MY_Controller {
         $customer = $obj['customer_table'];
         $customer['status'] = 1;
         $customer['added'] = sql_now_datetime();
-
 
         if($this->{$this->model}->insert($customer)) {
             $customer_id = $this->{$this->model}->insert_id();
@@ -675,12 +667,226 @@ class Customers extends MY_Controller {
         return $body;
     }
 
+    public function details($id = null){
+        if(!$id) {
+            $this->view = false;
+            redirect($this->module);
+        }
+        $customer = $this->_single(['id'=>$id]);
+        if(!$customer){
+            $this->view = false;
+            redirect($this->module);
+        }
+        $customer_id = $customer['id'];
+        $customer['items'] = $this->_items($customer_id);
+        $filter = $this->_filter_list($customer_id);
+        $interval = date_diff(date_create($filter['firstOrder']),date_create(sql_now_date()));
+        $filter['days'] = (int)$interval->format("%r%a");
+        
+        $orders = $this->_orders_get($customer_id);
+        $customer['backUrl'] = base_url($this->module);
+        $customer['pdfUrl'] = base_url("contacts/customers/pdf/$id");
+        $sales_data = _db_get_query("SELECT date_format(oo.order_date,'%b') as month_name,COUNT(*) as sales_count ,SUM(oo.grand_total + oo.tip - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id AND oo.order_date> now() - INTERVAL 12 month GROUP BY MONTH(oo.order_date) ORDER BY oo.order_date ASC;");
+        $month_name = [];
+        $sales_count = [];
+        $grand_total = [];
+        if($sales_data){
+            $month_name = array_column($sales_data,'month_name');
+            $sales_count = array_column($sales_data,'sales_count');
+            $grand_total = array_column($sales_data,'grand_total');
+        }
+
+        _set_js_var('this_year_months',$month_name,'j');
+        _set_js_var('this_year_sales',$sales_count,'j');
+        _set_js_var('this_year_earning',$grand_total,'j');
+
+        $yearlyData = _db_get_query("SELECT COUNT(*) AS yearCount, SUM(oo.grand_total + oo.tip- (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS yearEarnings FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id AND year(oo.order_date) = year(CURDATE()) GROUP BY year(oo.order_date);",true);
+        _set_js_var('yearlyData',$yearlyData,'j');
+
+        $popular_times = _db_get_query("SELECT ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ord_order oo1 WHERE oo1.customer_id = $customer_id AND oo1.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')),2) AS percent, CONCAT(DATE_FORMAT(oo.added,'%l %p'),' - ',DATE_FORMAT(DATE_ADD(oo.added, INTERVAL 1 hour),'%l %p')) AS time_range FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id GROUP BY HOUR(oo.added)");
+        $percent = [];
+        $time_range = [];
+        if($popular_times){
+            $percent = array_column($popular_times,'percent');
+            $time_range = array_column($popular_times,'time_range');
+        }
+        
+        _set_js_var('popular_times',$percent,'j');
+        _set_js_var('time_range',$time_range,'j');
+        _helper('control');
+        _set_js_var('orders',$orders,'j');
+        _set_js_var('customer',$customer,'j');
+        _set_js_var('defaultCityId',DEFAULT_CITY_ID,'n');
+        _set_js_var('defaultCountryId',DEFAULT_COUNTRY_ID,'n');
+        _set_js_var('defaultStateId',DEFAULT_STATE_ID,'n');
+        _set_js_var('filter',$filter,'j');
+         $edit_url = base_url($this->module.'/edit/'.$id);
+        _set_js_var('editUrl',$edit_url,'s');
+        _enqueue_script('assets/plugins/chart-js/Chart.bundle.min.js');
+        _enqueue_script('assets/plugins/vue-chartjs/vue-chartjs.min.js');
+        _enqueue_script('assets/plugins/vue-chartjs/chart.piece-label.js');
+        _set_page_heading('Customer Details');
+        _set_layout_type('wide');
+        _set_layout('customer_details_view');
+        _set_additional_component('customer_details_xtemplate','outside');
+        _load_plugin(['vue_multiselect','moment','datepicker']);
+        return true;
+    }
+
+    public function _items($customer_id) {
+        $result =_db_get_query("SELECT ooi.title AS title , SUM(ooi.quantity) AS total_quantity FROM ord_order oo LEFT JOIN ord_order_item ooi ON ooi.order_id = oo.id WHERE oo.customer_id = $customer_id GROUP BY ooi.item_id ORDER BY SUM(ooi.quantity) DESC;");
+        return $result;
+    }
+    public function _filter_list($customer_id) {
+        
+        $statuses = ['closed','cancelled','partial_refunded'];
+        $sql = "SELECT";
+        $sql .= " (SELECT SUM(oo.grand_total + oo.tip) FROM ord_order oo WHERE oo.order_status NOT IN ('cancelled','draft','confirmed','refunded','deleted') AND oo.customer_id = $customer_id) as `totalEarnings`,";
+        $sql .= " (SELECT IFNULL(SUM(amount),0) FROM ord_payment_refund opr WHERE opr.order_id IN (SELECT oo.id FROM ord_order oo WHERE oo.customer_id = $customer_id)) as `refundTotal`";
+        $sql .= " , (SELECT IFNULL(AVG(oo.grand_total),0) FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `avgOrder`";
+        $sql .= " , (SELECT IFNULL(SUM(oo.discount),0) FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `discount`";
+        $sql .= " , (SELECT IFNULL(SUM(oo.tip),0) FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `tip`";
+        $sql .= " , (SELECT IFNULL(AVG(op.amount),0) FROM ord_payment op LEFT JOIN ord_order oo ON oo.id = op.order_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `avgPayOrder`";
+        $sql .= " , (SELECT COUNT(*) FROM ord_order oo WHERE oo.type='p' AND  oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `pickUpOrder`";
+        $sql .= " , (SELECT COUNT(*) FROM ord_order oo WHERE oo.type='dine' AND  oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `dineOrder`";
+        $sql .= " , (SELECT MIN(oo.order_date) FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `firstOrder`";
+        $sql .= " , (SELECT MAX(oo.order_date) FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.customer_id = $customer_id) as `lastOrder`";
+        foreach($statuses as $status) {
+            $sql .= ", (SELECT COUNT(*) FROM ord_order oo WHERE oo.order_status = '$status' AND oo.customer_id = $customer_id) as `$status`";
+        }
+        $sql .= " FROM dual";
+        $result = _db_get_query($sql,true);
+        $result['partialRefunded'] = $result['partial_refunded'];
+        return $result;
+    }
+
+    public function _orders_get($customer_id){
+        _model('orders/order_item','order_item');
+        $orders = [];
+        $params = [];
+        $params['filter'] = [
+            'customer_id'=>  $customer_id,
+        ];
+        $params['exclude'] = true;
+        $params['convert'] = true;
+        $params['orders'] = [
+            ['order_by' => 'id', 'order' => 'DESC']
+        ];
+        $orders = _get_module('orders', '_search', $params);
+
+        $sources = _get_module('orders', '_order_sources', ['convert'=>true,'exclude'=>true]);
+
+        if($orders) {
+            $temp = [];
+            foreach ($orders as $order) {
+                $order_id = $order['id'];
+
+                $items = $this->order_item->search(['order_id'=>$order_id]);
+
+                $item_titles = [];
+                foreach ($items as $item) {
+                    $item_titles['title'][] = $item['title'];
+                }
+
+                $order['items'][] = $item_titles;
+                $source_id = $order['sourceId'];
+                $source = array_values(array_filter($sources,function($single) use ($source_id) {
+                    return $single['id'] == $source_id;
+                }));
+                $source = ($source)?$source[0]:false;
+
+                $order_type = $order['type'];
+                if($order_type == 'p') {
+                    $order['type'] = 'Pickup';
+                    if($source){
+                        $order['type'] .= ' (' . $source['title'] . ')';
+                    }
+                }elseif($order_type == 'dine') {
+                    $order['type'] = 'Dine-in';
+                }
+                $temp[] = $order;
+            }
+            $orders = $temp;
+        }
+        return $orders;
+        
+    }
+
     public function _install() {
         return true;
     }
 
     public function _uninstall() {
         return true;
+    }
+
+    public function pdf($id) {
+           
+        $this->view = false;
+
+        $params = [
+            'id'    =>  $id,
+            'force' =>  true
+        ];
+
+        $pdf_data = $this->_pdf($params);
+
+        $file_name = $pdf_data['file_name'];
+        $upload_path = $pdf_data['upload_path'];
+
+        header('Content-Type: application/pdf');
+        header('Content-Transfer-Encoding: Binary');
+        header('Content-disposition: inline; filename="'.$file_name.'"');
+
+        $fp = fopen($upload_path.$file_name, "r");
+
+        ob_clean();
+        flush();
+        while (!feof($fp)) {
+            $buff = fread($fp, 1024);
+            print $buff;
+        }
+        exit;
+    }
+
+    private function _pdf($params) {
+
+        $id = $params['id'];
+        $force = $params['force'];
+
+
+        $this->view = false;
+
+        $file_name = strtolower('so-'.$id.'-'.date('M').date('Y').'.pdf');
+        $upload_path = _get_config('pdf_path') . 'customer/';
+
+        if(!file_exists($upload_path)) {
+            mkdir($upload_path,0777,true);
+        }
+
+        if(!file_exists($upload_path.$file_name) || $force==true) {
+
+            $customer = $this->_single($params);
+            dd($customer);
+
+            $watermark_text = '';
+
+            _vars('obj',$customer);
+
+            $pdf_data = _view('customer_pdf');
+
+            $params = [
+                'watermark'     =>  $watermark_text,
+                'footer_html'   =>  '<hr/><p style="text-align:center;text-transform:uppercase;">'.CORE_APP_TITLE.'</p>'
+            ];
+
+            _generate_pdf($pdf_data,$upload_path.$file_name,$params);
+        }
+        return [
+            'file_name'     =>  $file_name,
+            'upload_path'   =>  $upload_path
+        ];
+
     }
 
     protected function _load_files() {

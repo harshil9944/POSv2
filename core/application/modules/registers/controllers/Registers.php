@@ -133,7 +133,7 @@ class Registers extends MY_Controller {
 
         $register = $obj['primary_table'];
 
-        $register['primary'] = $register['primary'] ==='true'?1:0;
+        /* $register['primary'] = $register['primary'] ==='true'?1:0; */
         $register['status'] = 1;
         $register['added'] = sql_now_datetime();
 
@@ -155,7 +155,7 @@ class Registers extends MY_Controller {
         $this->_prep_obj($obj);
 
         $register = $obj['primary_table'];
-        $register['primary'] = $register['primary'] ==='true'?1:0;
+       /*  $register['primary'] = $register['primary'] ==='true'?1:0; */
         $register_id = $register['id'];
         unset($register['id']);
 

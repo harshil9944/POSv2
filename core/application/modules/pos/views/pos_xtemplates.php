@@ -1459,7 +1459,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                         </div>
                                     </div>
                                     <div v-if="session.openOrdersCount===0" class="form-group text-center">
-                                        <button :disabled="session.openOrdersCount!==0" type="button" class="btn btn-alt-danger" @click="handleCloseRegister">Close {{ getTitle }}</button>
+                                        <button :disabled="session.openOrdersCount!==0" type="button" class="btn btn-alt-danger" @click="handleCloseRegister">{{ getTitle }}</button>
                                     </div>
                                 </div>
                             </div>

@@ -2638,6 +2638,13 @@ Vue.component("payment", {
 				}, 100);
 			}
 		},
+		applyAutoKitchenPrint:function(boolean){
+            var printer = this.printers.find(function(p){
+                return p.value ==='kitchen'
+            })
+            printer.selected = boolean;
+            return true;
+        },
 		applyAutoDiscount: function (paymentMethod) {
 			if (Number(paymentMethod.autoDiscountValue) > 0) {
 				var autoDiscountValue = Number(paymentMethod.autoDiscountValue);
@@ -2651,6 +2658,9 @@ Vue.component("payment", {
 				this.order.cart.totals.discountType = "p";
 				this.order.cart.totals.discountValue = autoDiscountValue;
 				this.order.cart.totals.discount = discount;
+				if(_s('defaultKitchenPrintInAutoDiscount')){
+                    this.applyAutoKitchenPrint(true);
+                }
 				bus.$emit("updateCartTotal", true);
 				return true;
 			}
@@ -2660,6 +2670,9 @@ Vue.component("payment", {
 				this.order.cart.totals.discountType = "p";
 				this.order.cart.totals.discountValue = 0;
 				this.order.cart.totals.discount = 0;
+				if(_s('defaultKitchenPrintInAutoDiscount')){
+                    this.applyAutoKitchenPrint(false);
+                }
 				bus.$emit("updateCartTotal", true);
 				return true;
 			}
@@ -3513,6 +3526,7 @@ Vue.component("print-server-dialog", {
 			this.showDialog();
 		},
 		initPrintOrderQueue(queue) {
+			console.log(queue);
 			this.printOrderQueue(queue).then(function (res) {
 				var data = {
 					module: "pos",
@@ -6097,9 +6111,10 @@ Vue.component("pos", {
 			return this.openOrderCount > 0;
 		},
 		lastRegister: function () {
-			return this.openRegister !== 0
+			return this.openRegister == 1;
+			/*return this.openRegister !== 0
 				? Number(this.openRegister) - Number(this.closeRegister) === 1
-				: false;
+				: false;*/
 		},
 		canCloseSession: function () {
 			return true;
