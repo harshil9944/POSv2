@@ -48,6 +48,14 @@ $code = 'employee';
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="user-outlet">Outlet</label>
+                                            <select id="user-outlet" class="form-control custom-select d-block w-100" v-model="user.outlet_id" required>
+                                                <option v-for="w in warehouses" :value="w.id">{{ w.title }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                                 <hr>
                                 <button class="btn btn-primary" type="button" @click.prevent="submit">Save</button>

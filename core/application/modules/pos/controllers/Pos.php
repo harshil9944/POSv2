@@ -150,6 +150,7 @@ class Pos extends MY_Controller {
         _set_js_var( 'allowConvertChangeToTip', ALLOW_CONVERT_CHANGE_TO_TIP, 'b' );
         _set_js_var( 'onlineOrderPaymentIds', ONLINE_ORDER_PAYMENT_IDS, 'j' );
         _set_js_var( 'allowOrderEdit', ALLOW_ORDER_EDIT, 'b' );
+        _set_js_var( 'defaultKitchenPrintInAutoDiscount', DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT, 'b' );
 
         if ( ALLOW_CLOVER_PAYMENT ) {
             _set_js_var( 'allowCloverPayment', ALLOW_CLOVER_PAYMENT, 'b' );
@@ -543,7 +544,7 @@ class Pos extends MY_Controller {
         return false;
     }
 
-    private function _prep_summary( &$session, &$result, $type = '' ) {
+    private function _prep_summary( &$session, &$result, $type = '',$params = [] ) {
         _model( 'users/user', 'user' );
         $session['ordersCount'] = ( $result ) ? $result['orders_count'] : 0;
         $session['openOrdersCount'] = ( $result ) ? (int) $result['open_orders_count'] : 0;
@@ -1197,8 +1198,8 @@ class Pos extends MY_Controller {
         $close_order = ( @$obj['close'] == true ) ? true : false;
 
         $mode = $obj['mode'];
-        $addToPrintQueue = isset( $obj['addToPrintQueue'] ) && $obj['addToPrintQueue'] == true ? true : false;
-        unset( $obj['addToPrintQueue'] );
+        $addToPrintQueue = isset($obj['addToPrintQueue']) && $obj['addToPrintQueue'] == true ? true : false;
+        unset($obj['addToPrintQueue']);
 
         $this->_prep_order_obj( $obj );
         //dd($obj);
@@ -1800,7 +1801,7 @@ class Pos extends MY_Controller {
         $session_id = $obj['sessionId'];
         $session_query = " SELECT
                             (SELECT COUNT(*)  FROM pos_register_session prs WHERE prs.session_id = $session_id AND prs.closing_user_id IS NOT NULL AND prs.closing_date IS NOT NULL) AS closeRegister,
-                            (SELECT COUNT(*) AS openRegister FROM pos_register_session prs WHERE prs.session_id = $session_id) AS openRegister,
+                            (SELECT COUNT(*) AS openRegister FROM pos_register_session prs WHERE prs.session_id = $session_id AND prs.status = 'Open') AS openRegister,
                             (SELECT COUNT(*) FROM emp_shift es WHERE  es.session_id = $session_id AND es.close_register_id IS NULL AND es.end_shift IS NULL) AS  openEmpShiftCount,
                             (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = $session_id AND oo.order_status IN ('Confirmed','Preparing','Ready'))  AS openOrderCount,
                             (SELECT COUNT(*)  FROM ord_order oo WHERE oo.session_id = $web_session_id AND oo.source_id=$source_id) AS onlineOrderCount
@@ -1819,11 +1820,15 @@ class Pos extends MY_Controller {
         $print_queue = [];
         $print_queue_count = 0;
         if ( PRINT_QUEUE ) {
-            $browser_id = _get_setting( BROWSER_ID_KEY, BROWSER_ID );
+            $primary_browser_id = _get_setting( BROWSER_ID_KEY, BROWSER_ID );
+            if(!$primary_browser_id){
+                log_message('error','No Primary Print Server Found');
+            }
             $query = "SELECT id,order_id FROM ord_print_queue ORDER BY added ASC;";
             $print_queue_list = _db_get_query( $query );
             $print_queue_count = ( $print_queue_list ) ? count( $print_queue_list ) : 0;
-            if ( $obj['browserId'] == $browser_id && $print_queue_list ) {
+            //check whether it is print server browser
+            if ( $obj['browserId'] == $primary_browser_id && $print_queue_count ) {
                 $print_queue = $this->_get_print_orders( $print_queue_list );
             }
         }
@@ -2074,10 +2079,12 @@ class Pos extends MY_Controller {
 
         $order_id = false;
         if ( $mode === 'add' ) {
-
+            $register_id = $obj['opening_register_id'];
+            $outlet_id = _db_get_query("SELECT sr.outlet_id AS outlet_id FROM sys_register sr WHERE sr.id = $register_id",true);
             $session_id = $obj['session_id'];
             $obj['session_order_no'] = $this->_get_new_session_order_no( $session_id );
             $obj['order_no'] = _get_ref( ORDER_REF );
+            $obj['outlet_id'] = $outlet_id['outlet_id'];
             $obj['notes'] = ( @$obj['notes'] ) ? $obj['notes'] : '';
             $obj['order_date'] = sql_now_datetime();
             $obj['added'] = sql_now_datetime();

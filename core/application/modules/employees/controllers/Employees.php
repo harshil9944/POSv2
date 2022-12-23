@@ -143,11 +143,18 @@ class Employees extends MY_Controller {
     }
 
     public function _populate_get() {
-        $warehouses = _get_module( 'warehouses', '_search', [] );
+        $warehouse_params = [];
+        $warehouse_params['filter'] = [];
+       
+        $warehouse_params['limit'] = 3000;
+        $warehouse_params['orders'] = [['order_by' => 'title', 'order' => 'ASC']];
+        $warehouse_params['exclude'] = true;
+        $warehouse_params['convert'] = true;
+        $warehouses = _get_module( 'warehouses', '_search',$warehouse_params );
         if ( $warehouses ) {
             $temp = [];
             foreach ( $warehouses as $warehouse ) {
-                $warehouse['title'] = $warehouse['title'] . ' (' . ucfirst( substr( $warehouse['type'], 0, 1 ) ) . ')';
+                $warehouse['title'] = $warehouse['name'] . ' (' . ucfirst( substr( $warehouse['type'], 0, 1 ) ) . ')';
                 $temp[] = $warehouse;
             }
             $warehouses = $temp;

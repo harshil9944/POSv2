@@ -35,5 +35,22 @@ class Customer extends MY_Model
         return $result;
 
     }
+    public function get_list_count($params=[]) {
+        $filter = $params['filter'];
+        $and_likes = (isset($params['and_likes']) && is_array($params['and_likes']))?$params['and_likes']:[];
+        $or_likes = (isset($params['or_likes']) && is_array($params['or_likes']))?$params['or_likes']:[];
+        if($and_likes) {
+            foreach ($and_likes as $field=>$value) {
+                $this->like($field,$value);
+            }
+        }
+        if($or_likes) {
+            foreach ($or_likes as $field=>$value) {
+                $this->or_like($field,$value);
+            }
+        }
+        $this->select('COUNT(*) as total_rows');
+        return $this->single($filter);
+    }
 
 }
