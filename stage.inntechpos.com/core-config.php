@@ -71,7 +71,7 @@ defined('DEV_PRINT_SERVER_URL')         OR  define('DEV_PRINT_SERVER_URL', 'http
 defined('DEV_DB_HOSTNAME')              OR  define('DEV_DB_HOSTNAME', 'localhost');
 defined('DEV_DB_USERNAME')              OR  define('DEV_DB_USERNAME', 'root');
 defined('DEV_DB_PASSWORD')              OR  define('DEV_DB_PASSWORD', '');
-defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'inntech_pos_v2_db');
+defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'inntech_pos_v2_live_db');
 
 //Production Settings
 defined('LIVE_BASE_URL')                OR  define('LIVE_BASE_URL', 'https://stage.inntechpos.com/');
@@ -128,3 +128,4 @@ defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',fa
 defined('ALLOW_CONVERT_CHANGE_TO_TIP')  OR  define('ALLOW_CONVERT_CHANGE_TO_TIP', true);
 defined( 'ONLINE_ORDER_PAYMENT_IDS' ) OR define( 'ONLINE_ORDER_PAYMENT_IDS', [5,6] );
 defined( 'ALLOW_ORDER_EDIT' ) OR define( 'ALLOW_ORDER_EDIT', true );
+defined('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT')    OR  define('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT', true);

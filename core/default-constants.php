@@ -109,3 +109,6 @@ defined('ITEM_SPICINESS')        OR  define('ITEM_SPICINESS', [
     ['id'=>'es','value'=>'Extra Spicy']
 ]);
 defined( 'AVOID_DASHBOARD_CUSTOMER_ID' ) OR define( 'AVOID_DASHBOARD_CUSTOMER_ID', 1 );
+
+//Auto Kitchen Print
+defined('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT')    OR  define('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT', false);

@@ -158,6 +158,10 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
                         <td style="<?php echo $td_styles; ?>">Overall Orders Amount</td>
                         <td style="<?php echo $td_styles_right; ?>"><?php echo _get_setting('currency_sign',''),dsRound($obj['transactionsTotal'],2); ?></td>
                     </tr>
+                    <tr>
+                        <td style="<?php echo $td_styles; ?>">Overall Payment Received</td>
+                        <td style="<?php echo $td_styles_right; ?>"><?php echo _get_setting('currency_sign',''),dsRound($obj['totalPaymentReceived'],2); ?></td>
+                    </tr>
                     <?php if($obj['status'] === 'Open') { ?>
                         <tr>
                             <td style="<?php echo $td_styles; ?>">Expected Closing Amount</td>

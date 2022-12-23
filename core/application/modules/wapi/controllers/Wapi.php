@@ -132,6 +132,9 @@ class Wapi extends MY_Controller {
         return true;
 
     }
+    public function _get_menu(){
+        return [];
+    }
 
     public function _populate_items_get() {
 

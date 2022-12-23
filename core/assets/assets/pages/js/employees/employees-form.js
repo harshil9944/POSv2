@@ -6,10 +6,12 @@ Vue.component('employee-form', {
             mode: _s('mode'),
             user: {},
             statuses: _s('statuses'),
+            warehouses:[],
+            registers:[]
         }
     },
     methods: {
-        /* populate: function() {
+        populate: function() {
             var self = this;
             var data = {
                 module: this.module,
@@ -21,24 +23,6 @@ Vue.component('employee-form', {
                 self.registers = response.registers;
             });
         },
-        populateRoutes: function(ref) {
-            var self = this;
-            var group_id = this.user.group_id;
-            if (group_id !== '') {
-                var data = {
-                    module: 'users/groups',
-                    method: 'routes',
-                    group_id: group_id
-                };
-                var request = submitRequest(data, 'get');
-                request.then(function(response) {
-                    if (ref !== 'load') {
-                        self.user.default_page = '';
-                    }
-                    self.routes = response.routes;
-                });
-            }
-        }, */
         submit: function() {
             var form = $('#frm-employee');
             if (form.parsley().validate()) {
@@ -72,7 +56,7 @@ Vue.component('employee-form', {
         }
     },
     mounted: function() {
-        //this.populate();
+        this.populate();
         if (this.mode === 'add') {
             this.user = {
                 id: '',
@@ -87,7 +71,7 @@ Vue.component('employee-form', {
             }
         } else if (this.mode === 'edit') {
             this.user = _s('user');
-            // this.populateRoutes('load');
+           
         }
     }
 });
