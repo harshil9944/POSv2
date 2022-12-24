@@ -6004,6 +6004,7 @@ Vue.component("pos", {
 	data: function () {
 		return {
 			module: "pos",
+			posVersionMismatch: false,
 			canCheckUpdate: _s("updateCheck"),
 			updateInterval: _s("updateCheckInterval"),
 			checkingForUpdate: false,
@@ -6660,10 +6661,9 @@ Vue.component("pos", {
                         window.location.reload(true);
                         return false;
                     }
-					/*if(response.result.appVersion !== _s('appVersion')) {
-                        window.location.reload();
-                        return false;
-                    }*/
+					if(response.result.appVersion !== _s('appVersion')) {
+                        self.posVersionMismatch = true;
+                    }
 					if (response.result.printQueueCount >= _s("printQueueWarningLimit")) {
 						self.showTopWarning(
 							"Waning: It might looks like the Kitchen printing feature is not working. Please contact your administrator.",
@@ -6837,6 +6837,9 @@ Vue.component("pos", {
 					this.isEditable = paidTotal === 0;
 				}
 			}
+		},
+		reloadWindow() {
+			window.location.reload(true);
 		},
 		setupEvents: function () {
 			var self = this;

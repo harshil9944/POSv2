@@ -3019,6 +3019,12 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
             </div>
         </div>
         <div v-if="canShowPos" class="row font-13">
+            <div v-if="posVersionMismatch" class="col-12">
+                <div class="alert alert-warning alert-dismissable" role="alert">
+                    <h3 class="alert-heading font-size-h4 font-w400 mb-1">Update Available</h3>
+                    <p class="mb-0">We have made some changes for your better experience. Kindly refresh the page. <a @click.prevent="reloadWindow" class="alert-link" href="javascript:void(0)">Reload Page</a>!</p>
+                </div>
+            </div>
             <div v-if="topWarning.show" class="col-12"><p class="p-10 bg-danger text-white text-center">{{ topWarning.message }}</p></div>
             <div class="col-xl-8 col-lg-6">
                 <item-list :cart="order.cart" :is-editable="isEditable"></item-list>
