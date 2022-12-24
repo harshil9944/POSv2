@@ -6430,6 +6430,7 @@ Vue.component("pos", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
+					console.log('OP');
 					if(obj.printers.length > 0) {
 						self.directPrint = obj.printers;
 						self.handlePrintToServer(response.printData);
@@ -6655,6 +6656,10 @@ Vue.component("pos", {
 				};
 				var request = submitRequest(data, "get");
 				request.then(function (response) {
+					if(response.result.reload) {
+                        window.location.reload(true);
+                        return false;
+                    }
 					/*if(response.result.appVersion !== _s('appVersion')) {
                         window.location.reload();
                         return false;
@@ -6913,8 +6918,8 @@ Vue.component("pos", {
 						if (obj.type === "session") {
 							self.handleCloseSession(obj);
 						} else if (obj.type === "register") {
-							(obj.id = self.registerSession ? self.registerSession.id : null),
-								self.handleCloseRegister(obj);
+							obj.id = self.registerSession ? self.registerSession.id : null;
+							self.handleCloseRegister(obj);
 						} else if (obj.type === "employee") {
 							self.handleEmployeeShiftClose(obj);
 						}
@@ -7009,7 +7014,16 @@ Vue.component("pos", {
 		this.populateMeta();
 	},
 	created: function () {
+		var self = this;
 		this.getLocalStorageData();
 		this.setupEvents();
+		var events = ['focus'];
+		events.forEach(function(e) {
+			window.addEventListener(e, function() {
+				if(self.session === null) {
+					self.populateMeta();
+				}
+			});
+		});
 	},
 });

@@ -1799,6 +1799,15 @@ class Pos extends MY_Controller {
         $obj = _input( 'obj' );
         $result = [];
         $session_id = $obj['sessionId'];
+        
+        //Check whether session is open
+        $open_session = _db_get_query("SELECT * FROM pos_session ps WHERE ps.id =$session_id AND ps.status='Open'",true);
+        if(!$open_session){
+            $result['reload'] = true;
+            _response_data( 'result', $result );
+
+            return true;
+        }
         $session_query = " SELECT
                             (SELECT COUNT(*)  FROM pos_register_session prs WHERE prs.session_id = $session_id AND prs.closing_user_id IS NOT NULL AND prs.closing_date IS NOT NULL) AS closeRegister,
                             (SELECT COUNT(*) AS openRegister FROM pos_register_session prs WHERE prs.session_id = $session_id AND prs.status = 'Open') AS openRegister,
