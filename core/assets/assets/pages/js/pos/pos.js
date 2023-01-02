@@ -6338,6 +6338,8 @@ Vue.component("pos", {
 						self.registerSession = response.registerSession;
 						self.resetOrder();
 						self.updateCheck();
+					}else{
+						self.reloadWindow();
 					}
 				}
 			});
@@ -7045,7 +7047,7 @@ Vue.component("pos", {
 		var self = this;
 		this.getLocalStorageData();
 		this.setupEvents();
-		var events = ['focus'];
+		var events = ['focus','touchstart'];
 		events.forEach(function(e) {
 			window.addEventListener(e, function() {
 				if(self.session === null) {

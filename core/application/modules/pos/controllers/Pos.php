@@ -446,6 +446,13 @@ class Pos extends MY_Controller {
         $session_id = $obj['session_id'];
         $register_id = $obj['register_id'];
 
+        //Check whether session is open
+        $open_session = _db_get_query("SELECT * FROM pos_session ps WHERE ps.id =$session_id AND ps.status='Open'",true);
+        if(!$open_session){
+            _response_data( 'registerSession', null );
+            return true;
+        }
+
         $params = [
             'session_id'  => $session_id,
             'register_id' => $register_id,
@@ -798,7 +805,7 @@ class Pos extends MY_Controller {
 
         $summary = $this->_close_employee_summary( ['session_id' => $session_id, 'enableRefunded' => ALLOW_REFUND, 'employee_id' => $employee_id] );
         $employee = _db_get_query("SELECT * FROM emp_employee ee LEFT JOIN emp_shift es ON ee.id=es.employee_id WHERE ee.id = $employee_id AND es.session_id = $session_id",true);
-       
+
         $name = $employee['first_name'] ." ".$employee['last_name'];
         $summary['openingDate'] = $employee['start_shift'];
         $summary['openingEmployee'] = $name;
@@ -1649,13 +1656,13 @@ class Pos extends MY_Controller {
 
       // dd($this->order->affected_rows());
         if($this->order->update( ['tip'=>$obj['tip'],'change'=>$obj['change']], ['id' => $order_id] )){
-            _response_data( 'message', ['text' => 'The Successfully Change And Tip.'] ); 
+            _response_data( 'message', ['text' => 'The Successfully Change And Tip.'] );
         }else{
             _response_data( 'message', ['text' => 'The Change And Tip Failed.', 'type' => 'warning'] );
         }
-       
+
         return true;
-        
+
     }
 
     public function _cache_items_get() {
@@ -1802,7 +1809,7 @@ class Pos extends MY_Controller {
         $obj = _input( 'obj' );
         $result = [];
         $session_id = $obj['sessionId'];
-        
+
         //Check whether session is open
         $open_session = _db_get_query("SELECT * FROM pos_session ps WHERE ps.id =$session_id AND ps.status='Open'",true);
         if(!$open_session){
@@ -2811,7 +2818,7 @@ class Pos extends MY_Controller {
                     $order['items'] = $temp;
                 }
                 $order['payments'] = $split['payments'];
-              
+
                 unset( $order['split'] );
             }
 
