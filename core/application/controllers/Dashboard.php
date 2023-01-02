@@ -7,6 +7,29 @@ class Dashboard extends MY_Controller {
     public $module = 'dashboard';
 	public function index()
 	{
+        if(!_can('dashboard','page')) {
+            $this->view = false;
+
+            _model('users/user','user');
+            _model('auth/auth_model','auth_m');
+
+            $userId = _get_session('user_id');
+            $user = $this->user->single(['id'=>$userId]);
+
+            $redirect = $this->auth_m->get_redirect($user);
+            if (!$redirect) {
+                $redirect = 'unauthorized';
+            }
+            if(!_can($redirect,'page')) {
+                $redirect = 'unauthorised';
+            }
+            if(_can($redirect,'page')) {
+                $this->_redirect($redirect,'refresh');
+            }else{
+                show_404();
+            }
+        }
+
 		if(_input('startDate') && _input('endDate')) {
             _set_js_var('startDate',_input('startDate'),'s');
             _set_js_var('endDate',_input('endDate'),'s');

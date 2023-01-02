@@ -57,9 +57,10 @@ class MY_Controller extends MX_Controller
                         }
                         $segments = implode('/',$segments);
                         if($segments && !_can($segments,'page')) {
+                            $userId = _get_session('user_id');
                             $this->view = false;
-                            log_message('error',"Permission to access $segments is denied.");
-                            redirect('unauthorised');
+                            log_message('error',"Permission to access $segments is denied for $userId.");
+                            $this->_redirect('unauthorised','refresh');
                         }
                     }
                 }
