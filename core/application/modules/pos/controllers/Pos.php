@@ -1457,6 +1457,8 @@ class Pos extends MY_Controller {
             'added'    => sql_now_datetime(),
         ];
         $this->print_queue->insert( $data );
+        $id = $this->print_queue->insert_id();
+        log_message("error","Queue Created: ".$id." ,Time:".sql_now_datetime());
         return true;
 
     }
@@ -1490,6 +1492,7 @@ class Pos extends MY_Controller {
         if ( $queueIds ) {
             $ids = implode( ',', $queueIds );
             _db_query( 'DELETE FROM ord_print_queue WHERE id IN (' . $ids . ')' );
+            log_message("error","Queue Cleared: ".$ids. " ,Time:".sql_now_datetime());
         }
         return true;
     }

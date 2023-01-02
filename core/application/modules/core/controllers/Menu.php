@@ -95,7 +95,7 @@ class Menu extends CORE_Controller {
                             /*if(!isset($groups[$menu['group']])) {
                             $groups[$menu['group']] = [];
                             }*/
-                            if ( $menu['children'] ) {
+                            if ( isset($menu['children'])  && $menu['children']) {
                                 $temp = [];
                                 foreach ( $menu['children'] as $child ) {
                                     if ( _can( $child['path'], 'page' ) ) {

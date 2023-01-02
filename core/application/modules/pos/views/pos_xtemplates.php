@@ -2783,7 +2783,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         <div class="form-group row">
                             <label class="col-12" for="code">Code</label>
                             <div class="col-md-12">
-                                <input type="number" class="form-control" id="code" placeholder="Enter code" v-model="employee.code"/>
+                                <input type="number" ref="codeRef" @keyup.enter="handleSubmit" class="form-control" id="code" placeholder="Enter code" v-model="employee.code">
                                 <p v-if="showError" class="text-danger">{{ errorMessage }}</p>
                             </div>
                         </div>
