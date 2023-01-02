@@ -3526,14 +3526,19 @@ Vue.component("print-server-dialog", {
 			this.showDialog();
 		},
 		initPrintOrderQueue(queue) {
-			console.log(queue);
-			this.printOrderQueue(queue).then(function (res) {
+			var self = this;
+			bus.$emit('setPrintQueueBusy', true);
+			this.printOrderQueue(queue)
+			.then(function (res) {
 				var data = {
 					module: "pos",
 					method: "clear_printed_queue",
 					queueIds: res,
 				};
-				submitRequest(data, "post");
+				return submitRequest(data, "post");
+			})
+			.finally(function() {
+				bus.$emit('setPrintQueueBusy', false);
 			});
 		},
 		printOrderQueue: function (queue) {
@@ -4288,7 +4293,6 @@ Vue.component("split-order", {
 					if (itemIndex === -1) {
 						self.order.split[self.activeInvoice].items.push(splitItem);
 					} else {
-						console.log(splitItem.quantity);
 						self.order.split[self.activeInvoice].items[itemIndex].quantity = Number(splitItem.quantity) + Number(self.order.split[self.activeInvoice].items[itemIndex].quantity);
 					}
 
@@ -5919,7 +5923,18 @@ Vue.component("employee-login", {
 				}
 			});
 		},
+		setFocus:function(){
+			/* var self = this;
+			self.$nextTick(function () {
+				self.$refs.codeRef.focus()
+			}) */
+			var self = this;
+			 setTimeout(() => {
+				self.$refs.codeRef.focus();
+			}, 500);
+		},
 	},
+	
 	created: function () {
 		var self = this;
 		bus.$on("showEmployeeLogin", function (payload) {
@@ -5927,8 +5942,11 @@ Vue.component("employee-login", {
 			self.errorMessage = null;
 			self.employee = self.blankObject();
 			self.employee = payload;
+			self.employee.code = null;
 			self.$bvModal.show("employee-login-modal");
+			self.setFocus();
 		});
+		
 	},
 });
 Vue.component("user-login", {
@@ -6058,6 +6076,7 @@ Vue.component("pos", {
 			closeRegister: 0,
 			openOrderCount: 0,
 			primaryRegister: false,
+			printQueueBusy:false,
 		};
 	},
 	watch: {
@@ -6127,6 +6146,9 @@ Vue.component("pos", {
 		},
 	},
 	methods: {
+		setPrintQueueBusy(value) {
+			this.printQueueBusy = value;
+		},
 		handleOrderType: function (type) {
 			if (this.isEditable) {
 				if (this.order.mode === "add") {
@@ -6431,7 +6453,6 @@ Vue.component("pos", {
 			var request = submitRequest(data, "post");
 			request.then(function (response) {
 				if (response.status === "ok") {
-					console.log('OP');
 					if(obj.printers.length > 0) {
 						self.directPrint = obj.printers;
 						self.handlePrintToServer(response.printData);
@@ -6671,7 +6692,7 @@ Vue.component("pos", {
 					} else {
 						self.hideTopWarning();
 					}
-					if (response.result.printQueue.length > 0) {
+					if (response.result.printQueue.length > 0 && !self.printQueueBusy) {
 						bus.$emit("initQueuePrint", response.result.printQueue);
 					}
 
@@ -6954,6 +6975,9 @@ Vue.component("pos", {
 						self.setOpenSession();
 					}
 				});
+				bus.$on("setPrintQueueBusy", function(payload) {
+					self.setPrintQueueBusy(payload);
+				});
 			}
 		},
 		clearEvents: function () {
@@ -6992,6 +7016,7 @@ Vue.component("pos", {
 			bus.$off("payBoxInit");
 			bus.$off("existingOrderLoaded");
 			bus.$off("initSplitOrder");
+			bus.$off("setPrintQueueBusy");
 			bus.$off("initPrintServerDialog");
 			bus.$off("initGratuityDialog");
 			bus.$off("initInfoCustomer");
