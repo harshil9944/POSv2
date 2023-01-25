@@ -261,7 +261,7 @@ class Promotions extends MY_Controller {
 
         $promotion_table = PROMOTIONS_TABLE;
 
-        $query = "SELECT *,'16:00:00' as start_time,'18:00:00' as end_time FROM $promotion_table WHERE end_date > NOW()";
+        $query = "SELECT * FROM $promotion_table WHERE end_date > NOW()";
         $query .= " AND status=1";
         if($is_weekend) {
             $query .= " AND (offer_days='all' OR offer_days='weekend')";
@@ -270,7 +270,6 @@ class Promotions extends MY_Controller {
         }
 
         $promotions = _db_get_query($query);
-
         if($promotions) {
 
             foreach ($promotions as $promotion) {

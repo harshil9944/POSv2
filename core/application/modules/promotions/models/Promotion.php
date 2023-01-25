@@ -18,6 +18,8 @@ class Promotion extends MY_Model
             'offerType'=>'offer_type',
             'startDate'=>'start_date',
             'endDate'=>'end_date',
+            'startTime'=>'start_time',
+            'endTime'=>'end_time',
             'offerDays'=>'offer_days',
             'offerCustomDays'=>'offer_custom_days',
             'customerType'=>'customer_type',

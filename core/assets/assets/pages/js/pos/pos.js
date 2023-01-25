@@ -226,10 +226,10 @@ var promotionMixin = {
 			return promotions;
 		},
 		isValidPromotion: function(s) {
-			if(s.start_time == null || s.end_time == null) {
+			if(s.startTime !== null || s.endTime !== null) {
 				var timezone = _s("timezone");
-				var startTimeArr = s.start_time.split(":");
-				var endTimeArr = s.end_time.split(":");
+				var startTimeArr = s.startTime.split(":");
+				var endTimeArr = s.endTime.split(":");
 				var startTime = moment.utc(new Date()).tz(timezone.tz).set({
 					'hour': startTimeArr[0],
 					'minute': startTimeArr[1],
@@ -377,20 +377,24 @@ var promotionMixin = {
 		showPromoDialog: function () {
 			bus.$emit("showPromoDialog", this.order.promotions);
 		},
-		updatePromotions: async function () {
-			//TODO this function will be responsible for adding auto promotions
-			var availablePromotions = await this.getApplicablePromotions();
-			this.cart.totals.promotionTotal = 0;
-			var promotionTotal = 0;
+		updatePromotions: function () {
+			var self = this;
+			return new Promise(async function(resolve) {
+				//TODO this function will be responsible for adding auto promotions
+				var availablePromotions = await self.getApplicablePromotions();
+				self.cart.totals.promotionTotal = 0;
+				var promotionTotal = 0;
 
-			var basicTotal = this.getBasicPromotionTotal();
-			promotionTotal = Number(promotionTotal) + Number(basicTotal);
+				var basicTotal = self.getBasicPromotionTotal();
+				promotionTotal = Number(promotionTotal) + Number(basicTotal);
 
-			var advanceTotal = this.getAdvancePromotionTotal();
-			promotionTotal += Number(advanceTotal);
+				var advanceTotal = self.getAdvancePromotionTotal();
+				promotionTotal += Number(advanceTotal);
 
-			this.order.promotions.available = availablePromotions;
-			this.cart.totals.promotionTotal = promotionTotal;
+				self.order.promotions.available = availablePromotions;
+				self.cart.totals.promotionTotal = promotionTotal;
+				resolve(true);
+			});
 		},
 		getApplicablePromotions: function () {
 			var self = this;
@@ -835,8 +839,9 @@ Vue.component("cart", {
 				return "mh-263p mnh-263p";
 			}
 		},
-		updateTotals: function () {
-			this.updatePromotions();
+		updateTotals: async function () {
+			await this.updatePromotions();
+
 			var self = this;
 			var subTotal = 0;
 			var taxableTotal = 0;
@@ -854,7 +859,7 @@ Vue.component("cart", {
 				).toFixed(2);
 			});
 			var deliveryTotal = self.cart.totals.freightTotal;
-			var promotionTotal = self.cart.totals.promotionTotal;
+			var promotionTotal = this.cart.totals.promotionTotal;
 			var mixTotal = Number(taxableTotal) + Number(deliveryTotal);
 			mixTotal -= Number(promotionTotal);
 			mixTotal -= Number(self.cart.totals.discount);
