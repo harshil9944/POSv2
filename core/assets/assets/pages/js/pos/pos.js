@@ -182,6 +182,7 @@ var promotionMixin = {
 			});
 		},
 		getAvailablePromotions: function (itemId) {
+			var self = this;
 			var promotions = [];
 			this.masters.promotions.forEach(function (s) {
 				var addPromotion = false;
@@ -211,25 +212,53 @@ var promotionMixin = {
 						}
 					}
 				}
+
+				//Check Time for promotion starts
+				if(!self.isValidPromotion(s)) {
+					addPromotion = false;
+				}
+				//Check Time for promotion ends
+
 				if (addPromotion) {
 					promotions.push(s);
 				}
 			});
 			return promotions;
 		},
+		isValidPromotion: function(s) {
+			if(s.start_time == null || s.end_time == null) {
+				var timezone = _s("timezone");
+				var startTimeArr = s.start_time.split(":");
+				var endTimeArr = s.end_time.split(":");
+				var startTime = moment.utc(new Date()).tz(timezone.tz).set({
+					'hour': startTimeArr[0],
+					'minute': startTimeArr[1],
+					'second': startTimeArr[2],
+				});
+				var endTime = moment.utc(new Date()).tz(timezone.tz).set({
+					'hour': endTimeArr[0],
+					'minute': endTimeArr[1],
+					'second': endTimeArr[2],
+				});
+				return moment.utc(new Date()).tz(timezone.tz).isBetween(startTime, endTime);
+			}
+			return true;
+		},
 		getBasicPromotions: function () {
+			var self = this;
 			var promotions = [];
 			this.masters.promotions.forEach(function (s) {
-				if (s.offerType === "basic") {
+				if (s.offerType === "basic" && self.isValidPromotion(s)) {
 					promotions.push(s);
 				}
 			});
 			return promotions;
 		},
 		getAdvancePromotions: function () {
+			var self = this;
 			var promotions = [];
 			this.masters.promotions.forEach(function (s) {
-				if (s.offerType !== "basic") {
+				if (s.offerType !== "basic" && self.isValidPromotion(s)) {
 					promotions.push(s);
 				}
 			});
@@ -5934,7 +5963,7 @@ Vue.component("employee-login", {
 			}, 500);
 		},
 	},
-	
+
 	created: function () {
 		var self = this;
 		bus.$on("showEmployeeLogin", function (payload) {
@@ -5946,7 +5975,7 @@ Vue.component("employee-login", {
 			self.$bvModal.show("employee-login-modal");
 			self.setFocus();
 		});
-		
+
 	},
 });
 Vue.component("user-login", {

@@ -435,6 +435,21 @@ if ( !function_exists( '_ejs_vars' ) ) {
 }
 /* Javascript Variables End */
 
+if ( !function_exists( '_get_timezone' ) ) {
+    function _get_timezone() {
+        if(ENVIRONMENT == 'development'){
+            return [
+                'tz'    => DEV_DEFAULT_TIMEZONE,
+                'value' => DEV_DEFAULT_TIMEZONE_VALUE,
+            ];
+        }
+        return [
+            'tz'    => LIVE_DEFAULT_TIMEZONE,
+            'value' => LIVE_DEFAULT_TIMEZONE_VALUE,
+        ];
+    }
+}
+
 /*Timezone Starts*/
 if ( !function_exists( '_set_timezone' ) ) {
     function _set_timezone( $timezone = '', $timezone_value = '' ) {

@@ -138,6 +138,7 @@ if (!function_exists('_load_moment')) {
     function _load_moment() {
 
         _enqueue_script('vendors/moment/moment.min.js','footer',0);
+        _enqueue_script('vendors/moment/moment-timezone.min.js','footer',0);
 
     }
 }

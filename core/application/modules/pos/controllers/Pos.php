@@ -55,6 +55,8 @@ class Pos extends MY_Controller {
         _set_js_var( 'updateCheck', $update_check, 's' );
         _set_js_var( 'updateCheckInterval', $update_check_interval, 'n' );
 
+        _set_js_var('timezone', _get_timezone(), 'j');
+
         $item_caching = _get_setting( 'item_caching', true );
         $preload_cache_items = ( $item_caching ) ? _get_setting( 'preload_cache_items', true ) : false;
 
