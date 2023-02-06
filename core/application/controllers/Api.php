@@ -58,13 +58,13 @@ class Api extends REST_Controller {
         _vars('user_id',_input_server("HTTP_ID"));
     }
 
-    
+
     //Common Methods Start
     public function login_post() {
 
         $login_method = _get_config('api_login_method');
          $login_module = _get_config('api_order_module');
-  
+
         $obj = json_decode(file_get_contents('php://input'),true);
         $email = $obj['email'];
         $password = $obj['password'];
@@ -83,6 +83,45 @@ class Api extends REST_Controller {
 
     }
 
+    public function print_queue_get() {
+
+        $this->load->vars('key',rand(4567,97946));
+
+        $print_queue_list = _get_module('pos','_get_print_queue');
+
+        $response = [
+            'status'        => 'ok',
+            'queue_count'   => $print_queue_list ? count($print_queue_list) : 0,
+            'queue'         => $print_queue_list ?: [],
+            'orders'        => [],
+            'printers'      => [],
+        ];
+        $response_code = 200;
+        if($print_queue_list) {
+            $response['orders'] = _get_module('pos', '_get_print_orders', $print_queue_list);
+            $response['printers'] = ['kitchen'];
+        }
+        $this->set_response($response,$response_code);
+    }
+
+    public function clear_print_queue_post() {
+
+        $this->load->vars('key',rand(4567,97946));
+
+        $postArray = json_decode(file_get_contents('php://input'),true);
+
+        if(isset($postArray['q']) && is_array($postArray['q'])) {
+            $queue = $postArray['q'];
+            $queueIds = [];
+            foreach($queue as $q) {
+                $queueIds[] = $q['id'];
+                _get_module('pos', '_set_printed', $q['order_id']);
+            }
+            _get_module('pos', '_clear_printed_queue', $queueIds);
+        }
+        $this->set_response(['status'=>'ok'],200);
+    }
+
     public function validate_session_post(){
 
         $validate_session_method = _get_config('api_validate_session_method');
@@ -99,19 +138,19 @@ class Api extends REST_Controller {
     }
 
     public function populate_items_get(){
-    
+
         $module = _get_config('api_item_module');
         $method =  _get_config('api_populate_items_method');
 
-       
-    
+
+
         $response = _get_module($module, $method, []);
         $response_code = $this->_get_response_code($response['type']);
         unset($response['type']);
         $this->set_response($response,$response_code);
     }
     public function populate_menu_items_get(){
-    
+
         $module = _get_config('api_item_module');
         $method =  _get_config('api_populate_menu_items_method');
         $response = _get_module($module, $method, []);
@@ -134,8 +173,8 @@ class Api extends REST_Controller {
     }
 
     public function register_post() {
-        
-        
+
+
         $register_module = _get_config('api_order_module');
         $register_method = '_api_register';
 
@@ -149,14 +188,14 @@ class Api extends REST_Controller {
         $this->set_response($response,$response_code);
     }
     public function order_post() {
-        
-        
+
+
         $register_module = _get_config('api_order_module');
         $register_method = '_api_order';
 
         $data = json_decode(file_get_contents('php://input'),true);
-       
-      
+
+
 
         $response = _get_module($register_module, $register_method, $data);
 
@@ -260,7 +299,7 @@ class Api extends REST_Controller {
                 'url'       =>  _get_config('retrieve_password_url') . "?code=$code"
             ];
             _vars('details',$details);
-           
+
 
             $to = ['email' => $user['email']];
             $subject = "Welcome to Inntech";
@@ -277,10 +316,10 @@ class Api extends REST_Controller {
                 'type' => 'HTTP_CREATED',
                 'expiresIn' => 86400,
             ];
-            
+
             $response_code = $this->_get_response_code($response['type']);
             unset($response['type']);
-    
+
             $this->set_response($response,$response_code);
 
         }else{
@@ -609,7 +648,7 @@ class Api extends REST_Controller {
         return false;
     }*/
 
-   
+
     private function _get_user_id() {
         return _input_server("HTTP_ID");
     }
@@ -623,10 +662,10 @@ class Api extends REST_Controller {
         return $user['group_id'];
     }
 
-   
 
 
-    
+
+
 
     private function _send_bad_request($error_msg) {
 

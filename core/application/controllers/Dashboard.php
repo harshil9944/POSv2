@@ -7,6 +7,51 @@ class Dashboard extends MY_Controller {
     public $module = 'dashboard';
 	public function index()
 	{
+        if(1==2) {
+
+            _model('promotions/promotion', 'p');
+            $this->p->insert([
+                'title'       => 'Weekdays Liquor 50% Off',
+                'description' => '',
+                'offer_type'  => 'basic',
+                'start_date'  => '2023-01-01',
+                'end_date'    => '2023-03-01',
+                'start_time'  => '16:00:00',
+                'end_time'    => '18:00:00',
+                'offer_days'  => 'weekdays',
+                'customer_type'  => 'all',
+                'status'      => '1',
+                'added'       => sql_now_datetime(),
+            ]);
+            $promotionId = $this->p->insert_id();
+
+            _model('promotions/promotion_reward', 'pr');
+            $this->pr->insert([
+                'promotion_id'      => $promotionId,
+                'product_type'      => 'include',
+                'discount_type'     => 'p',
+                'discount_value'    => 50,
+                'added'             => sql_now_datetime(),
+            ]);
+            $promoRewardId = $this->pr->insert_id();
+
+            $items = _db_get_query("SELECT ii.id FROM itm_item ii WHERE ii.category_id IN (SELECT ic.id FROM itm_category ic WHERE ic.type='liquor')");
+            $reward_items = [];
+            foreach ($items as $i) {
+                $reward_items[] = [
+                    'reward_id'    => $promoRewardId,
+                    'promotion_id' => $promotionId,
+                    'item_id'      => $i['id'],
+                    'type'         => 'include',
+                    'added'        => sql_now_datetime(),
+                ];
+            }
+            if ($reward_items) {
+                _model('promotions/promotion_reward_product', 'prp');
+                $this->prp->insert_batch($reward_items);
+            }
+        }
+
         if(!_can('dashboard','page')) {
             $this->view = false;
 

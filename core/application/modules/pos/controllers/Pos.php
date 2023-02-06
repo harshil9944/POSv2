@@ -1472,6 +1472,11 @@ class Pos extends MY_Controller {
 
     }
 
+    public function _get_print_queue() {
+        $query = "SELECT id,order_id FROM ord_print_queue ORDER BY added ASC;";
+        return _db_get_query( $query );
+    }
+
     public function _get_print_orders( $orders ) {
         $print_orders = [];
         if ( $orders ) {
@@ -1499,10 +1504,15 @@ class Pos extends MY_Controller {
     public function _clear_printed_queue_post() {
         $queueIds = _input( 'queueIds' );
         if ( $queueIds ) {
-            $ids = implode( ',', $queueIds );
-            _db_query( 'DELETE FROM ord_print_queue WHERE id IN (' . $ids . ')' );
-            log_message("error","Queue Cleared: ".$ids. " ,Time:".sql_now_datetime());
+            return $this->_clear_printed_queue( $queueIds );
         }
+        return true;
+    }
+
+    public function _clear_printed_queue($queueIds) {
+        $ids = implode( ',', $queueIds );
+        _db_query( "DELETE FROM ord_print_queue WHERE id IN (" . $ids . ")" );
+        log_message("error","Queue Cleared: ".$ids. " ,Time:".sql_now_datetime());
         return true;
     }
 
@@ -1513,7 +1523,7 @@ class Pos extends MY_Controller {
         return ( @$existing['last_part_no'] ) ? $existing['last_part_no'] + 1 : 1;
     }
 
-    private function _set_printed( $order_id, $part_no = false ) {
+    public function _set_printed( $order_id, $part_no = false ) {
 
         _model( 'orders/order_item', 'order_item' );
 
@@ -1840,13 +1850,12 @@ class Pos extends MY_Controller {
 
         $print_queue = [];
         $print_queue_count = 0;
-        if ( PRINT_QUEUE ) {
+        if ( PRINT_QUEUE && 1==2) {
             $primary_browser_id = _get_setting( BROWSER_ID_KEY, BROWSER_ID );
             if(!$primary_browser_id){
                 log_message('error','No Primary Print Server Found');
             }
-            $query = "SELECT id,order_id FROM ord_print_queue ORDER BY added ASC;";
-            $print_queue_list = _db_get_query( $query );
+            $print_queue_list = $this->_get_print_queue();
             $print_queue_count = ( $print_queue_list ) ? count( $print_queue_list ) : 0;
             //check whether it is print server browser
             if ( $obj['browserId'] == $primary_browser_id && $print_queue_count ) {
