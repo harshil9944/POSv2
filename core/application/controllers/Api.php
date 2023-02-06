@@ -113,11 +113,15 @@ class Api extends REST_Controller {
         if(isset($postArray['q']) && is_array($postArray['q'])) {
             $queue = $postArray['q'];
             $queueIds = [];
-            foreach($queue as $q) {
-                $queueIds[] = $q['id'];
-                _get_module('pos', '_set_printed', $q['order_id']);
+            if($queue) {
+                foreach($queue as $q) {
+                    $queueIds[] = $q['id'];
+                    _get_module('pos', '_set_printed', $q['order_id']);
+                }
             }
-            _get_module('pos', '_clear_printed_queue', $queueIds);
+            if($queueIds) {
+                _get_module('pos', '_clear_printed_queue', $queueIds);
+            }
         }
         $this->set_response(['status'=>'ok'],200);
     }
