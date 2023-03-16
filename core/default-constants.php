@@ -113,3 +113,5 @@ defined( 'AVOID_DASHBOARD_CUSTOMER_ID' ) OR define( 'AVOID_DASHBOARD_CUSTOMER_ID
 
 //Auto Kitchen Print
 defined('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT')    OR  define('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT', false);
+//Promotions
+defined('WEEKDAYS')    OR  define('WEEKDAYS', ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
