@@ -90,6 +90,7 @@ defined('GRATUITY_PERSONS')             OR  define('GRATUITY_PERSONS', 6);
 defined('DISPLAY_SEAT_USED_INVOICE')    OR  define('DISPLAY_SEAT_USED_INVOICE', true);
 
 defined('PRINT_QUEUE')                  OR  define('PRINT_QUEUE', true);
+defined('USE_PRINT_QUEUE_V2')           OR  define('USE_PRINT_QUEUE_V2', true);
 defined('ALLOW_RELEASE_TABLE')          OR  define('ALLOW_RELEASE_TABLE', true);
 
 defined('ALLOW_VOID_ITEM')              OR  define('ALLOW_VOID_ITEM', true);

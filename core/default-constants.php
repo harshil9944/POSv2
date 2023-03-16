@@ -58,6 +58,7 @@ defined('DISPLAY_SEAT_USED_INVOICE')    OR  define('DISPLAY_SEAT_USED_INVOICE', 
 defined('BROWSER_ID')                   OR  define('BROWSER_ID', null);
 defined('BROWSER_ID_KEY')               OR  define('BROWSER_ID_KEY', 'unique_browser_id');
 defined('PRINT_QUEUE')                  OR  define('PRINT_QUEUE', false);
+defined('USE_PRINT_QUEUE_V2')           OR  define('USE_PRINT_QUEUE_V2', false);
 defined('PRINT_QUEUE_WARNING_LIMIT')    OR  define('PRINT_QUEUE_WARNING_LIMIT', 10);
 
 //CUSTOMER

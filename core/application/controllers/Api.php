@@ -109,8 +109,8 @@ class Api extends REST_Controller {
         $this->load->vars('key',rand(4567,97946));
 
         $postArray = json_decode(file_get_contents('php://input'),true);
-
         if(isset($postArray['q']) && is_array($postArray['q'])) {
+            log_message("error","QueueIds Received: ".implode(',',$postArray['q']). ". Time:".sql_now_datetime());
             $queue = $postArray['q'];
             $queueIds = [];
             if($queue) {
@@ -120,7 +120,7 @@ class Api extends REST_Controller {
                 }
             }
             if($queueIds) {
-                _get_module('pos', '_clear_printed_queue', $queueIds);
+                _get_module('pos', '_clear_printed_queue', array_values(array_unique($queueIds)));
             }
         }
         $this->set_response(['status'=>'ok'],200);

@@ -1419,6 +1419,7 @@ class Pos extends MY_Controller {
                         $this->_release_table_session( $table_id );
                     }
                 }
+                $this->_clear_printed_order_queue( $order['id'] );
             }
             if ( $order['type'] == 'p' ) {
                 if ( @$obj['tableId'] ) {
@@ -1479,9 +1480,14 @@ class Pos extends MY_Controller {
 
     public function _get_print_orders( $orders ) {
         $print_orders = [];
+        $fetched = [];
         if ( $orders ) {
             foreach ( $orders as $order ) {
                 $order_id = $order['order_id'];
+                if ( in_array( $order_id, $fetched ) ) {
+                    continue;
+                }
+                $fetched[] = $order_id;
                 $print_order = $this->_get_print_data( $order_id );
 
                 if ( $print_order ) {
@@ -1512,7 +1518,13 @@ class Pos extends MY_Controller {
     public function _clear_printed_queue($queueIds) {
         $ids = implode( ',', $queueIds );
         _db_query( "DELETE FROM ord_print_queue WHERE id IN (" . $ids . ")" );
-        log_message("error","Queue Cleared: ".$ids. " ,Time:".sql_now_datetime());
+        log_message("error","Queue Cleared: ".$ids. ". Time:".sql_now_datetime());
+        return true;
+    }
+
+    public function _clear_printed_order_queue($orderId) {
+        _db_query( "DELETE FROM ord_print_queue WHERE order_id = " . $orderId );
+        log_message("error","Order Queue Cleared: " . $orderId . ". Time:".sql_now_datetime());
         return true;
     }
 
@@ -1850,7 +1862,7 @@ class Pos extends MY_Controller {
 
         $print_queue = [];
         $print_queue_count = 0;
-        if ( PRINT_QUEUE && 1==2) {
+        if ( PRINT_QUEUE && !USE_PRINT_QUEUE_V2) {
             $primary_browser_id = _get_setting( BROWSER_ID_KEY, BROWSER_ID );
             if(!$primary_browser_id){
                 log_message('error','No Primary Print Server Found');

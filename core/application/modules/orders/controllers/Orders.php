@@ -28,12 +28,12 @@ class Orders extends MY_Controller {
         $filters['offset'] = $offset;
         $filters['limit'] = true;
         $results = $this->_search($filters);
-       
-       
+
+
         $count = _db_get_query('SELECT COUNT(*) as total FROM ord_order oo',true);
         $total_rows = ($count != false) ? $count['total'] : 0;
         $per_page = (int)_get_setting('global_limit',50);
-        $paginate_url = base_url($this->module);  
+        $paginate_url = base_url($this->module);
         $body = [];
         if($results) {
             foreach ($results as $result) {
@@ -494,7 +494,7 @@ class Orders extends MY_Controller {
 
             $result['customer'] = $customer;
 
-            $result['orderSource'] = false;
+            $result['orderSource'] = '';
             $source = $this->source->single(['id'=>$result['source_id']]);
             if($source) {
                 //TODO make dynamic whether to print particular source
@@ -506,7 +506,7 @@ class Orders extends MY_Controller {
             }
 
            // $warehouse = _get_module('warehouses','_single',['id'=>$result['warehouse_id']]);
-/* 
+/*
             if($warehouse) {
                 $result['company'] = [
                     'name' => $warehouse['title'],
@@ -546,7 +546,7 @@ class Orders extends MY_Controller {
                $order_item_filter['quantity !='] = 0 ;
             }
 
-            
+
             $this->item->left_join(ITEM_TABLE,ITEM_TABLE.'.id='.ORDER_ITEM_TABLE.'.item_id');
             $this->item_category->left_join(ITEM_CATEGORY_TABLE,ITEM_CATEGORY_TABLE.'.id='.ITEM_TABLE.'.category_id');
             $this->item_category->order_by(ITEM_CATEGORY_TABLE.'.sort_order','ASC');
