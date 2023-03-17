@@ -257,19 +257,22 @@ class Promotions extends MY_Controller {
         _model('promotion_reward','reward');
         _model('promotion_reward_product','reward_product');
 
-        $is_weekend = $this->is_today_weekend();
-
         $promotion_table = PROMOTIONS_TABLE;
 
         $query = "SELECT * FROM $promotion_table WHERE end_date > NOW()";
-        $query .= " AND status=1";
-        if($is_weekend) {
-            $query .= " AND (offer_days='all' OR offer_days='weekend')";
-        }else{
-            $query .= " AND (offer_days='all' OR offer_days='weekdays')";
-        }
+        $query .= " AND status = 1";
+        $all_promotions = _db_get_query($query);
 
-        $promotions = _db_get_query($query);
+        $promotions = [];
+        if($all_promotions){
+            foreach($all_promotions as $pro){
+                $offer_days = explode(',',$pro['offer_days']);
+                if(in_array(date("D"),  $offer_days)){
+                    $promotions[] = $pro;
+                }
+            }
+
+        }
         if($promotions) {
 
             foreach ($promotions as $promotion) {
