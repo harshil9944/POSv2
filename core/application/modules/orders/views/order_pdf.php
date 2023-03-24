@@ -150,6 +150,12 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
             <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['discount'],2),_get_setting('currency_sign','')); ?></td>
         </tr>
         <?php } ?>
+        <?php if((int)$obj['promotionTotal'] > 0) { ?>
+        <tr>
+            <th colspan="3" style="<?php echo $th_styles_right; ?>">Promotion</th>
+            <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['promotionTotal'],2),_get_setting('currency_sign','')); ?></td>
+        </tr>
+        <?php } ?>
         <tr>
             <th colspan="3" style="<?php echo $th_styles_right; ?>">Grand Total</th>
             <td style="<?php echo $td_styles_right; ?>"><?php echo custom_money_format(round($obj['grandTotal'],2),_get_setting('currency_sign','')); ?></td>

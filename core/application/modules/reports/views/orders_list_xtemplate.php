@@ -167,6 +167,10 @@
                                 <td colspan="4" class="font-w600 text-right">Discount</td>
                                 <td class="text-right">{{ modal.obj.discount | beautifyCurrency }}</td>
                             </tr>
+                            <tr v-if="Number(modal.obj.promotionTotal) !== 0">
+                                <td colspan="4" class="font-w600 text-right">Promotion</td>
+                                <td class="text-right">{{ modal.obj.promotionTotal | beautifyCurrency }}</td>
+                            </tr>
                             <tr v-if="Number(modal.obj.tip) !== 0">
                                 <td colspan="4" class="font-w600 text-right">Tip</td>
                                 <td class="text-right">{{ modal.obj.tip | beautifyCurrency }}</td>

@@ -477,33 +477,29 @@ Vue.component("dashboard", {
 				: 0;
 		},
 		avgYearCount: function () {
-			/* var d = new Date();
-			var n = d.getMonth() + 1; */
-			var months = _s("this_year_months");
-			var n = months.length;
+			var d = new Date();
+			var n = d.getMonth() + 1;
+			/* var months = _s("this_year_months");
+			var n = months.length; */
 			var yearCount = Number(this.dashData.yearlyData.yearCount);
 			var avgYearCount = yearCount / n;
-			return Math.ceil(Number(avgYearCount))
-				? Math.ceil(Number(avgYearCount))
-				: 0;
+			return Math.ceil(Number(avgYearCount));
 		},
 		avgYearEarnings: function () {
-			/* var d = new Date();
-			var n = d.getMonth() + 1; */
-			var months = _s("this_year_months");
+			var d = new Date();
+			var n = d.getMonth() //+ 1;
+			/* var months = _s("this_year_months");
 			var n = months.length;
 			if (Number(n) === 0) {
 				n += 1;
-			}
+			} */
 
 			var yearCount = Number(this.dashData.yearlyData.yearEarnings)
 				? Number(this.dashData.yearlyData.yearEarnings)
 				: 0;
 			var avgYearEarnings = yearCount / n;
 
-			return Number(avgYearEarnings).toFixed(2)
-				? Number(avgYearEarnings).toFixed(2)
-				: 0;
+			return Number(avgYearEarnings).toFixed(2);
 		},
 	},
 	methods: {
