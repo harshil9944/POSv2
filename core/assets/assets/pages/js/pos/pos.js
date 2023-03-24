@@ -419,6 +419,7 @@ var promotionMixin = {
 		bus.$on("cacheItemsLoaded", function (payload) {
 			self.masters.cachedItems = payload;
 		});
+		console.log(_s("promotions"));
 	},
 };
 var cloverPaymentMixin = {

@@ -1,4 +1,6 @@
 <?php
+defined('TEST_ENV')                     OR  define('TEST_ENV', false);
+
 defined('PROJECT_CODE')                 OR  define('PROJECT_CODE', 'inntechpos');
 defined('ENCRYPTION_KEY')               OR  define('ENCRYPTION_KEY', 'bXm9pGl5Et8QeOPofomiRpv0mJGp4Ii8');
 
@@ -71,7 +73,7 @@ defined('DEV_PRINT_SERVER_URL')         OR  define('DEV_PRINT_SERVER_URL', 'http
 defined('DEV_DB_HOSTNAME')              OR  define('DEV_DB_HOSTNAME', 'localhost');
 defined('DEV_DB_USERNAME')              OR  define('DEV_DB_USERNAME', 'root');
 defined('DEV_DB_PASSWORD')              OR  define('DEV_DB_PASSWORD', '');
-defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'inntech_pos_v2_live_db');
+defined('DEV_DB_SCHEMA')                OR  define('DEV_DB_SCHEMA', 'inntech_pos_v2_db');
 
 //Production Settings
 defined('LIVE_BASE_URL')                OR  define('LIVE_BASE_URL', 'https://stage.inntechpos.com/');

@@ -1,4 +1,6 @@
 <?php
+defined('TEST_ENV')                     OR  define('TEST_ENV', false);
+
 defined('PROJECT_CODE')                 OR  define('PROJECT_CODE', 'stage');
 defined('ENCRYPTION_KEY')               OR  define('ENCRYPTION_KEY', 'HbWqncMP7qs276lSLk3tywiJKvQiBtzW');
 

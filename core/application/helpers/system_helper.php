@@ -1,6 +1,11 @@
 <?php
 
 /*Loader Start*/
+if ( !function_exists( '_is_test_env' ) ) {
+    function _is_test_env() {
+        return defined('TEST_ENV') && TEST_ENV == true;
+    }
+}
 if ( !function_exists( '_model' ) ) {
     function _model( $model, $name = '', $db_conn = FALSE ) {
         $obj = &get_instance();

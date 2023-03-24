@@ -1,4 +1,6 @@
 <?php
+defined('TEST_ENV')                     OR  define('TEST_ENV', false);
+
 //Development Start
 defined('DEV_APPLICATION_DIR')          OR  define('DEV_APPLICATION_DIR', '../core/application');
 defined('DEV_SYSTEM_DIR')               OR  define('DEV_SYSTEM_DIR', '../core/system');

@@ -20,6 +20,8 @@ class Pos extends MY_Controller {
     }
     public function index() {
 
+        //_is_test_env();
+
         _helper( 'control' );
 
         $this->_js_vars_setup();
