@@ -2800,6 +2800,7 @@ class Pos extends MY_Controller {
                 $order['discount'] = dsRound( $split['discount'] );
                 $order['subTotal'] = dsRound( $split['subTotal'] );
                 $order['discountValue'] = dsRound( $split['discountValue'] );
+                $order['promotionTotal'] = dsRound( $split['promotionTotal'] );
                 $order['freightTotal'] = dsRound( $split['freightTotal'] );
                 $order['gratuityTotal'] = dsRound( $split['gratuityTotal'] );
                 $order['dutyTotal'] = dsRound( $split['dutyTotal'] );

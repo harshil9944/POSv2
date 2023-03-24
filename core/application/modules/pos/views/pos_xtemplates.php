@@ -1919,6 +1919,10 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                                     <th colspan="3" class="text-right">Discount</th>
                                                     <th class="text-right">{{ getTotal('discount') }}</th>
                                                 </tr>
+                                                <tr v-if="getTotal('promotionTotal')>0">
+                                                    <th colspan="3" class="text-right">Promotion</th>
+                                                    <th class="text-right">{{ getTotal('promotionTotal') }}</th>
+                                                </tr>
                                                 <tr v-if="getTotal('gratuityTotal')>0">
                                                     <th colspan="3" class="text-right">Gratuity</th>
                                                     <th class="text-right">{{ getTotal('gratuityTotal') }}</th>
@@ -1994,6 +1998,10 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                             <tr v-if="getTotal('discount')>0">
                                                 <th colspan="3" class="text-right">Discount</th>
                                                 <th class="text-right">{{ getTotal('discount') }}</th>
+                                            </tr>
+                                            <tr v-if="getTotal('promotionTotal')>0">
+                                                <th colspan="3" class="text-right">Promotion</th>
+                                                <th class="text-right">{{ getTotal('promotionTotal') }}</th>
                                             </tr>
                                             <tr v-if="getTotal('gratuityTotal')>0">
                                                 <th colspan="3" class="text-right">Gratuity</th>
@@ -2181,6 +2189,10 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                             <tr v-if="Number(modal.obj.discount) !== 0">
                                 <td colspan="4" class="font-w600 text-right">Discount</td>
                                 <td class="text-right">{{ modal.obj.discount | beautifyCurrency }}</td>
+                            </tr>
+                            <tr v-if="Number(modal.obj.promotionTotal) !== 0">
+                                <td colspan="4" class="font-w600 text-right">promotion</td>
+                                <td class="text-right">{{ modal.obj.promotionTotal | beautifyCurrency }}</td>
                             </tr>
                             <tr v-if="Number(modal.obj.tip) !== 0">
                                 <td colspan="4" class="font-w600 text-right">Tip</td>
@@ -2673,6 +2685,10 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                     <tr>
                                         <th class="text-right">Discount</th>
                                         <td class="text-right">{{ order.discount | toTwoDecimal | beautifyCurrency }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right">Promotion</th>
+                                        <td class="text-right">{{ order.promotionTotal | toTwoDecimal | beautifyCurrency }}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right">Grant Total</th>
