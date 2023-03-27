@@ -419,7 +419,6 @@ var promotionMixin = {
 		bus.$on("cacheItemsLoaded", function (payload) {
 			self.masters.cachedItems = payload;
 		});
-		console.log(_s("promotions"));
 	},
 };
 var cloverPaymentMixin = {
@@ -4469,6 +4468,9 @@ Vue.component("split-order", {
 				}
 				var mixTotal =
 					Number(taxableTotal) + Number(deliveryTotal) + Number(gratuityTotal);
+				var promotionTotal =
+					(Number(subTotal) * Number(self.order.cart.totals.promotionTotal)) /
+					Number(self.order.cart.totals.subTotal);
 				mixTotal -= Number(promotionTotal);
 				var discount =
 					(Number(subTotal) * Number(self.order.cart.totals.discount)) /
@@ -4478,6 +4480,7 @@ Vue.component("split-order", {
 					(Number(mixTotal) * Number(invoice.taxRate)) / Number(100);
 				mixTotal = Number(mixTotal) + (Number(subTotal) - Number(taxableTotal));
 				invoice.discount = Number(discount).toFixed(2);
+				invoice.promotionTotal = Number(promotionTotal).toFixed(2);
 				invoice.subTotal = Number(subTotal).toFixed(2);
 				invoice.taxTotal = Number(taxTotal).toFixed(2);
 				invoice.gratuityTotal = Number(gratuityTotal).toFixed(2);
@@ -6740,11 +6743,11 @@ Vue.component("pos", {
 					if (self.employeeId === null && !self.employees.length) {
 						self.getEmployees();
 					}
-					//if (!self.registerCheckLogin && self.registerSession === null) {
-					self.registerTitle = response.result.register.title;
-					self.registerCheckLogin = response.result.register.registerCheckLogin;
-					self.primaryRegister = response.result.register.primary;
-					//}
+					if (!self.registerCheckLogin && self.registerSession === null) {
+						self.registerTitle = response.result.register.title;
+						self.registerCheckLogin = response.result.register.registerCheckLogin;
+						self.primaryRegister = response.result.register.primary;
+					}
 					self.openRegister = Number(response.result.openRegister);
 					self.closeRegister = Number(response.result.closeRegister);
 					self.openEmpShiftCount = Number(response.result.openEmpShiftCount);
