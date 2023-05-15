@@ -357,7 +357,7 @@ class Customers extends MY_Controller {
         unset($obj['group']);
     }
 
-    private function _delete($id) {
+    protected function _delete($id) {
 
         $ignore_list = [];
         $ignore_list[] = DEFAULT_POS_CUSTOMER;
@@ -682,7 +682,7 @@ class Customers extends MY_Controller {
         $filter = $this->_filter_list($customer_id);
         $interval = date_diff(date_create($filter['firstOrder']),date_create(sql_now_date()));
         $filter['days'] = (int)$interval->format("%r%a");
-        
+
         $orders = $this->_orders_get($customer_id);
         $customer['backUrl'] = base_url($this->module);
         $customer['pdfUrl'] = base_url("contacts/customers/pdf/$id");
@@ -710,7 +710,7 @@ class Customers extends MY_Controller {
             $percent = array_column($popular_times,'percent');
             $time_range = array_column($popular_times,'time_range');
         }
-        
+
         _set_js_var('popular_times',$percent,'j');
         _set_js_var('time_range',$time_range,'j');
         _helper('control');
@@ -738,7 +738,7 @@ class Customers extends MY_Controller {
         return $result;
     }
     public function _filter_list($customer_id) {
-        
+
         $statuses = ['closed','cancelled','partial_refunded'];
         $sql = "SELECT";
         $sql .= " (SELECT SUM(oo.grand_total + oo.tip) FROM ord_order oo WHERE oo.order_status NOT IN ('cancelled','draft','confirmed','refunded','deleted') AND oo.customer_id = $customer_id) as `totalEarnings`,";
@@ -809,7 +809,7 @@ class Customers extends MY_Controller {
             $orders = $temp;
         }
         return $orders;
-        
+
     }
 
     public function _install() {
@@ -821,7 +821,7 @@ class Customers extends MY_Controller {
     }
 
     public function pdf($id) {
-           
+
         $this->view = false;
 
         $params = [

@@ -104,7 +104,7 @@ class Kitchens extends MY_Controller {
         $menus[] = array(
             'id'        => 'menu-kitchens',
             'class'     => '',
-            'icon'      => 'si si-bar-chart',
+            'icon'      => 'si si-handbag',
             'group'     => 'module',
             'name'      => 'Kitchens',
             'path'      => 'kitchens',

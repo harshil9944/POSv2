@@ -23,7 +23,7 @@ class Printers extends MY_Controller {
     }
     public function index()
 	{
-        
+
         _library('table');
         $filters = [];
         $filters['filter'] = [];
@@ -64,14 +64,14 @@ class Printers extends MY_Controller {
         _vars('table_body',$body);
         $table = _view(DATA_TABLE_PATH);
 
-      
+
 
         $page = [
             'singular'  =>  $this->singular,
             'plural'    =>  $this->plural,
             'add_url'   =>  base_url('printers/add'),
             'table'         =>  $table,
-           
+
         ];
         _vars('page_data',$page);
 
@@ -82,7 +82,7 @@ class Printers extends MY_Controller {
         _set_layout(LIST_VIEW_PATH);
 	}
 
-   
+
 
     public function _get_menu() {
 
@@ -110,12 +110,12 @@ class Printers extends MY_Controller {
             'children'  =>  []
         ];
 
-       
+
 
         $menus[] = array(
             'id'        => 'menu-printers',
             'class'     => '',
-            'icon'      => 'si si-bar-chart',
+            'icon'      => 'si si-printer',
             'group'     => 'module',
             'name'      => 'Printers',
             'path'      => 'printers',
@@ -141,7 +141,7 @@ class Printers extends MY_Controller {
 
     public function edit($id) {
 
-        
+
         $printer = $this->{$this->model}->single(['id'=>$id]);
 
         $this->_exclude_keys($printer);
@@ -165,10 +165,10 @@ class Printers extends MY_Controller {
 
         $obj = _input('printer');
         $this->_prep_obj($obj);
-       
-       
+
+
         $obj['added'] = sql_now_datetime();
-        
+
         $affected_rows = $this->{$this->model}->insert($obj);
 
         if($affected_rows) {
@@ -177,7 +177,7 @@ class Printers extends MY_Controller {
         }else{
             return false;
         }
-        
+
     }
 
     public function _action_post() {
@@ -188,7 +188,7 @@ class Printers extends MY_Controller {
         $this->_prep_obj($obj);
         $filter = ['id'=>$obj['id']];
         $affected_rows = $this->{$this->model}->update($obj,$filter);
-        
+
 
         if($affected_rows) {
             _response_data('redirect',base_url('printers'));
@@ -245,11 +245,11 @@ class Printers extends MY_Controller {
 	    if(_get_method()=='add' || _get_method()=='edit') {
 
           //  _load_plugin(['vue_multiselect','moment','datepicker']);
-          
+
 
           _set_js_var('statuses',get_status_array('Enabled','Disabled'),'j');
-         
-         
+
+
             _page_script_override('printers/printers-form');
 
             $this->layout = 'printers_form_view';

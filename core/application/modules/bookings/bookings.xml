@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+	<code>bookings</code>
+	<title>Bookings</title>
+	<description>Booking module for Restaurant</description>
+	<version>0.0.1</version>
+	<developer>Chintan Bagdawala</developer>
+</module>

@@ -201,6 +201,12 @@ class Wapi extends MY_Controller {
 
     }
 
+
+    public function _banquet_inquiry_post()
+    {
+        return _get_module('bookings/inquiries','_create_inquiry');
+    }
+
     public function _customer_login_post() {
 
         _model('web_session');

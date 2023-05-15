@@ -165,7 +165,7 @@ class Orders extends MY_Controller {
         $menus[] = array(
             'id'        => 'menu-orders',
             'class'     => '',
-            'icon'      => 'si si-basket',
+            'icon'      => 'si si-basket-loaded',
             'group'     => 'module',
             'name'      => 'Sales',
             'path'      => 'orders',

@@ -135,7 +135,7 @@ class Payment_methods extends MY_Controller {
 
     }
 
-    private function _delete($id) {
+    protected function _delete($id) {
 
         $ignore_list = [];
 

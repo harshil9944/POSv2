@@ -104,6 +104,19 @@ if ( ! function_exists('_enqueue_script')){
         _vars('scripts',$scripts);
     }
 }
+if ( ! function_exists('_enqueue_cdn_script')){
+    function _enqueue_cdn_script($script,$position='footer',$priority=3,$condition=false) {
+        $scripts = _get_var('scripts',array());
+        $position = ($position!='header')?'footer':$position;
+
+        $scripts[$position][$priority][] = array(
+            'script'    =>  (string)$script,
+            'type'      =>  'cdn',
+            'cond'      =>  $condition
+        );
+        _vars('scripts',$scripts);
+    }
+}
 if ( ! function_exists('_enqueue_module_script')){
     function _enqueue_module_script($script,$position='footer',$priority=3,$condition=false) {
         $scripts = _get_var('scripts',array());
@@ -138,8 +151,12 @@ if ( ! function_exists('_get_scripts')){
                     if($script['cond']) {
                         $output .= $script['script'] . "\n";
                     }else{
-                        $file_path = asset_url() . $script['script'] . '?v=' . _get_app_version();
-                        $output .= '<script type="'.$script['type'].'" crossorigin="anonymous" src="' . $file_path . '"></script>' . "\n";
+                        if($script['type'] == 'cdn') {
+                            $output .= '<script type="text/javascript" crossorigin="anonymous" src="' . $script['script'] . '"></script>' . "\n";
+                        } else {
+                            $file_path = asset_url() . $script['script'] . '?v=' . _get_app_version();
+                            $output .= '<script type="' . $script['type'] . '" crossorigin="anonymous" src="' . $file_path . '"></script>' . "\n";
+                        }
                     }
                 }
             }
@@ -311,6 +328,11 @@ if ( ! function_exists('_clear_message')) {
             $item = $type . '_message';
             _unset_session($item);
         }
+    }
+}
+if ( ! function_exists('_show_link')){
+    function _show_link($url,$tooltip='Show Details') {
+        return '<a class="btn btn-sm btn-secondary js-tooltip-enabled mr-2" data-toggle="tooltip" title="'.$tooltip.'" data-original-title="'. $tooltip . '" href="'. $url . '"><i class="fas fa-info-circle"></i></a>';
     }
 }
 if ( ! function_exists('_edit_vue_link')){

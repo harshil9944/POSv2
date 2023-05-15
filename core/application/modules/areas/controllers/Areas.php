@@ -117,7 +117,7 @@ class Areas extends MY_Controller {
         $menus[] = array(
             'id'        => 'menu-areas',
             'class'     => '',
-            'icon'      => 'si si-bar-chart',
+            'icon'      => 'si si-grid',
             'group'     => 'module',
             'name'      => 'Areas',
             'path'      => 'areas',

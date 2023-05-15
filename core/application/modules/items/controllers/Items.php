@@ -161,9 +161,9 @@ class Items extends MY_Controller {
 
     }
 
-    public function add() {
+    public function add($id = null) {
 
-        $this->_add();
+        $this->_add($id);
 
     }
 
@@ -210,7 +210,7 @@ class Items extends MY_Controller {
         $menus[] = array(
             'id'        => 'menu-items',
             'class'     => '',
-            'icon'      => 'si si-basket-loaded',
+            'icon'      => 'si si-present',
             'group'     => 'module',
             'name'      => 'Items',
             'path'      => '',

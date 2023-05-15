@@ -98,9 +98,9 @@ var promotionMixin = {
 				this.order.promotions.applied.forEach(function (id, index) {
 					var p = self.getPromotion(id);
 					if (index === 0) {
-						text += typeof p.title === "string" ? p.title : "";
+						text += typeof p === "Object" ? p.title : "";
 					} else {
-						text += typeof p.title === "string" ? ", " + p.title : "";
+						text += typeof p === "Object" ? ", " + p.title : "";
 					}
 				});
 			}

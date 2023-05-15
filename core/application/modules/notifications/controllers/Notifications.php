@@ -164,7 +164,7 @@ class Notifications extends MY_Controller {
         $menus[] = array(
             'id'        => 'menu-notifications',
             'class'     => '',
-            'icon'      => 'si si-calculator',
+            'icon'      => 'si si-bell',
             'group'     => 'module',
             'name'      => $this->plural,
             'path'      => 'notifications',

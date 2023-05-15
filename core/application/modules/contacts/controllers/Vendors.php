@@ -482,7 +482,7 @@ class Vendors extends MY_Controller {
         $obj['additional_emails'] = (isset($obj['additional_emails']) && $obj['additional_emails'])?serialize($obj['additional_emails']):'';
     }
 
-    private function _delete($id) {
+    protected function _delete($id) {
 
         $ignore_list = [];
 

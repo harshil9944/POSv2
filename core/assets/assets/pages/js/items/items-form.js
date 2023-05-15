@@ -168,6 +168,9 @@ Vue.component("item-form", {
                 request.then(function(response) {
                     if (response.status === "ok") {
                         self.item = response.obj;
+                        if(_s("mode") === "add") {
+                            self.item.id = null;
+                        }
                     }
                 });
             }
@@ -201,7 +204,7 @@ Vue.component("item-form", {
         handleRemoveNote: function(i) {
             this.item.notes.splice(i, 1);
         },
-       
+
         handleSubmit: function() {
             var form = $("#frm-item");
             if (form.parsley().validate()) {
@@ -228,7 +231,7 @@ Vue.component("item-form", {
                 } else {
                     alert("Something went wrong!");
                 }
-               
+
             }
         },
         copyToAll: function(key) {
@@ -328,6 +331,9 @@ Vue.component("item-form", {
         };
         this.populateMeta();
         if (mode === "edit") {
+            this.populateSingle();
+        }
+        if(mode === 'add' && _s("id")) {
             this.populateSingle();
         }
     },

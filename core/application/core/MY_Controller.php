@@ -200,6 +200,7 @@ class MY_Controller extends MX_Controller
             $obj = $temp;
         }else{
             foreach ($keys as $vue => $sql) {
+                if(!isset($obj[$vue])) continue;
                 change_array_key($vue,$sql,$obj);
             }
         }
@@ -385,11 +386,24 @@ class MY_Controller extends MX_Controller
         redirect($uri,$method,$code);
     }
 
-    protected function _add() {
+    protected function _show($id) {
+
+        _language($this->language);
+        _vars('back_url',base_url($this->module),'s');
+        _set_page_heading($this->singular . ' Details');
+        _set_page_title($this->singular . ' Details');
+        _set_layout($this->layout);
+
+    }
+
+    protected function _add($id=null) {
 
         _language($this->language);
         _set_js_var('back_url',base_url($this->module),'s');
         _set_js_var('mode','add','s');
+        if($id) {
+            _set_js_var('id', $id, 's');
+        }
         _set_page_heading('New ' . $this->singular);
         _set_page_title('New ' . $this->singular);
         if($this->form_xtemplate) {
@@ -397,6 +411,31 @@ class MY_Controller extends MX_Controller
         }
         _set_layout($this->layout);
 
+    }
+
+    protected function _put($post='obj') {
+        _model($this->model);
+        $obj = _input($post);
+        $this->_vue_to_sql($obj);
+        $obj['added'] = sql_now_datetime();
+        return $this->{$this->model}->insert($obj);
+    }
+
+    protected function _post($post='obj') {
+        _model($this->model);
+        $obj = _input($post);
+        $this->_vue_to_sql($obj);
+        $filter = ['id'=>$obj['id']];
+        return $this->{$this->model}->update($obj,$filter);
+    }
+
+    protected function _perform_delete($id,$ignore_list=[]) {
+        _model($this->model);
+        if(!in_array($id,$ignore_list)) {
+            $filter = ['id' => $id];
+            return $this->{$this->model}->delete($filter);
+        }
+        return false;
     }
 
     protected function _edit($id) {
