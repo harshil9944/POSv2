@@ -25,7 +25,7 @@ Vue.component("report-orders", {
 				itemCurrentPage: 1,
 				fields: [
 					{ key: "date", label: "Date" },
-					{ key: "type", label: "Type" },
+					{ key: "orderType", label: "Type" },
 					{ 
 						key: "sessionOrderNo",
 					 	label: "Session Order No",
@@ -66,6 +66,7 @@ Vue.component("report-orders", {
 					: moment().subtract(1, "weeks"),
 				endDate: _s("endDate") ? _s("endDate") : moment(),
 			},
+			orderTypeId:"",
 			enableFilterBtn: true,
 			reportsCount: null,
 			reports: [],
@@ -79,6 +80,12 @@ Vue.component("report-orders", {
 			paymentMethods: [],
 			allowGratuity: _s("allowGratuity"),
 			pageOptions: [ 10, 20, 50,100],
+			orderStatus:[
+				{ id: "", value: "All" },
+				{ id: 'p', value: "Pick-Up" },
+				{ id: 'dine', value: "Dine-In" },
+				{ id: 'd', value: "Delivery" },
+			]
 		};
 	},
 	computed: {
@@ -95,6 +102,15 @@ Vue.component("report-orders", {
 		},
 	},
 	methods: {
+		getOrderTypeTitle:function(item){
+			if(item.type === 'p'){
+				return "Pick-up"
+			}else if (item.type === 'dine'){
+				return 'Dine-in ( ' + item.table + ' )'
+			}else if(item.type ==='d'){
+				return 'Delivery'
+			}
+		},
 		handleChangeLimit: function (){
 			this.filterData(1)
 		},
@@ -221,6 +237,7 @@ Vue.component("report-orders", {
 				filterEndDate: endDate,
 				currentPage: this.params.itemCurrentPage,
 				limit: this.params.perPage,
+				orderTypeId: this.orderTypeId,
 			};
 			var response = await submitRequest(data, "get");
 			if (response.status === "ok") {
@@ -248,6 +265,7 @@ Vue.component("report-orders", {
 				method: "filter_list_total",
 				filterStartDate: startDate,
 				filterEndDate: endDate,
+				orderTypeId: this.orderTypeId,
 			};
 
 			var response = await submitRequest(data, "get");
