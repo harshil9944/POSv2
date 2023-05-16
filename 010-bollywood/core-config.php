@@ -51,7 +51,7 @@ defined('KITCHEN_PRINTERS')             OR  define('KITCHEN_PRINTERS', [
 defined('CUSTOMER_USERNAME_FIELD')      OR  define('CUSTOMER_USERNAME_FIELD', 'mobile');
 defined('CUSTOMER_AUTOFILL_FIELD')      OR  define('CUSTOMER_AUTOFILL_FIELD', 'phone');
 
-defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 178);
+defined('OPEN_ITEM_ID')                 OR  define('OPEN_ITEM_ID', 211);
 defined('ENABLE_SPLIT_ORDERS')          OR  define('ENABLE_SPLIT_ORDERS', true);
 
 defined('NOTIFICATION_PUBLIC_KEY')      OR  define('NOTIFICATION_PUBLIC_KEY', 'BLivyLi6Ep7DfUFGak19PRbGMM6bMR88CPRcBdDFv415VsE-d_vKwfj_eKJKrWER_bnPYb6tDcYuKseyUnFsK7Q');
@@ -84,7 +84,7 @@ defined('LIVE_DB_SCHEMA')               OR  define('LIVE_DB_SCHEMA', '010bolly05
 
 defined('CUSTOMER_CUSTOM_FIELDS')       OR  define('CUSTOMER_CUSTOM_FIELDS', ['memberNumber','fullVaccinated']);
 
-defined('ALLOW_GRATUITY')               OR  define('ALLOW_GRATUITY', true );
+defined('ALLOW_GRATUITY')               OR  define('ALLOW_GRATUITY', false );
 defined('GRATUITY_RATE')                OR  define('GRATUITY_RATE', 15);
 defined('GRATUITY_PERSONS')             OR  define('GRATUITY_PERSONS', 6);
 defined('DISPLAY_SEAT_USED_INVOICE')    OR  define('DISPLAY_SEAT_USED_INVOICE', true);
