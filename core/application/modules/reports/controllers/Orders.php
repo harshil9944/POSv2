@@ -37,6 +37,7 @@ class Orders extends MY_Controller {
 
         $filter_start_date = _input('filterStartDate');
         $filter_end_date = _input('filterEndDate');
+        $orderTypeId = _input('orderTypeId');
 
        // $limit = _get_setting('pagination_limit',10);
        $limit = _input('limit');
@@ -48,7 +49,8 @@ class Orders extends MY_Controller {
             'filter_date_start' =>  $filter_start_date,
             'filter_date_end'   =>  $filter_end_date,
             'start'             =>  (_input('currentPage') - 1) * $limit,
-            'limit'             =>  $limit
+            'limit'             =>  $limit,
+            'orderTypeId'     =>  $orderTypeId
         ];
 
         $result = $this->_filter_list($params);
@@ -60,10 +62,12 @@ class Orders extends MY_Controller {
     public function _filter_list_total_get() {
         $filter_start_date = _input('filterStartDate');
         $filter_end_date = _input('filterEndDate');
+        $orderTypeId = _input('orderTypeId');
 
         $params = [
             'filter_date_start' =>  $filter_start_date,
-            'filter_date_end'   =>  $filter_end_date
+            'filter_date_end'   =>  $filter_end_date,
+            'orderTypeId'   =>  $orderTypeId
         ];
 
         $result = $this->_filter_list_total($params);
@@ -88,6 +92,10 @@ class Orders extends MY_Controller {
             $sql .= " AND DATE(oo.order_date) <= " . $this->db->escape($params['filter_date_end']) . "";
         }
 
+        if(isset($params['orderTypeId']) && $params['orderTypeId']){
+            $sql .= " AND oo.type = '". $params['orderTypeId']. "' ";
+        }
+
         $sql .= " AND oo.order_status  NOT IN ('cancelled','refunded','deleted') ORDER BY oo.order_date DESC";
 
         if (isset($params['start']) || isset($params['limit'])) {
@@ -105,6 +113,23 @@ class Orders extends MY_Controller {
         if($result) {
             $this->_exclude_keys($result, $this->order->exclude_keys, true);
             $this->_sql_to_vue($result, $this->order->keys, true);
+            foreach($result as &$o){
+                $o['orderType']= "";
+                if($o['type'] === 'p'){
+                    $o['orderType']= "Pick-up";
+
+                }else if($o['type'] === 'dine') {
+                    _model('areas/area_relation','area_relation');
+                    $this->area_relation->left_join(AREAS_TABLES_TABLE,AREAS_TABLES_TABLE.'.id='.AREAS_RELATION_TABLE.'.table_id');
+                    $this->area_relation->order_by('ara_relation.id','DESC');
+                    $relation = $this->area_relation->single(['order_id'=>$o['id']]);
+                    if($relation) {
+                        $o['orderType'] = "Dine-in (".$relation['short_name']." )";
+                    }
+                }else if($o['type'] === 'd'){
+                    $o['orderType']= "Delivery";
+                }
+            }
         }
 
         return $result;
@@ -125,6 +150,9 @@ class Orders extends MY_Controller {
             $sql .= " AND DATE(oo.order_date) <= " . $this->db->escape($params['filter_date_end']) . "";
         }
         $sql .= " AND oo.order_status  NOT IN ('cancelled','refunded','deleted')";
+        if(isset($params['orderTypeId']) && $params['orderTypeId']){
+            $sql .= " AND oo.type = '". $params['orderTypeId']. "' ";
+        }
         if (isset($params['start']) || isset($params['limit'])) {
             if ($params['start'] < 0) {
                 $params['start'] = 0;
@@ -282,7 +310,7 @@ class Orders extends MY_Controller {
                 foreach ($reports as $report) {
                     $body[] = [
                         'date'      =>	custom_date_format($report['date'],'d/m/Y'),
-                        'type'	=>	$report['type']=='p'?"Pickup":"Dine-in",
+                        'type'	=>	        $report['orderType'],
                         'orderStatus'	    =>	$report['orderStatus'],
                         'billingName'	=>	$report['billingName'],
                         'subTotal'	=>	$report['subTotal'],

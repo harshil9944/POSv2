@@ -4,17 +4,28 @@
             <div class="block">
                 <div class="block-content p-20">
                     <p class="mb-0 font-weight-700">Filters</p>
-                    <date-range-picker
-                        opens="right"
-                        v-model="filteredDateRange"
-                        :auto-apply="true"
-                    ></date-range-picker>
-                    <button :disabled="!enableFilterBtn" class="btn btn-danger ml-2" @click="handleFilter">Filter</button>
-                    <div class="btn-group float-right d-block" role="group">
-                        <button type="button" class="btn btn-primary dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>Exports</button>
-                        <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
-                            <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportPDF"></i>PDF</a>
-                            <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportCSV"></i>CSV</a>
+                    <div class="row no-gutters">
+                        <div class="col-12 col-md-6">
+                            <form class="form-inline" @submit.prevent="handleFilter">
+                                <date-range-picker
+                                    opens="right"
+                                    v-model="filteredDateRange"
+                                    :auto-apply="true"
+                                ></date-range-picker>
+                                <select class="form-control ml-2" v-model="orderTypeId">
+                                    <option v-for="single in orderStatus" :value="single.id">{{ single.value }}</option>
+                                </select>
+                                <button :disabled="!enableFilterBtn" class="btn btn-danger ml-2" type="submit">Filter</button>
+                            </form>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="btn-group float-right d-block" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" id="additional-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>Exports</button>
+                                <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
+                                    <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportPDF"></i>PDF</a>
+                                    <a  class="dropdown-item" href="javascript:void(0)" @click.prevent="handleExportCSV"></i>CSV</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -32,9 +43,6 @@
                         v-if="reports.length">
                         <template slot="date" slot-scope="{row,item}">
                             <a @click.prevent="handleViewOrder(item.id)" href="#">{{ item.date | beautifyDateTime }}</a>
-                        </template>
-                        <template slot="type" slot-scope="row">
-                            {{ row.value == 'p' ? 'Pickup' : 'Delivery' }}
                         </template>
                         <template slot="grandTotal" slot-scope="row">
                             {{ row.value | beautifyCurrency }}

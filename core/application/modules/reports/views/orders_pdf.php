@@ -42,7 +42,7 @@ $p_styles = 'margin-top: 0px; margin-bottom: 20px;font-size:13px;';
         <?php foreach($obj as $single){ ?>
             <tr>
                 <td style="<?php echo $td_styles; ?>"><?php echo custom_date_format($single['date'],'d/m/Y'); ?></td>
-                <td style="<?php echo $td_styles; ?>"><?php echo ($single['type']=='p')?'Pickup':'Delivery'; ?></td>
+                <td style="<?php echo $td_styles; ?>"><?php echo $single['orderType']; ?></td>
                 <td style="<?php echo $td_styles; ?>"><?php echo $single['orderStatus']; ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['billingName']; ?></td>
                 <td style="<?php echo $td_styles_right; ?>"><?php echo $single['subTotal']; ?></td>

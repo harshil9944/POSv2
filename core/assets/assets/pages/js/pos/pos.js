@@ -6424,18 +6424,22 @@ Vue.component("pos", {
 			if (this.isTabletMode) {
 				event = true;
 			} else {
-				if(this.anyOrderOpen){
-					ds_alert("Close Open Orders", "warning");
-				}else{
-					if(this.anyShiftOpen){
-						ds_alert("Close Shifts", "warning");
+				if(this.isPrimaryRegister){
+					if(this.anyOrderOpen){
+						ds_alert("Close Open Orders", "warning");
 					}else{
-						if (this.isPrimaryRegister && this.lastRegister) {
-							event = true;
-						} else {
-							ds_alert("Close Other Registers", "warning");
+						if(this.anyShiftOpen){
+							ds_alert("Close Shifts", "warning");
+						}else{
+							if(this.lastRegister){
+								event = true;
+							}else{
+								ds_alert("Close Other Registers", "warning");
+							}
 						}
 					}
+				}else{
+					event = true;
 				}
 			}
 			if(event){
@@ -6743,11 +6747,11 @@ Vue.component("pos", {
 					if (self.employeeId === null && !self.employees.length) {
 						self.getEmployees();
 					}
-					if (!self.registerCheckLogin && self.registerSession === null) {
+					/* if (!self.registerCheckLogin && self.registerSession === null) { */
 						self.registerTitle = response.result.register.title;
 						self.registerCheckLogin = response.result.register.registerCheckLogin;
 						self.primaryRegister = response.result.register.primary;
-					}
+					/* } */
 					self.openRegister = Number(response.result.openRegister);
 					self.closeRegister = Number(response.result.closeRegister);
 					self.openEmpShiftCount = Number(response.result.openEmpShiftCount);

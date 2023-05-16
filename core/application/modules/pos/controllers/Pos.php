@@ -2389,13 +2389,13 @@ class Pos extends MY_Controller {
 
         if ( empty( @$obj['customer'] ) ) {
             $customer_id = DEFAULT_POS_CUSTOMER;
-            $customer = $customer = _get_module( 'contacts/customers', '_single', ['id' => $customer_id] );
+            $customer  = _get_module( 'contacts/customers', '_single', ['id' => $customer_id] );
         } else {
             $customer = $obj['customer'];
             $customer_id = $customer['id'];
         }
 
-        $obj['customer_id'] = $customer_id;
+        $obj['customerId'] = $customer_id;
         unset( $obj['customer'] );
 
         $obj['billingName'] = $customer['displayName'];
