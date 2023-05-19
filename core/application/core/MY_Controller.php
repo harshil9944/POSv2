@@ -165,6 +165,11 @@ class MY_Controller extends MX_Controller
         return 0;
     }
 
+    public function _get_menu()
+    {
+        return [];
+    }
+
     public function _sql_to_vue(&$obj,$keys=[],$array=false) {
         if(!$keys) {
             $keys = $this->{$this->model}->keys;
