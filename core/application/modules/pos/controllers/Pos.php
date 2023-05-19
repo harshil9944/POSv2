@@ -1476,7 +1476,7 @@ class Pos extends MY_Controller {
     }
 
     public function _get_print_queue() {
-        $query = "SELECT id,order_id FROM ord_print_queue ORDER BY added ASC;";
+        $query = "SELECT id,order_id FROM ord_print_queue WHERE printing = 0 ORDER BY added ASC;";
         return _db_get_query( $query );
     }
 

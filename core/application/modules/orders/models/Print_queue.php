@@ -12,6 +12,7 @@ class Print_queue extends MY_Model
         $this->keys = [
             'id'=>'id',
             'orderId'=>'order_id',
+            'printing'=>'printing',
             'added'=>'added',
         ];
         $this->exclude_keys = [];
