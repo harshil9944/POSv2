@@ -87,7 +87,16 @@ class Api extends REST_Controller {
 
         $this->load->vars('key',rand(4567,97946));
 
+        $set =_input('stop') ? (int)_input('stop') == 1 : false;
+
         $print_queue_list = _get_module('pos','_get_print_queue');
+        if(!$set){
+            $queueIds = isset($print_queue_list) && $print_queue_list ? array_column($print_queue_list,'order_id') :[];
+            $ids = implode( ',', $queueIds );
+            if($ids){
+                _db_query("UPDATE ord_print_queue SET printing=1 WHERE order_id IN (" . $ids . ")");
+            }
+        }
 
         $response = [
             'status'        => 'ok',
@@ -283,6 +292,9 @@ class Api extends REST_Controller {
             ];
             $this->response($data, REST_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400) being the HTTP response code
         }
+    }
+    private function _get_error_msg($key = null){
+        return true;
     }
 
     public function forgot_post() {
@@ -516,7 +528,6 @@ class Api extends REST_Controller {
 
     public function customer_post() {
 
-        if($this->_valid_method_user('customer')) {
             $user_module = _get_config('api_user_module');
             $user_method = '_api_update';
 
@@ -565,7 +576,6 @@ class Api extends REST_Controller {
                 ];
                 $this->set_response($response, REST_Controller::HTTP_BAD_REQUEST);
             }
-        }
 
     }
 
