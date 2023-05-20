@@ -5297,6 +5297,20 @@ Vue.component("order-details", {
 		}
 	},
 	methods: {
+		clearSplitOrder: function () {
+			Codebase.blocks("#order-details-block", "state_loading");
+			var self = this;
+			var orderId = this.modal.obj.id;
+			var data = {
+				module: "pos",
+				method: "order_none_split_type",
+				order_id: orderId,
+			};
+			var request = submitRequest(data, "post");
+			request.then(function (res) {
+				Codebase.blocks("#order-details-block", "state_normal");
+			});
+		},
 		handleConvertToTip: function () {
 			bus.$emit("initConvertToTip", { orderId: this.modal.obj.id });
 		},
