@@ -783,6 +783,7 @@ class Pos extends MY_Controller {
             if ( $this->pos_session->update( $obj, ['id' => $session_id] ) ) {
 
                 _set_setting( 'web', '0', 'order_sources_switch' );
+                $this->_clear_print_queue_table();
 
                 $summary = $this->_close_session_summary( ['session_id' => $session_id, 'recalculate_cash' => false] );
                 if ( $summary ) {
@@ -2779,6 +2780,10 @@ class Pos extends MY_Controller {
         }
         return $order;
 
+    }
+
+    private function _clear_print_queue_table(){
+        return _db_query("TRUNCATE TABLE ord_print_queue");
     }
 
     private function _prep_print_obj( $order, $split_order_id = '' ) {
