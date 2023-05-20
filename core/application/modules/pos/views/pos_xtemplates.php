@@ -2096,7 +2096,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
 </script>
 <script type="text/x-template" id="order-details-template">
     <b-modal id="order-details-modal" size="xl" hide-header hide-footer body-class="p-0" v-cloak>
-            <div class="block block-themed block-transparent mb-0">
+            <div id="order-details-block" class="block block-themed block-transparent mb-0">
                 <div class="block-header bg-primary-dark">
                     <h3 class="block-title">{{ modal.obj.orderNo }}</h3>
                     <div class="block-options">
@@ -2107,6 +2107,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                 </div>
                 <div class="row bg-black-op-10 p-3 mx-0">
                     <div class="col text-right">
+                        <button v-if="isSplitOrder" class="btn btn-primary ml-5" @click="clearSplitOrder" title="Cancel Split Order">Cancel Split Order</button>
                         <button class="btn btn-danger ml-5" @click="handleDownloadPdf" title="Download PDF"><i class="fa fa-file-pdf-o"></i></button>
                     </div>
                 </div>
