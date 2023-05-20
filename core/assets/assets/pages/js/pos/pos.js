@@ -5308,6 +5308,7 @@ Vue.component("order-details", {
 			};
 			var request = submitRequest(data, "post");
 			request.then(function (res) {
+				self.handleViewOrder(orderId);
 				Codebase.blocks("#order-details-block", "state_normal");
 			});
 		},
