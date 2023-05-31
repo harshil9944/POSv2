@@ -2939,7 +2939,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
             </div>
             <user-login></user-login>
         </div>
-        <div v-if="session==null && isTabletMode">
+        <div v-if="!sessionOpen && isTabletMode">
             <div class="col-md-12">
                 <div class="d-flex align-items-center justify-content-center">
                     <div class="block block-rounded block-themed w-400p">
@@ -3064,7 +3064,8 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 <div class="dropdown-menu" aria-labelledby="additional-actions" x-placement="bottom-start">
                                     <div class="dropdown-item"><i class="fa fa-fw fa-user mr-5"></i>{{ employeeName }}</div>
                                     <a v-if="enableSourceSwitch && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOrderSwitch"><i class="fa fa-fw fa-bell mr-5"></i>Order Sources</a>
-                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handlePosRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Register Summary</a>
+                                    <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handlePosRegisterSummary"><i class="fa fa-fw fa-money mr-5"></i>Register Summary</a>.
+                                    <a v-if="showPosSessionSummary" class="dropdown-item" href="javascript:void(0)" @click.prevent="handlePosSessionSummary"><i class="fa fa-fw fa-money mr-5"></i>Session Summary</a>
                                     <a v-if="allowOpenCashDrawer() && !isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleOpenDrawer"><i class="fa fa-fw fa-bell mr-5"></i>Cash Drawer</a>
                                     <a class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeLogout"><i class="si si-logout mr-5"></i>Lock Terminal</a>
                                     <a v-if="!isTabletMode" class="dropdown-item" href="javascript:void(0)" @click.prevent="handleEmployeeSummary"><i class="si si-logout mr-5"></i>Close Shift</a>
@@ -3074,6 +3075,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         <a v-if="unacceptedOrders.length" @click.prevent="onUnacceptedOrders" href="#" class="btn btn-link float-right text-danger">{{ unacceptedOrders.length }} pending online {{ unacceptedOrders.length > 1 ? 'orders' : 'order' }}</a>
                     </div>
                 </div>
+                <session-summary object-id="session" :id="session.id" :employeeId="employeeId" :registerId="registerId" :registerSessionId="registerSession ? registerSession.id : ''"></session-summary>
                 <table-list></table-list>
                 <table-dialog></table-dialog>
                 <discount-dialog :cart="order.cart" :is-editable="isEditable"></discount-dialog>

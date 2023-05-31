@@ -3669,11 +3669,11 @@ Vue.component("print-server-dialog", {
 			this.handleCloseModal(this.modal);
 		},
 	},
-	/* beforeDestroy: function(){
+	beforeDestroy: function(){
 		bus.$off("initDirectPrint");
-		bus.$off("initQueuePrint");
-		bus.$off("initPrintServerDialog");
-	}, */
+		/* bus.$off("initQueuePrint");
+		bus.$off("initPrintServerDialog"); */
+	},
 	created: function () {
 		var self = this;
 		bus.$on("initPrintServerDialog", function (payload) {
@@ -6206,6 +6206,9 @@ Vue.component("pos", {
 		isPrimaryRegister: function () {
 			return this.primaryRegister;
 		},
+		showPosSessionSummary: function () {
+			return _s("allowShowSessionSummary") ? true : this.isPrimaryRegister;
+		},
 	},
 	methods: {
 		setPrintQueueBusy(value) {
@@ -6472,6 +6475,9 @@ Vue.component("pos", {
 		},
 		handlePosRegisterSummary: function () {
 			this.showSummary('register',false);
+		},
+		handlePosSessionSummary: function () {
+			this.showSummary('session',false);
 		},
 		handleSessionSummary: function () {
 			this.showSummary('session',true);
@@ -6973,17 +6979,19 @@ Vue.component("pos", {
 					self.order.orderStatus = "Confirmed";
 					self.handlePlaceOrder(saveAndLoad);
 				});
-				bus.$on("printOrder", function (payload) {
-					var id = null;
-					if (typeof payload.id !== "undefined") {
-						id = payload.id;
-					} else if (typeof self.order.id !== "undefined") {
-						id = self.order.id;
-					}
-					if (id !== null) {
-						self.handlePrintOrder(id);
-					}
-				});
+				if(typeof bus._events.printOrder === 'undefined') {
+					bus.$on("printOrder", function (payload) {
+						var id = null;
+						if (typeof payload.id !== "undefined") {
+							id = payload.id;
+						} else if (typeof self.order.id !== "undefined") {
+							id = self.order.id;
+						}
+						if (id !== null) {
+							self.handlePrintOrder(id);
+						}
+					});
+				}
 				bus.$on("printSplitOrderReceipt", function (payload) {
 				/* var splitId = payload.splitId;
 					var orderId = payload.orderId;

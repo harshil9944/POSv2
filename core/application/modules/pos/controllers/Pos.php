@@ -156,6 +156,8 @@ class Pos extends MY_Controller {
         _set_js_var( 'allowOrderEdit', ALLOW_ORDER_EDIT, 'b' );
         _set_js_var( 'defaultKitchenPrintInAutoDiscount', DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT, 'b' );
 
+        _set_js_var( 'allowShowSessionSummary', ALLOW_SHOW_SESSION_SUMMARY, 'b' );
+
         if ( ALLOW_CLOVER_PAYMENT ) {
             _set_js_var( 'allowCloverPayment', ALLOW_CLOVER_PAYMENT, 'b' );
             _set_js_var( 'merchant_id', CLOVER_MERCHANT_ID, 's' );

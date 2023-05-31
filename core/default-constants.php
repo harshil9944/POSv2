@@ -80,6 +80,7 @@ defined('ALLOW_SUMMARY_CASH_EMPLOYEE_TAKEOUT')  OR  define('ALLOW_SUMMARY_CASH_E
 defined('DEFAULT_SUMMARY_PRINT')                    OR  define('DEFAULT_SUMMARY_PRINT', false);
 defined('DEFAULT_REGISTER_PRINT')                    OR  define('DEFAULT_REGISTER_PRINT', false);
 defined('ALLOW_SHIFT_PRINT')                    OR  define('ALLOW_SHIFT_PRINT', true);
+defined('ALLOW_SHOW_SESSION_SUMMARY')                    OR  define('ALLOW_SHOW_SESSION_SUMMARY', false);
 
 //Payment
 defined('ALLOW_CARD_PAYMENT_CHANGE')    OR  define('ALLOW_CARD_PAYMENT_CHANGE', false);

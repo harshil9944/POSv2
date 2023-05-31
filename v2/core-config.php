@@ -22,6 +22,9 @@ defined('ORDER_SOURCE_PAYMENT_LINK')    OR  define('ORDER_SOURCE_PAYMENT_LINK', 
     ['print_label'=>'DIW','source_id'=>7,'payment_method_id'=>8],
 ]);
 
+defined('DEFAULT_CASHIER_PRINT')        OR  define('DEFAULT_CASHIER_PRINT',true);
+defined('DEFAULT_KITCHEN_PRINT')        OR  define('DEFAULT_KITCHEN_PRINT',true);
+
 defined('IGNORE_PRINT_PAYMENT_IDS')     OR  define('IGNORE_PRINT_PAYMENT_IDS', [4]);
 //For printing source name in prints
 defined('PRINT_SOURCE_IDS')             OR  define('PRINT_SOURCE_IDS', [4,5,6,7]);
