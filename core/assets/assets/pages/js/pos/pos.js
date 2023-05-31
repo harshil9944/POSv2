@@ -287,7 +287,7 @@ var promotionMixin = {
 									}
 								}
 							}
-							
+
 						});
 						if (addBp) {
 							if (self.order.promotions.applied.indexOf(bp.id) === -1) {
@@ -3669,11 +3669,11 @@ Vue.component("print-server-dialog", {
 			this.handleCloseModal(this.modal);
 		},
 	},
-	beforeDestroy: function(){
+	/* beforeDestroy: function(){
 		bus.$off("initDirectPrint");
-		/* bus.$off("initQueuePrint");
-		bus.$off("initPrintServerDialog"); */
-	},
+		bus.$off("initQueuePrint");
+		bus.$off("initPrintServerDialog");
+	},*/
 	created: function () {
 		var self = this;
 		bus.$on("initPrintServerDialog", function (payload) {
