@@ -42,6 +42,36 @@ async function asyncForEach(array, callback) {
     }
 }
 
+function isValidDateAndTime(startTime,endTime,currentDate) {
+    var timezone = _s("timezone");
+    if(typeof currentDate === "undefined"){
+        currentDate = new Date();
+    }else{
+        var dateAndTime = currentDate.split(" ");
+        var currentTimeArr = dateAndTime[1].split(":");
+        currentDate = moment.utc(new Date()).tz(timezone.tz).set({
+            'hour': currentTimeArr[0],
+            'minute': currentTimeArr[1],
+            'second': currentTimeArr[2],
+        });
+    }
+    var startTimeArr = startTime.split(":");
+    var endTimeArr = endTime.split(":");
+    var startTime = moment.utc(new Date()).tz(timezone.tz).set({
+        'hour': startTimeArr[0],
+        'minute': startTimeArr[1],
+        'second': startTimeArr[2],
+    });
+    var endTime = moment.utc(new Date()).tz(timezone.tz).set({
+        'hour': endTimeArr[0],
+        'minute': endTimeArr[1],
+        'second': endTimeArr[2],
+    });
+    
+    return moment.utc(currentDate).tz(timezone.tz).isBetween(startTime, endTime);
+   
+}
+
 function generateUUID() {
     // Public Domain/MIT
     var d = new Date().getTime(); //Timestamp
