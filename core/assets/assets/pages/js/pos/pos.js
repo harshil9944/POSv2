@@ -214,9 +214,9 @@ var promotionMixin = {
 				}
 
 				//Check Time for promotion starts
-				if(!self.isValidPromotion(s)) {
+				/* if(!self.isValidPromotion(s)) {
 					addPromotion = false;
-				}
+				} */
 				//Check Time for promotion ends
 
 				if (addPromotion) {
@@ -227,20 +227,7 @@ var promotionMixin = {
 		},
 		isValidPromotion: function(s) {
 			if(s.startTime !== null || s.endTime !== null) {
-				var timezone = _s("timezone");
-				var startTimeArr = s.startTime.split(":");
-				var endTimeArr = s.endTime.split(":");
-				var startTime = moment.utc(new Date()).tz(timezone.tz).set({
-					'hour': startTimeArr[0],
-					'minute': startTimeArr[1],
-					'second': startTimeArr[2],
-				});
-				var endTime = moment.utc(new Date()).tz(timezone.tz).set({
-					'hour': endTimeArr[0],
-					'minute': endTimeArr[1],
-					'second': endTimeArr[2],
-				});
-				return moment.utc(new Date()).tz(timezone.tz).isBetween(startTime, endTime);
+				return isValidDateAndTime(s.startTime,s.endTime);
 			}
 			return true;
 		},
@@ -248,7 +235,7 @@ var promotionMixin = {
 			var self = this;
 			var promotions = [];
 			this.masters.promotions.forEach(function (s) {
-				if (s.offerType === "basic" && self.isValidPromotion(s)) {
+				if (s.offerType === "basic") {
 					promotions.push(s);
 				}
 			});
@@ -258,7 +245,7 @@ var promotionMixin = {
 			var self = this;
 			var promotions = [];
 			this.masters.promotions.forEach(function (s) {
-				if (s.offerType !== "basic" && self.isValidPromotion(s)) {
+				if (s.offerType !== "basic") {
 					promotions.push(s);
 				}
 			});
@@ -275,18 +262,8 @@ var promotionMixin = {
 						var reward = bp.reward;
 						var productType = reward.productType;
 						self.cart.items.forEach(function (item, index) {
-							if (productType === "all") {
-								addBp = true;
-								total += Number(
-									self.getDiscountAmount(
-										item,
-										bp.reward.discountType,
-										bp.reward.discountValue,
-										true,
-									),
-								);
-							} else if (productType === "include") {
-								if (self.hasPromoItem(item.itemId, reward.include)) {
+							if(self.isValidItemDateAndTime(bp.startTime,bp.endTime,item)){
+								if (productType === "all") {
 									addBp = true;
 									total += Number(
 										self.getDiscountAmount(
@@ -296,8 +273,21 @@ var promotionMixin = {
 											true,
 										),
 									);
+								} else if (productType === "include") {
+									if (self.hasPromoItem(item.itemId, reward.include)) {
+										addBp = true;
+										total += Number(
+											self.getDiscountAmount(
+												item,
+												bp.reward.discountType,
+												bp.reward.discountValue,
+												true,
+											),
+										);
+									}
 								}
 							}
+							
 						});
 						if (addBp) {
 							if (self.order.promotions.applied.indexOf(bp.id) === -1) {
@@ -308,6 +298,23 @@ var promotionMixin = {
 				}
 			}
 			return total;
+		},
+		isNewItem:function(item){
+			if(typeof item.added === "undefined"){
+				return true;
+			}
+			return false;
+		},
+		isValidItemDateAndTime: function (startTime,endTime,i){
+			if(startTime !== null || endTime !== null) {
+				if(this.isNewItem(i)){
+					return isValidDateAndTime(startTime,endTime);
+				}else{
+					return isValidDateAndTime(startTime,endTime,i.added);
+				}
+			}
+			return true;
+
 		},
 		getAdvancePromotionTotal: function () {
 			var self = this;
@@ -326,27 +333,29 @@ var promotionMixin = {
 						var criteriaQuantity = 0;
 						var rewardQuantity = 0;
 						cartItems.forEach(function (item) {
-							if (criteria) {
-								if (criteriaProductType === "include") {
-									if (self.hasPromoItem(item.itemId, criteria.include)) {
-										criteriaMatches = true;
-										criteriaQuantity += Number(item.quantity);
+							if(self.isValidItemDateAndTime(ap.startTime,ap.endTime,item)){
+								if (criteria) {
+									if (criteriaProductType === "include") {
+										if (self.hasPromoItem(item.itemId, criteria.include)) {
+											criteriaMatches = true;
+											criteriaQuantity += Number(item.quantity);
+										}
 									}
 								}
-							}
-							if (reward) {
-								if (rewardProductType === "include") {
-									if (self.hasPromoItem(item.itemId, reward.include)) {
-										rewardMatches = true;
-										var rewardTotal = Number(
-											self.getDiscountAmount(
-												item,
-												ap.reward.discountType,
-												ap.reward.discountValue,
-											),
-										);
-										rewardQuantity += Number(item.quantity);
-										total += Number(rewardTotal);
+								if (reward) {
+									if (rewardProductType === "include") {
+										if (self.hasPromoItem(item.itemId, reward.include)) {
+											rewardMatches = true;
+											var rewardTotal = Number(
+												self.getDiscountAmount(
+													item,
+													ap.reward.discountType,
+													ap.reward.discountValue,
+												),
+											);
+											rewardQuantity += Number(item.quantity);
+											total += Number(rewardTotal);
+										}
 									}
 								}
 							}

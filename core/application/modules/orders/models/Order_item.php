@@ -31,7 +31,7 @@ class Order_item extends MY_Model
             'spiceLevel'=>'spice_level',
             'added'=>'added'
         ];
-        $this->exclude_keys = ['added'];
+        $this->exclude_keys = [];
     }
 
 }
