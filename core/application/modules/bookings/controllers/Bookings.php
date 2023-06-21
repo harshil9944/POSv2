@@ -30,7 +30,10 @@ class Bookings extends MY_Controller
         $filters = [];
         $filters['filter'] = [];
         $bookings = $this->_search($filters);
-        //dd($bookings);
+
+        $result = $this->_prep_booking($bookings);
+        _set_js_var('events', $result, 'j');
+
         /*$filters = [];
         $filters['filter'] = [];
         $bookings = $this->_search($filters);
@@ -71,9 +74,49 @@ class Bookings extends MY_Controller
 
         _set_additional_component('bookings_xtemplate_view', 'outside');
 
+
         _set_page_heading($this->plural);
         _set_layout_type('wide');
         _set_layout('bookings_view');
+    }
+
+    private function _prep_booking(&$bookings)
+    {
+        $result = [];
+        if($bookings){
+            foreach($bookings as $b){
+                $array = [
+                    'title'=>$b['booking_name'],
+                    'start'=>$b['date'],
+                    'end'=>$b['date'],
+                    'textColor'=>$this->_get_status_color($b['status']),
+                    'url'=>base_url('bookings/inquiries/show/'.$b['id']),
+                ];
+                $result[] = $array;
+            }
+
+        }
+
+        return $result;
+
+    }
+
+    private function _get_status_color($status){
+        switch ( $status ) {
+            case 1:
+                return '#666';
+            case 2:
+                return '#080';
+            case 3:
+                return '#800';
+            case 4:
+                return '#aaa';
+            case 5:
+                return '#800';
+            default:
+                return 'black';
+            }
+
     }
 
     public function _populate_get()
@@ -223,9 +266,11 @@ class Bookings extends MY_Controller
     {
         if (_get_method() == 'index') {
             _load_plugin(['dt']);
-            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/index.global.min.js','header');
-            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/web-component@6.1.5/index.global.min.js','header');
-            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/index.global.min.js','header');
+            _set_js_var('timezone', _get_timezone(), 'j');
+
+            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/index.global.min.js','header');
+            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/web-component@6.1.8/index.global.min.js','header');
+            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/index.global.min.js','header');
         }
         if (_get_method() == 'add' || _get_method() == 'edit') {
             //  _load_plugin(['vue_multiselect','moment','datepicker']);

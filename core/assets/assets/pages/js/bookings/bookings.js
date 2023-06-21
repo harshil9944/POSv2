@@ -1,32 +1,41 @@
-const fullCalendarElement = document.querySelector('full-calendar')
-
+/*const fullCalendarElement = document.querySelector('full-calendar');
+var timezone = _s("timezone");
 fullCalendarElement.options = {
+  timeZone: timezone.tz,
+  
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
     right: 'dayGridMonth,dayGridWeek,dayGridDay'
   },
-  events: [
-    {
-      title: 'Event 1',
-      start: '2023-04-16T10:00:00',
-      end: '2023-04-16T12:00:00',
-    },
-    {
-      title: 'Event 2',
-      start: '2023-04-17T14:00:00',
-      end: '2023-04-17T16:00:00',
-    },
-    {
-      title: 'Event 3',
-      start: '2023-04-18T08:00:00',
-      end: '2023-04-18T10:00:00',
-    },
-  ],
+  events:_s('events'),
 }
 $(document).ready(function () {
   $('#frm-calendar-event').on('submit', function (e) {
     e.preventDefault();
 
   });
+});*/
+
+document.addEventListener('DOMContentLoaded', function() {
+  var calendarEl = document.getElementById('full-calendar');
+  var timezone = _s("timezone");
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    timeZone: timezone.tz,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,dayGridWeek,dayGridDay'
+    },
+    events:_s('events'),
+    eventClick: function(info) {
+      info.jsEvent.preventDefault();
+      Object.assign(document.createElement("a"), {
+				target: "_blank",
+				href: info.event.url,
+			}).click();
+    }
+  });
+  calendar.render();
 });
