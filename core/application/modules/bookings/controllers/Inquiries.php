@@ -90,7 +90,7 @@ class Inquiries extends MY_Controller
                     $action .= _show_link(base_url($this->module . '/show/' . $id));
                 }
                 if ($can_edit) {
-                    $action .= _edit_link(base_url($this->module . '/edit/' . $id));
+                    $action .= _edit_link(base_url('/edit/' . $id));
                 }
                 if ($can_delete) {
                     $remove_url = base_url($this->module . '/remove/' . $id);
@@ -156,6 +156,7 @@ class Inquiries extends MY_Controller
     public function show($id) {
 
         $obj = $this->_single(['id' => $id],'show');
+        $obj['editLink'] = base_url('bookings/inquiries/edit/' . $obj['id']);
         _vars('obj',$obj);
 
         $this->_show($id);
@@ -254,11 +255,47 @@ class Inquiries extends MY_Controller
         $insert['date'] = sql_now_date();
 
         $this->{$this->model}->insert($insert);
+
+        //TODO send email to admin
+        $this->_send_inquiry_email( $insert );
+        //TODO send sms in future
+
         return true;
     }
 
-    public
-    function _confirm_post()
+    private function _send_inquiry_email( $obj ) {
+        _helper( 'email' );
+        if ( $obj ) {
+            $company_name = _get_setting( 'name', '', 'company' );
+            $details = [
+                'name' => $obj['booking_name'],
+                'email'     => $obj['email'],
+                'phone'    => $obj['phone'],
+                'number_of_person'    => $obj['number_of_person'],
+                'date'    => $obj['date'],
+                'description'    => $obj['description'],
+                'menu'    => $obj['menu'],
+                'remark'    => $obj['remark'],
+                'company'   => $company_name,
+            ];
+            _vars( 'details', $details );
+
+            $to = ['email' => DEFAULT_COMPANY_EMAIL];
+            $subject = "Welcome to $company_name";
+
+            $text = $subject;
+
+            $html_data = _view( 'email_templates/inquiry' );
+
+            _ci_send( $to, $subject, $text, $html_data );
+
+        } else {
+            log_message( 'error', "Error sending activation email to Customer" );
+        }
+
+    }
+
+    public function _confirm_post()
     {
         $id = _input('id');
         $this->setBookingStatus($id, 2);
@@ -266,8 +303,7 @@ class Inquiries extends MY_Controller
         return true;
     }
 
-    public
-    function _reject_post()
+    public function _reject_post()
     {
         $id = _input('id');
         $this->setBookingStatus($id, 3);
@@ -275,17 +311,15 @@ class Inquiries extends MY_Controller
         return true;
     }
 
-    public
-    function _cancel_post()
+    public function _cancel_post()
     {
         $id = _input('id');
         $this->setBookingStatus($id, 5);
-        _response_data('message', 'Booking has been rejected.');
+        _response_data('message', 'Booking has been cancelled.');
         return true;
     }
 
-    private
-    function setBookingStatus($bookingId, $statusId)
+    private function setBookingStatus($bookingId, $statusId)
     {
         $condition = ['id' => $bookingId];
         $data = [
