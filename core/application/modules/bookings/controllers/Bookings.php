@@ -271,6 +271,7 @@ class Bookings extends MY_Controller
             _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/index.global.min.js','header');
             _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/web-component@6.1.8/index.global.min.js','header');
             _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/index.global.min.js','header');
+            _enqueue_cdn_script('https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.8/index.global.min.js','header');
         }
         if (_get_method() == 'add' || _get_method() == 'edit') {
             //  _load_plugin(['vue_multiselect','moment','datepicker']);

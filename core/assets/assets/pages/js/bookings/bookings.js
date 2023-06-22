@@ -2,7 +2,7 @@
 var timezone = _s("timezone");
 fullCalendarElement.options = {
   timeZone: timezone.tz,
-  
+
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,dayGridWeek,dayGridDay'
+      right: 'dayGridMonth,dayGridWeek,dayGridDay,listMonth'
     },
     events:_s('events'),
     eventClick: function(info) {
