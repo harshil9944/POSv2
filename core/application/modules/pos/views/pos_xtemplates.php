@@ -1006,7 +1006,7 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                                 <table v-if="!isSplitPayment" class="table-bordered table f-s-12 text-black table-vcenter">
                                     <tbody>
                                         <tr v-if="enableExtOrderNo">
-                                            <th class="w-50">Order No</th>
+                                            <th class="w-50">Ref No</th>
                                             <td class="text-center w-50">
                                                 <input class="form-control" id="order-ext-order-no" type="text" v-model="order.extOrderNo">
                                             </td>
