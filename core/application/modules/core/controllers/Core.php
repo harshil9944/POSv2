@@ -6,6 +6,19 @@ class Core extends CORE_Controller {
 	public function _get_menu() {
         $menus = [];
 
+       
+        $menus[] = array(
+            'id'        =>  'menu-crowd-reports',
+            'class'     =>  '',
+            'icon'      =>  'si si-layers',
+            'group'     =>  'core',
+            'name'      =>  'Crowd Reports',
+            'path'      =>  'crowd_reports',
+            'module'    =>  '',
+            'priority'  =>  0,
+            'children'  =>  []
+        );
+        
         $menus[] = array(
             'id'        =>  'menu-dashboard',
             'class'     =>  '',
@@ -17,7 +30,6 @@ class Core extends CORE_Controller {
             'priority'  =>  0,
             'children'  =>  []
         );
-
         $menus[] = array(
             'id'        => 'menu-modules',
             'class'     => '',

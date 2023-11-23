@@ -291,9 +291,62 @@
                                 <div class="font-size-h4 font-w600">{{ avgYearEarnings | toTwoDecimal | beautifyUSCurrency }}</div>
                                 <div class="font-size-sm font-w600 text-uppercase text-muted">Average Earnings</div>
                             </div>
-
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4" data-toggle="appear">
+            <div class="col-md-6">
+                <div class="block block-fx-shadow block-rounded block-bordered">
+                    <div class="block-header block-header-default border-b">
+                        <h3 class="block-title">
+                            Tips <small>Last 12 Months</small>
+                        </h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <div class="pull-all pt-50">
+                            <canvas class="js-flot-line-tips"></canvas>
+                        </div>
+                    </div>
+                   <!--  <div class="block-content">
+                        <div class="row items-push text-center">
+                            <div class="col-6">
+                                <div class="font-size-h4 font-w600">{{ yearCount }}</div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Total sales</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="font-size-h4 font-w600">{{ avgYearCount }}</div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Average Sales</div>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="block block-fx-shadow block-rounded block-bordered">
+                    <div class="block-header block-header-default border-b">
+                        <h3 class="block-title">
+                            Discount <small>Last 12 Months</small>
+                        </h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <div class="pull-all pt-50">
+                            <canvas class="js-flot-line-discount"></canvas>
+                        </div>
+                    </div>
+                    <!-- <div class="block-content bg-white">
+                        <div class="row items-push text-center">
+                            <div class="col-6">
+                                <div class="font-size-h4 font-w600">{{ yearEarnings | toTwoDecimal | beautifyUSCurrency }}</div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Total Earnings</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="font-size-h4 font-w600">{{ avgYearEarnings | toTwoDecimal | beautifyUSCurrency }}</div>
+                                <div class="font-size-sm font-w600 text-uppercase text-muted">Average Earnings</div>
+                            </div>
+                        </div>
+                    </div> -->
                 </div>
             </div>
         </div>

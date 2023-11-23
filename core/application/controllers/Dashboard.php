@@ -5,123 +5,38 @@ class Dashboard extends MY_Controller {
 
     public $language = 'dashboard';
     public $module = 'dashboard';
+    public $order_sources = [];
+    public function __construct()
+    {
+        parent::__construct();
+        $this->order_sources =  _get_module('orders/order_sources','_search',[]);
+       
+    }
 	public function index()
 	{
+        
         if(1==2) {
-
-            _model('promotions/promotion', 'p');
-            $this->p->insert([
-                'title'       => 'Weekdays Liquor 50% Off',
-                'description' => '',
-                'offer_type'  => 'basic',
-                'start_date'  => '2023-01-01',
-                'end_date'    => '2023-03-01',
-                'start_time'  => '16:00:00',
-                'end_time'    => '18:00:00',
-                'offer_days'  => 'weekdays',
-                'customer_type'  => 'all',
-                'status'      => '1',
-                'added'       => sql_now_datetime(),
-            ]);
-            $promotionId = $this->p->insert_id();
-
-            _model('promotions/promotion_reward', 'pr');
-            $this->pr->insert([
-                'promotion_id'      => $promotionId,
-                'product_type'      => 'include',
-                'discount_type'     => 'p',
-                'discount_value'    => 50,
-                'added'             => sql_now_datetime(),
-            ]);
-            $promoRewardId = $this->pr->insert_id();
-
-            $items = _db_get_query("SELECT ii.id FROM itm_item ii WHERE ii.category_id IN (SELECT ic.id FROM itm_category ic WHERE ic.type='liquor')");
-            $reward_items = [];
-            foreach ($items as $i) {
-                $reward_items[] = [
-                    'reward_id'    => $promoRewardId,
-                    'promotion_id' => $promotionId,
-                    'item_id'      => $i['id'],
-                    'type'         => 'include',
-                    'added'        => sql_now_datetime(),
-                ];
-            }
-            if ($reward_items) {
-                _model('promotions/promotion_reward_product', 'prp');
-                $this->prp->insert_batch($reward_items);
-            }
+            $this->_set_promotions();
         }
 
-        if(!_can('dashboard','page')) {
-            $this->view = false;
-
-            _model('users/user','user');
-            _model('auth/auth_model','auth_m');
-
-            $userId = _get_session('user_id');
-            $user = $this->user->single(['id'=>$userId]);
-
-            $redirect = $this->auth_m->get_redirect($user);
-            if (!$redirect) {
-                $redirect = 'unauthorized';
-            }
-            if(!_can($redirect,'page')) {
-                $redirect = 'unauthorised';
-            }
-            if(_can($redirect,'page')) {
-                $this->_redirect($redirect,'refresh');
-            }else{
-                show_404();
-            }
-        }
+        $this->_check_dashboard_page_access();
 
 		if(_input('startDate') && _input('endDate')) {
             _set_js_var('startDate',_input('startDate'),'s');
             _set_js_var('endDate',_input('endDate'),'s');
         }
-        $sales_data = _db_get_query("SELECT date_format(oo.order_date,'%b') as month_name,COUNT(*) as sales_count ,SUM(oo.grand_total + oo.tip - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date> now() - INTERVAL 12 month GROUP BY MONTH(oo.order_date) ORDER BY oo.order_date ASC;");
-        $month_name = [];
-        $sales_count = [];
-        $grand_total = [];
-        if($sales_data){
-            $month_name = array_column($sales_data,'month_name');
-            $sales_count = array_column($sales_data,'sales_count');
-            $grand_total = array_column($sales_data,'grand_total');
-        }
 
-        _set_js_var('this_year_months',$month_name,'j');
-        _set_js_var('this_year',$sales_count,'j');
-        _set_js_var('this_year_earning',$grand_total,'j');
-        $sources = _get_module('orders/order_sources','_search',[]);
+        //Charts Data
+        $this->_set_sales_data();
+        $this->_set_popular_times_data();
+        $this->_set_yearly_data();
+        $this->_set_last_30_days_data();
+        $this->_set_discounts_and_tips_data();
+
+        $sources = $this->order_sources;
         $order_sources = get_select_array($sources,'id','title',true,'','All');
         _set_js_var('orderSources',$order_sources,'j');
-        $popular_times = _db_get_query("SELECT ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ord_order oo1 WHERE oo1.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')),2) AS percent, CONCAT(DATE_FORMAT(oo.added,'%l %p'),' - ',DATE_FORMAT(DATE_ADD(oo.added, INTERVAL 1 hour),'%l %p')) AS time_range FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') GROUP BY HOUR(oo.added)");
-        $percent = [];
-        $time_range = [];
-        if($popular_times){
-            $percent = array_column($popular_times,'percent');
-            $time_range = array_column($popular_times,'time_range');
-        }
-        _set_js_var('popular_times',$percent,'j');
-        _set_js_var('time_range',$time_range,'j');
-        $yearlyData = _db_get_query("SELECT COUNT(*) AS yearCount, SUM(oo.grand_total + oo.tip- (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS yearEarnings FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND year(oo.order_date) = year(CURDATE()) GROUP BY year(oo.order_date);",true);
-        _set_js_var('yearlyData',$yearlyData,'j');
-
-        $last_30_days_data = _db_get_query("SELECT DATE_FORMAT(oo.added, '%m/%d/%Y') AS date,SUM(oo.grand_total + oo.tip -oo.change) AS earnings, COUNT(*) AS totalOrders FROM ord_order oo WHERE oo.order_status NOT IN ('cancelled','refunded','deleted') AND oo.order_date BETWEEN NOW() - INTERVAL 30 DAY AND NOW() GROUP BY DATE(oo.order_date);",false);
-        $last_30_days = [];
-        $last_30_days_orders = [];
-        $last_30_days_earings = [];
-        if($last_30_days_data){
-            $last_30_days = array_column($last_30_days_data,'date');
-            $last_30_days_orders = array_column($last_30_days_data,'totalOrders');
-            $last_30_days_earings = array_column($last_30_days_data,'earnings');
-        }
-
-        _set_js_var('last_30_days',$last_30_days,'j');
-        _set_js_var('last_30_days_orders',$last_30_days_orders,'j');
-        _set_js_var('last_30_days_earings',$last_30_days_earings,'j');
-
-
+       
 	    _set_layout_type('wide');
 	    _set_additional_component('system/dashboard_xtemplate','outside');
 		_set_layout('system/dashboard_view');
@@ -203,8 +118,7 @@ class Dashboard extends MY_Controller {
     public function _pieChartOrders($params){
         $start_date = $this->db->escape($params['filter_date_start']);
         $end_date = $this->db->escape($params['filter_date_end']);
-        $order_sources = _get_module('orders/order_sources','_search',[]);
-
+        $order_sources = $this->order_sources;// _get_module('orders/order_sources','_search',[]);
         $sources = array_column($order_sources,'id');
 
         $sql = "SELECT";
@@ -224,7 +138,7 @@ class Dashboard extends MY_Controller {
     public function _pieChartEarnings($params){
         $start_date = $this->db->escape($params['filter_date_start']);
         $end_date = $this->db->escape($params['filter_date_end']);
-        $order_sources = _get_module('orders/order_sources','_search',[]);
+        $order_sources = $this->order_sources;// _get_module('orders/order_sources','_search',[]);
 
         $sources = array_column($order_sources,'id');
 
@@ -241,6 +155,140 @@ class Dashboard extends MY_Controller {
         $result = _db_get_query($sql,true);
         return $result;
     }
+
+    public function _set_sales_data(){
+        $sales_data = _db_get_query("SELECT DATE_FORMAT(oo.order_date,'%b %Y') as month_name,COUNT(*) as sales_count ,SUM(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date >= DATE_SUB(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), INTERVAL DAYOFMONTH(DATE_SUB(CURDATE(), INTERVAL 11 MONTH)) - 1 DAY) GROUP BY DATE_FORMAT(oo.order_date,'%b %Y') ORDER BY oo.order_date ASC");
+        $month_name = [];
+        $sales_count = [];
+        $grand_total = [];
+        if($sales_data){
+            $month_name = array_column($sales_data,'month_name');
+            $sales_count = array_column($sales_data,'sales_count');
+            $grand_total = array_column($sales_data,'grand_total');
+        }
+
+        _set_js_var('this_year_months',$month_name,'j');
+        _set_js_var('this_year',$sales_count,'j');
+        _set_js_var('this_year_earning',$grand_total,'j');
+
+    }
+    public function _set_popular_times_data(){
+        $popular_times = _db_get_query("SELECT ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ord_order oo1 WHERE oo1.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')),2) AS percent, CONCAT(DATE_FORMAT(oo.added,'%l %p'),' - ',DATE_FORMAT(DATE_ADD(oo.added, INTERVAL 1 hour),'%l %p')) AS time_range FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') GROUP BY HOUR(oo.added)");
+        $percent = [];
+        $time_range = [];
+        if($popular_times){
+            $percent = array_column($popular_times,'percent');
+            $time_range = array_column($popular_times,'time_range');
+        }
+        _set_js_var('popular_times',$percent,'j');
+        _set_js_var('time_range',$time_range,'j');
+    }
+
+    public function _set_yearly_data(){
+        $yearlyData = _db_get_query("SELECT COUNT(*) AS yearCount, SUM(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS yearEarnings FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND year(oo.order_date) = year(CURDATE()) GROUP BY year(oo.order_date);",true);
+        _set_js_var('yearlyData',$yearlyData,'j');
+    }
+
+    public function _set_last_30_days_data(){
+        $last_30_days_data = _db_get_query("SELECT DATE_FORMAT(oo.added, '%m/%d/%Y') AS date,SUM(oo.grand_total -oo.change) AS earnings, COUNT(*) AS totalOrders FROM ord_order oo WHERE oo.order_status NOT IN ('cancelled','refunded','deleted') AND oo.order_date BETWEEN NOW() - INTERVAL 30 DAY AND NOW() GROUP BY DATE(oo.order_date);",false);
+        $last_30_days = [];
+        $last_30_days_orders = [];
+        $last_30_days_earings = [];
+        if($last_30_days_data){
+            $last_30_days = array_column($last_30_days_data,'date');
+            $last_30_days_orders = array_column($last_30_days_data,'totalOrders');
+            $last_30_days_earings = array_column($last_30_days_data,'earnings');
+        }
+        _set_js_var('last_30_days',$last_30_days,'j');
+        _set_js_var('last_30_days_orders',$last_30_days_orders,'j');
+        _set_js_var('last_30_days_earings',$last_30_days_earings,'j');
+    }
+
+    public function _check_dashboard_page_access(){
+        if(!_can('dashboard','page')) {
+            $this->view = false;
+
+            _model('users/user','user');
+            _model('auth/auth_model','auth_m');
+
+            $userId = _get_session('user_id');
+            $user = $this->user->single(['id'=>$userId]);
+
+            $redirect = $this->auth_m->get_redirect($user);
+            if (!$redirect) {
+                $redirect = 'unauthorized';
+            }
+            if(!_can($redirect,'page')) {
+                $redirect = 'unauthorised';
+            }
+            if(_can($redirect,'page')) {
+                $this->_redirect($redirect,'refresh');
+            }else{
+                show_404();
+            }
+        }
+    }
+
+    public function _set_discounts_and_tips_data(){
+        $sales_data = _db_get_query("SELECT DATE_FORMAT(oo.order_date,'%b %Y') as month_name,SUM(oo.tip) as tips ,SUM(oo.discount) AS discounts FROM ord_order oo WHERE oo.order_status NOT IN ('Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date >= DATE_SUB(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), INTERVAL DAYOFMONTH(DATE_SUB(CURDATE(), INTERVAL 11 MONTH)) - 1 DAY) GROUP BY DATE_FORMAT(oo.order_date,'%b %Y') ORDER BY oo.order_date ASC");
+        $month_name = [];
+        $sales_count = [];
+        $grand_total = [];
+        if($sales_data){
+            $month_name = array_column($sales_data,'month_name');
+            $tips = array_column($sales_data,'tips');
+            $discounts = array_column($sales_data,'discounts');
+        }
+        _set_js_var('this_year_months',$month_name,'j');
+        _set_js_var('this_year_tips',$tips,'j');
+        _set_js_var('this_year_discounts',$discounts,'j');
+    }
+
+    public function _set_promotions(){
+        _model('promotions/promotion', 'p');
+        $this->p->insert([
+            'title'       => 'Weekdays Liquor 50% Off',
+            'description' => '',
+            'offer_type'  => 'basic',
+            'start_date'  => '2023-01-01',
+            'end_date'    => '2023-03-01',
+            'start_time'  => '16:00:00',
+            'end_time'    => '18:00:00',
+            'offer_days'  => 'weekdays',
+            'customer_type'  => 'all',
+            'status'      => '1',
+            'added'       => sql_now_datetime(),
+        ]);
+        $promotionId = $this->p->insert_id();
+
+        _model('promotions/promotion_reward', 'pr');
+        $this->pr->insert([
+            'promotion_id'      => $promotionId,
+            'product_type'      => 'include',
+            'discount_type'     => 'p',
+            'discount_value'    => 50,
+            'added'             => sql_now_datetime(),
+        ]);
+        $promoRewardId = $this->pr->insert_id();
+
+        $items = _db_get_query("SELECT ii.id FROM itm_item ii WHERE ii.category_id IN (SELECT ic.id FROM itm_category ic WHERE ic.type='liquor')");
+        $reward_items = [];
+        foreach ($items as $i) {
+            $reward_items[] = [
+                'reward_id'    => $promoRewardId,
+                'promotion_id' => $promotionId,
+                'item_id'      => $i['id'],
+                'type'         => 'include',
+                'added'        => sql_now_datetime(),
+            ];
+        }
+        if ($reward_items) {
+            _model('promotions/promotion_reward_product', 'prp');
+            $this->prp->insert_batch($reward_items);
+        }
+    }
+
+
 	/*public function set_default_settings() {
 	    _set_setting('name','Status Tour & Travel','company',false);
 	    _set_setting('url','http://www.statustours.in/','company',false);
@@ -261,6 +309,8 @@ class Dashboard extends MY_Controller {
             _enqueue_script('assets/plugins/vue-chartjs/chart.piece-label.js');
 			_enqueue_style('assets/plugins/vue2-daterange-picker/dist/vue2-daterange-picker.css');
            _enqueue_script('assets/plugins/vue2-daterange-picker/dist/vue2-daterange-picker.umd.min.js');
+
+          
         }
     }
 }

@@ -120,3 +120,13 @@ defined('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT')    OR  define('DEFAULT_KITCHEN
 defined('WEEKDAYS')    OR  define('WEEKDAYS', ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
 
 defined('DEFAULT_COMPANY_EMAIL')    OR  define('DEFAULT_COMPANY_EMAIL','sanju@divaasolutions.com');
+
+defined('DB_WEEKDAYS')        OR  define('DB_WEEKDAYS', [
+    ['id'=>1,'value'=>'Sunday'],
+    ['id'=>2,'value'=>'Monday'],
+    ['id'=>3,'value'=>'Tuesday'],
+    ['id'=>4,'value'=>'Wednesday'],
+    ['id'=>5,'value'=>'Thursday'],
+    ['id'=>6,'value'=>'Friday'],
+    ['id'=>7,'value'=>'Saturday']
+]);

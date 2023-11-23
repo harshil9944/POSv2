@@ -89,146 +89,12 @@
 								(Chart.defaults.global.elements.point.hoverRadius = 7),
 								(Chart.defaults.global.tooltips.cornerRadius = 3),
 								(Chart.defaults.global.legend.display = !1);
-							var e = jQuery(".js-flot-line"),
-								t = jQuery(".js-flot-line2"),
-								p = jQuery(".js-flot-line3");
-								l = jQuery(".js-flot-last-30-days");
-								m = jQuery(".js-flot-last-30-earnings");
-								a = jQuery(".js-flot-line-tips"),
-								d = jQuery(".js-flot-line-discount"),
-							e.length &&
-								new Chart(e, {
-									type: "line",
-									data: {
-										labels: _s("this_year_months"),
-										datasets: [
-											{
-												label: "This Year",
-												fill: !0,
-												backgroundColor: "rgba(114,102,186,.15)",
-												borderColor: "rgba(114,102,186,.5)",
-												pointBackgroundColor: "rgba(114,102,186,.5)",
-												pointBorderColor: "#fff",
-												pointHoverBackgroundColor: "#fff",
-												pointHoverBorderColor: "rgba(114,102,186,.5)",
-												data: _s("this_year"),
-											},
-										],
-									},
-									options: {
-										scales: { yAxes: [{ ticks: { suggestedMax: 50 } }] },
-										tooltips: {
-											callbacks: {
-												label: function (e, t) {
-													return " " + e.yLabel + " Orders";
-												},
-											},
-										},
-									},
-								}),
-							a.length &&
-							new Chart(a, {
-								type: "line",
-								data: {
-									labels: _s("this_year_months"),
-									datasets: [
-										{
-											label: "This Year",
-											fill: !0,
-											backgroundColor: "rgba(114,102,186,.15)",
-											borderColor: "rgba(114,102,186,.5)",
-											pointBackgroundColor: "rgba(114,102,186,.5)",
-											pointBorderColor: "#fff",
-											pointHoverBackgroundColor: "#fff",
-											pointHoverBorderColor: "rgba(114,102,186,.5)",
-											data: _s("this_year_tips"),
-										},
-									],
-								},
-								options: {
-									scales: { yAxes: [{ ticks: { suggestedMax: 50 } }] },
-									tooltips: {
-										callbacks: {
-											label: function (e, t) {
-												return " " + e.yLabel + " Orders";
-											},
-										},
-									},
-								},
-							}),
-							d.length &&
-								new Chart(d, {
-									type: "line",
-									data: {
-										labels: _s("this_year_months"),
-										datasets: [
-											{
-												label: "This Year",
-												fill: !0,
-												backgroundColor: "rgba(114,102,186,.15)",
-												borderColor: "rgba(114,102,186,.5)",
-												pointBackgroundColor: "rgba(114,102,186,.5)",
-												pointBorderColor: "#fff",
-												pointHoverBackgroundColor: "#fff",
-												pointHoverBorderColor: "rgba(114,102,186,.5)",
-												data: _s("this_year_discounts"),
-											},
-										],
-									},
-									options: {
-										scales: { yAxes: [{ ticks: { suggestedMax: 50 } }] },
-										tooltips: {
-											callbacks: {
-												label: function (e, t) {
-													return " " + e.yLabel + " $";
-												},
-											},
-										},
-									},
-								}),
+							
+							var	t = jQuery(".js-flot-time-of-day");
+								w = jQuery(".js-flot-day-of-week");
+							
 							t.length &&
 								new Chart(t, {
-									type: "line",
-									data: {
-										labels: _s("this_year_months"),
-										datasets: [
-											{
-												label: "This Year",
-												fill: !0,
-												backgroundColor: "rgba(247,93,129,.15)",
-												borderColor: "rgba(247,93,129,.5)",
-												pointBackgroundColor: "rgba(247,93,129,.5)",
-												pointBorderColor: "#fff",
-												pointHoverBackgroundColor: "#fff",
-												pointHoverBorderColor: "rgba(247,93,129,.5)",
-												data: _s("this_year_earning"),
-											},
-										],
-									},
-									options: {
-										scales: {
-											yAxes: [
-												{
-													ticks: {
-														suggestedMax: 1000,
-														callback: function (value, index, values) {
-															return "$" + value;
-														},
-													},
-												},
-											],
-										},
-										tooltips: {
-											callbacks: {
-												label: function (e, t) {
-													return " $ " + e.yLabel;
-												},
-											},
-										},
-									},
-								});
-							p.length &&
-								new Chart(p, {
 									type: "line",
 									data: {
 										labels: _s("time_range"),
@@ -268,11 +134,11 @@
 										},
 									},
 								});
-							l.length &&
-							new Chart(l, {
+							w.length &&
+							new Chart(w, {
 								type: "line",
 								data: {
-									labels: _s("last_30_days"),
+									labels: _s("week_day"),
 									datasets: [
 										{
 											label: "This Year",
@@ -283,7 +149,7 @@
 											pointBorderColor: "#fff",
 											pointHoverBackgroundColor: "#fff",
 											pointHoverBorderColor: "rgba(249,126,54,.5)",
-											data: _s("last_30_days_orders"),
+											data: _s("week_day_orders"),
 										},
 									],
 								},
@@ -292,9 +158,9 @@
 										yAxes: [
 											{
 												ticks: {
-													suggestedMax: 10,
+													suggestedMax: 20,
 													callback: function (value, index, values) {
-														return " "+ value;
+														return value + "%";
 													},
 												},
 											},
@@ -303,53 +169,13 @@
 									tooltips: {
 										callbacks: {
 											label: function (e, t) {
-												return " "+ e.yLabel + " orders";
+												return " "+ e.yLabel + " %";
 											},
 										},
 									},
 								},
 							});
-							m.length &&
-							new Chart(m, {
-								type: "line",
-								data: {
-									labels: _s("last_30_days"),
-									datasets: [
-										{
-											label: "This Year",
-											fill: !0,
-											backgroundColor: "rgba(249,126,54,.15)",
-											borderColor: "rgba(249,126,54,.5)",
-											pointBackgroundColor: "rgba(249,126,54,.5)",
-											pointBorderColor: "#fff",
-											pointHoverBackgroundColor: "#fff",
-											pointHoverBorderColor: "rgba(249,126,54,.5)",
-											data: _s("last_30_days_earings"),
-										},
-									],
-								},
-								options: {
-									scales: {
-										yAxes: [
-											{
-												ticks: {
-													suggestedMax: 100,
-													callback: function (value, index, values) {
-														return " "+ value;
-													},
-												},
-											},
-										],
-									},
-									tooltips: {
-										callbacks: {
-											label: function (e, t) {
-												return "$ "+ e.yLabel;
-											},
-										},
-									},
-								},
-							});
+							
 						},
 					},
 					{
@@ -412,11 +238,11 @@ Vue.mixin({
 		},
 	},
 });
-Vue.component("dashboard", {
-	template: "#dashboard-template",
+Vue.component("crowd-reports", {
+	template: "#crowd-reports-template",
 	data: function () {
 		return {
-			module: "dashboard",
+			module: "crowd_reports",
 			params: {},
 			filteredDateRange: {
 				startDate: _s("startDate")
@@ -473,14 +299,24 @@ Vue.component("dashboard", {
 				},
 				chartOptions: this.getChartOptions(),
 			},
+			baseUrl:_s('crowdReportsUrl'),
+			dbWeekDays:_s('dbWeekDays'),
+			weekDayId:_s('week_day_id'),
 		};
 	},
 	computed: {
+		weekDay:function(){
+			var self = this;
+			var week =  this.dbWeekDays.find(function (w) {
+				return Number(w.id) === Number(self.weekDayId);
+			});
+			return week.value;
+		},
 		dateRange: function () {
 			return (
-				moment(this.displayDate.startDate).format("D/M/Y") +
+				moment(this.filteredDateRange.startDate).format("D/M/Y") +
 				" - " +
-				moment(this.displayDate.endDate).format("D/M/Y")
+				moment(this.filteredDateRange.endDate).format("D/M/Y")
 			);
 		},
 		totalEarnings: function () {
@@ -637,13 +473,20 @@ Vue.component("dashboard", {
 			this.enableFilterBtn = false;
 			var self = this;
 			if (loader) {
-				Codebase.blocks(".dashboard-filter-block", "state_loading");
+				Codebase.blocks(".crowd-reports-filter-block", "state_loading");
 			}
+			var url = this.baseUrl;
 			var startDate = moment(this.filteredDateRange.startDate).format(
 				"YYYY/MM/DD",
 			);
 			var endDate = moment(this.filteredDateRange.endDate).format("YYYY/MM/DD");
-			var data = {
+				url += "?filterStartDate=" + startDate;
+			
+			url += "&filterEndDate=" + endDate;
+			url += "&weekDayId=" + this.weekDayId;
+
+			window.location = url;
+			/* var data = {
 				module: this.module,
 				method: "filter_list",
 				filterStartDate: startDate,
@@ -666,11 +509,11 @@ Vue.component("dashboard", {
 				);
 				this.updatePieChartOrder();
 				this.updatePieChartEarning();
-			}
+			} */
 			if (loader) {
-				Codebase.blocks(".dashboard-filter-block", "state_normal");
+				Codebase.blocks(".crowd-reports-filter-block", "state_normal");
 			}
-			self.enableFilterBtn = true;
+			this.enableFilterBtn = true;
 		},
 		updatePieChartOrder: function () {
 			this.pieChartOrders.chartData.labels = this.getPieChartLabels();
@@ -686,38 +529,21 @@ Vue.component("dashboard", {
 				options: this.pieChartEarnings.chartOptions,
 			});
 		},
+		setPieChartData:function(){
+			this.pieChartOrders.chartData.datasets[0].data = Object.values(
+				_s('pieChartOrders')
+			);
+			this.pieChartEarnings.chartData.datasets[0].data = Object.values(
+				_s('pieChartEarnings')
+			);
+			this.updatePieChartOrder();
+			this.updatePieChartEarning();
+		}
 	},
 	mounted: function () {
-		this.filterData(false);
+		//this.filterData(false);
 		this.orderSources = _s("orderSources");
-	},
-});
-Vue.component("dashboard-summary-box", {
-	template: "#dashboard-summary-box",
-	props: {
-		title: {
-			type: String,
-			default: "Summary",
-		},
-		value: {
-			type: [String, Number],
-			default: 0,
-		},
-		icon: {
-			type: String,
-			default: "si-bag",
-		},
-		variant: {
-			type: String,
-			default: "primary",
-		},
-	},
-	computed: {
-		iconClass: function () {
-			return "text-" + this.variant + "-light " + this.icon;
-		},
-		textColorClass: function () {
-			return "text-" + this.variant;
-		},
+		this.setPieChartData();
+		
 	},
 });
