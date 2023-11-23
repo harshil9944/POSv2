@@ -30,7 +30,7 @@
                 <div class="block block-rounded block-bordered">
                     <div class="block-header block-header-default border-b">
                         <h3 class="block-title">
-                            Day of week  <small> - only {{ weekDay }}</small> <small class="pull-right">{{ dateRange }}</small>
+                            Day of week  <small> (only {{ weekDay }}s)</small> <small class="pull-right">{{ dateRange }}</small>
                         </h3>
                     </div>
                     <div class="block-content block-content-full">
@@ -41,37 +41,21 @@
                 </div>
             </div>
         </div>
-        <div class="row mb-4" data-toggle="appear">
-            <div class="col-12">
-                <div class="block block-rounded block-bordered">
-                    <div class="block-header block-header-default border-b">
-                        <h3 class="block-title">
-                            Time of Day <small class="pull-right">{{ dateRange }}</small>
-                        </h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <div class="pull-all pt-50">
-                            <canvas class="js-flot-time-of-day" height="100"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="row invisible" data-toggle="appear">
             <div class="col-md-12">
                 <div class="row">
-                    
+
                     <div class="col-12">
                         <div class="row">
                             <div class="col-12 col-md-6">
                                 <div class="block block-fx-shadow block-bordered">
                                     <div class="block-header block-header-default border-b">
                                         <h3 class="block-title">
-                                        Orders<small class="pull-right">{{ dateRange }}</small>
+                                        Orders<small> (only {{ weekDay }}s)</small><small class="pull-right">{{ dateRange }}</small>
                                         </h3>
                                     </div>
                                     <div class="block-content block-content-full">
-                                        <pie-chart-order></pie-chart-order>
+                                        <pie-chart-order />
                                     </div>
                                 </div>
                             </div>
@@ -79,14 +63,30 @@
                                 <div class="block block-fx-shadow block-bordered">
                                     <div class="block-header block-header-default border-b">
                                         <h3 class="block-title">
-                                        Earnings<small class="pull-right">{{ dateRange }}</small>
+                                        Earnings<small> (only {{ weekDay }}s)</small><small class="pull-right">{{ dateRange }}</small>
                                         </h3>
                                     </div>
                                     <div class="block-content block-content-full">
-                                        <pie-chart-earning></pie-chart-earning>
+                                        <pie-chart-earning />
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4" data-toggle="appear">
+            <div class="col-12">
+                <div class="block block-rounded block-bordered">
+                    <div class="block-header block-header-default border-b">
+                        <h3 class="block-title">
+                            Time of Day (All Days) <small class="pull-right">{{ dateRange }}</small>
+                        </h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <div class="pull-all pt-50">
+                            <canvas class="js-flot-time-of-day" height="100"></canvas>
                         </div>
                     </div>
                 </div>

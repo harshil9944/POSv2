@@ -1,5 +1,5 @@
 <?php
-defined('CORE_VERSION')     OR define('CORE_VERSION', '0.02.56');
+defined('CORE_VERSION')     OR define('CORE_VERSION', '0.02.60');
 
 defined('COMPOSER_PATH')    OR define('COMPOSER_PATH', BASEPATH . '../vendor/autoload.php');
 defined('LOG_PATH')         OR define('LOG_PATH', BASEPATH . '../projects/' . PROJECT_CODE . '/logs/');
