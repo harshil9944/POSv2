@@ -6,10 +6,12 @@ class Dashboard extends MY_Controller {
     public $language = 'dashboard';
     public $module = 'dashboard';
     public $order_sources = [];
+    public $payment_methods = [];
     public function __construct()
     {
         parent::__construct();
         $this->order_sources =  _get_module('orders/order_sources','_search',[]);
+        $this->payment_methods =  _get_module( 'core/payment_methods', '_search', ['filter' => []] );
        
     }
 	public function index()
@@ -36,6 +38,10 @@ class Dashboard extends MY_Controller {
         $sources = $this->order_sources;
         $order_sources = get_select_array($sources,'id','title',true,'','All');
         _set_js_var('orderSources',$order_sources,'j');
+
+        $methods = $this->payment_methods;
+        $payment_methods = get_select_array($methods,'id','title',true,'','All');
+        _set_js_var('paymentMethods',$payment_methods,'j');
        
 	    _set_layout_type('wide');
 	    _set_additional_component('system/dashboard_xtemplate','outside');
@@ -56,6 +62,8 @@ class Dashboard extends MY_Controller {
         $last_orders = $this->_orders($sourceId);
         $pieChartOrders = $this->_pieChartOrders($params);
         $pieChartEarnings = $this->_pieChartEarnings($params);
+        $pieChartPayments = $this->_pieChartPayments($params);
+        $pieChartPaymentOrders = $this->_pieChartPaymentOrders($params);
 
 		_response_data('items',$items);
         _response_data('mostVisitedCustomers',$mostVisited);
@@ -63,6 +71,8 @@ class Dashboard extends MY_Controller {
         _response_data('lastOrders',$last_orders);
         _response_data('pieChartOrders',$pieChartOrders);
         _response_data('pieChartEarnings',$pieChartEarnings);
+        _response_data('pieChartPayments',$pieChartPayments);
+        _response_data('pieChartPaymentOrders',$pieChartPaymentOrders);
         return true;
     }
 	public function _filter_list($params) {
@@ -156,8 +166,63 @@ class Dashboard extends MY_Controller {
         return $result;
     }
 
+    public function _pieChartPayments($params){
+        $start_date = $this->db->escape($params['filter_date_start']);
+        $end_date = $this->db->escape($params['filter_date_end']);
+        $db_methods = $this->payment_methods;
+        $methods = array_column($db_methods,'id');
+
+        $sql = "SELECT";
+        $first = true;
+        foreach($methods as $source) {
+            if(!$first) {
+                $sql .= ',';
+            }
+            $first=false;
+            $sql .= "(SELECT IFNULL(SUM(op.amount),0) FROM ord_payment op LEFT JOIN ord_order oo ON oo.id = op.order_id LEFT JOIN sys_payment_method spm ON spm.id = op.payment_method_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND op.payment_method_id = $source  AND DATE(oo.order_date) BETWEEN $start_date AND $end_date) as `$source`";
+        }
+        $sql .= " FROM dual";
+        $result = _db_get_query($sql,true);
+
+        return $result;
+    }
+    public function _pieChartPaymentOrders($params){
+        $start_date = $this->db->escape($params['filter_date_start']);
+        $end_date = $this->db->escape($params['filter_date_end']);
+        $db_methods = $this->payment_methods;
+        $methods = array_column($db_methods,'id');
+
+        $sql = "SELECT";
+        $first = true;
+        foreach($methods as $source) {
+            if(!$first) {
+                $sql .= ',';
+            }
+            $first=false;
+            $sql .= "(SELECT IFNULL(COUNT(oo.id),0) FROM ord_payment op LEFT JOIN ord_order oo ON oo.id = op.order_id LEFT JOIN sys_payment_method spm ON spm.id = op.payment_method_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND op.payment_method_id = $source  AND DATE(oo.order_date) BETWEEN $start_date AND $end_date) as `$source`";
+        }
+        $sql .= " FROM dual";
+        $result = _db_get_query($sql,true);
+
+        return $result;
+    }
+
     public function _set_sales_data(){
-        $sales_data = _db_get_query("SELECT DATE_FORMAT(oo.order_date,'%b %Y') as month_name,COUNT(*) as sales_count ,SUM(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date >= DATE_SUB(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), INTERVAL DAYOFMONTH(DATE_SUB(CURDATE(), INTERVAL 11 MONTH)) - 1 DAY) GROUP BY DATE_FORMAT(oo.order_date,'%b %Y') ORDER BY oo.order_date ASC");
+       // $sales_data = _db_get_query("SELECT DATE_FORMAT(oo.order_date,'%b %Y') as month_name,COUNT(*) as sales_count ,SUM(oo.grand_total - (SELECT IFNULL(SUM(opr.amount),0) FROM ord_payment_refund opr WHERE opr.order_id = oo.id)) AS grand_total FROM ord_order oo WHERE oo.order_status NOT IN ('Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date >= DATE_SUB(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), INTERVAL DAYOFMONTH(DATE_SUB(CURDATE(), INTERVAL 11 MONTH)) - 1 DAY) GROUP BY DATE_FORMAT(oo.order_date,'%b %Y') ORDER BY oo.order_date ASC");
+        $sales_data = _db_get_query("SELECT 
+                                            DATE_FORMAT(oo.order_date, '%b %Y') as month_name,
+                                            COUNT(*) as sales_count,
+                                            SUM(oo.grand_total - IFNULL((SELECT SUM(opr.amount) FROM ord_payment_refund opr WHERE opr.order_id = oo.id), 0)) AS grand_total
+                                        FROM 
+                                            ord_order oo
+                                        WHERE 
+                                            oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') 
+                                            AND oo.order_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m-01')
+                                            AND oo.order_date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                                        GROUP BY 
+                                            DATE_FORMAT(oo.order_date, '%b %Y')
+                                        ORDER BY 
+                                            oo.order_date ASC;");
         $month_name = [];
         $sales_count = [];
         $grand_total = [];
@@ -230,10 +295,18 @@ class Dashboard extends MY_Controller {
     }
 
     public function _set_discounts_and_tips_data(){
-        $sales_data = _db_get_query("SELECT DATE_FORMAT(oo.order_date,'%b %Y') as month_name,SUM(oo.tip) as tips ,SUM(oo.discount) AS discounts FROM ord_order oo WHERE oo.order_status NOT IN ('Cancelled','Confirmed','Refunded','Deleted') AND oo.order_date >= DATE_SUB(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), INTERVAL DAYOFMONTH(DATE_SUB(CURDATE(), INTERVAL 11 MONTH)) - 1 DAY) GROUP BY DATE_FORMAT(oo.order_date,'%b %Y') ORDER BY oo.order_date ASC");
+        $sales_data =   _db_get_query("SELECT DATE_FORMAT(oo.order_date,'%b %Y') as month_name,SUM(oo.tip) as tips ,SUM(oo.discount) AS discounts FROM ord_order oo 
+                                         WHERE 
+                                            oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') 
+                                            AND oo.order_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m-01')
+                                            AND oo.order_date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                                        GROUP BY 
+                                            DATE_FORMAT(oo.order_date, '%b %Y')
+                                        ORDER BY 
+                                            oo.order_date ASC");
         $month_name = [];
-        $sales_count = [];
-        $grand_total = [];
+        $tips = [];
+        $discounts = [];
         if($sales_data){
             $month_name = array_column($sales_data,'month_name');
             $tips = array_column($sales_data,'tips');

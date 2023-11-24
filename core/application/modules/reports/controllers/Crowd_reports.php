@@ -3,9 +3,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Crowd_reports extends MY_Controller {
 
-    public $language = 'dashboard';
-    public $module = 'crowd_reports';
+    public $language = '';
+    public $module = 'reports/crowd_reports';
     public $title = 'Crowd Reports';
+    public function __construct()
+    {
+        parent::__construct();
+    }
 	public function index()
 	{
         $filter_start_date = _input( 'filterStartDate' );
@@ -37,7 +41,8 @@ class Crowd_reports extends MY_Controller {
             $date_filter = 'oo.added  >= '.$end_date.' - INTERVAL 1 year';
         }
           // Day of week
-          $day_of_week = _db_get_query("SELECT ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ord_order oo1 WHERE oo1.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND  DATE(oo1.added) BETWEEN $start_date AND $end_date AND DAYOFWEEK(oo1.added) = $day_of_week_number),2) AS week_day_orders, CONCAT(DATE_FORMAT(oo.added,'%l %p'),' - ',DATE_FORMAT(DATE_ADD(oo.added, INTERVAL 1 hour),'%l %p')) AS week_day FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')  AND DAYOFWEEK(oo.added) = $day_of_week_number AND DATE(oo.added) BETWEEN $start_date AND $end_date  GROUP BY HOUR(oo.added)");
+          //$day_of_week = _db_get_query("SELECT ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ord_order oo1 WHERE oo1.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND  DATE(oo1.added) BETWEEN $start_date AND $end_date AND DAYOFWEEK(oo1.added) = $day_of_week_number),2) AS week_day_orders, CONCAT(DATE_FORMAT(oo.added,'%l %p'),' - ',DATE_FORMAT(DATE_ADD(oo.added, INTERVAL 1 hour),'%l %p')) AS week_day FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')  AND DAYOFWEEK(oo.added) = $day_of_week_number AND DATE(oo.added) BETWEEN $start_date AND $end_date  GROUP BY HOUR(oo.added)");
+          $day_of_week = _db_get_query("SELECT COUNT(*) AS week_day_orders, CONCAT(DATE_FORMAT(oo.added,'%l %p'),' - ',DATE_FORMAT(DATE_ADD(oo.added, INTERVAL 1 hour),'%l %p')) AS week_day FROM ord_order oo WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted')  AND DAYOFWEEK(oo.added) = $day_of_week_number AND DATE(oo.added) BETWEEN $start_date AND $end_date  GROUP BY HOUR(oo.added)");
           $percent = [];
             $week_day = [];
             $week_day_orders = [];
@@ -53,29 +58,45 @@ class Crowd_reports extends MY_Controller {
         $sources = _get_module('orders/order_sources','_search',[]);
         $order_sources = get_select_array($sources,'id','title',true,'','All');
         _set_js_var('orderSources',$order_sources,'j');
+
+        $methods = _get_module( 'core/payment_methods', '_search', ['filter' => []] );
+        $payment_methods = get_select_array($methods,'id','title',true,'','All');
+        _set_js_var('paymentMethods',$payment_methods,'j');
+
+
         $params = [
             'filter_date_start' =>  $filter_start_date,
             'filter_date_end'   =>  $filter_end_date,
             'day_of_week_number'=>$day_of_week_number,
-            'order_sources'=>$sources
+            'order_sources'=>$sources,
+            'payment_methods'=>$methods
         ];
 
         //Pie chart data
+        $pieChartPayments = $this->_pieChartPayments($params);
+        $pieChartPaymentOrders = $this->_pieChartPaymentOrders($params);
         $pieChartOrders = $this->_pieChartOrders($params);
         $pieChartEarnings = $this->_pieChartEarnings($params);
+
+        $items = $this->_items($params);
+        $customers = $this->_customers($params);
         _set_js_var('pieChartOrders',$pieChartOrders,'j');
         _set_js_var('pieChartEarnings',$pieChartEarnings,'j');
+        _set_js_var('pieChartPayments',$pieChartPayments,'j');
+        _set_js_var('pieChartPaymentOrders',$pieChartPaymentOrders,'j');
+        _set_js_var('items',$items,'j');
+        _set_js_var('customers',$customers,'j');
         
 
         _set_js_var('startDate',$filter_start_date,'s');
         _set_js_var('endDate',$filter_end_date,'s');
-        _set_js_var('crowdReportsUrl',base_url('crowd_reports'),'s');
+        _set_js_var('crowdReportsUrl',base_url('reports/crowd_reports'),'s');
         _set_js_var('dbWeekDays',DB_WEEKDAYS,'j');
 	    _set_layout_type('wide');
         _set_page_heading($this->title);
         _set_page_title($this->title);
-	    _set_additional_component('system/crowd_reports_xtemplate','outside');
-		_set_layout('system/crowd_reports_view');
+	    _set_additional_component('crowd_reports_xtemplate','outside');
+		_set_layout('crowd_reports_view');
 	}
 	public function _filter_list_get() {
         $filter_start_date = _input('filterStartDate');
@@ -84,7 +105,6 @@ class Crowd_reports extends MY_Controller {
         $params = [
             'filter_date_start' =>  $filter_start_date,
             'filter_date_end'   =>  $filter_end_date,
-           
         ];
 
         $result = $this->_filter_list($params);
@@ -93,6 +113,7 @@ class Crowd_reports extends MY_Controller {
         $last_orders = $this->_orders($sourceId);
         $pieChartOrders = $this->_pieChartOrders($params);
         $pieChartEarnings = $this->_pieChartEarnings($params);
+        
 
 		_response_data('items',$items);
         _response_data('mostVisitedCustomers',$mostVisited);
@@ -125,15 +146,17 @@ class Crowd_reports extends MY_Controller {
 	public function _items($params) {
         $start_date = $this->db->escape($params['filter_date_start']);
         $end_date = $this->db->escape($params['filter_date_end']);
-        $sql ="SELECT SUM(ooi.quantity) AS total_quantity,ooi.title FROM ord_order_item ooi WHERE DATE(ooi.added) BETWEEN $start_date AND $end_date GROUP BY ooi.item_id ORDER BY SUM(ooi.quantity) DESC LIMIT 10;";
+        $day_of_week_number = $this->db->escape($params['day_of_week_number']);
+        $sql ="SELECT SUM(ooi.quantity) AS total_quantity,ooi.title FROM ord_order_item ooi  LEFT JOIN ord_order oo ON oo.id = ooi.order_id WHERE oo.order_status NOT IN ('cancelled','draft','confirmed','refunded','Deleted') AND DAYOFWEEK(ooi.added) = $day_of_week_number AND DATE(ooi.added) BETWEEN $start_date AND $end_date GROUP BY ooi.item_id ORDER BY SUM(ooi.quantity) DESC LIMIT 10;";
         $result = _db_get_query($sql);
         return $result;
     }
     public function _customers($params) {
         $start_date = $this->db->escape($params['filter_date_start']);
         $end_date = $this->db->escape($params['filter_date_end']);
+        $day_of_week_number = $this->db->escape($params['day_of_week_number']);
         $avoid_customer_id =AVOID_DASHBOARD_CUSTOMER_ID;
-        $sql ="SELECT COUNT(oo.customer_id) AS totalVisited,cc.display_name FROM ord_order oo LEFT JOIN con_customer cc ON cc.id = oo.customer_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND DATE(oo.order_date) BETWEEN $start_date AND $end_date AND cc.id NOT IN($avoid_customer_id) GROUP BY oo.customer_id ORDER BY COUNT(oo.customer_id) DESC LIMIT 10;";
+        $sql ="SELECT COUNT(oo.customer_id) AS totalVisited,cc.display_name FROM ord_order oo LEFT JOIN con_customer cc ON cc.id = oo.customer_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND DAYOFWEEK(oo.added) = $day_of_week_number AND  DATE(oo.order_date) BETWEEN $start_date AND $end_date AND cc.id NOT IN($avoid_customer_id) GROUP BY oo.customer_id ORDER BY COUNT(oo.customer_id) DESC LIMIT 10;";
         $result = _db_get_query($sql);
         return $result;
     }
@@ -173,6 +196,48 @@ class Crowd_reports extends MY_Controller {
 
         return $result;
     }
+    public function _pieChartPayments($params){
+        $start_date = $this->db->escape($params['filter_date_start']);
+        $end_date = $this->db->escape($params['filter_date_end']);
+        $day_of_week_number = $this->db->escape($params['day_of_week_number']);
+        $db_methods = $params['payment_methods'];
+        $methods = array_column($db_methods,'id');
+
+        $sql = "SELECT";
+        $first = true;
+        foreach($methods as $source) {
+            if(!$first) {
+                $sql .= ',';
+            }
+            $first=false;
+            $sql .= "(SELECT IFNULL(SUM(op.amount),0) FROM ord_payment op LEFT JOIN ord_order oo ON oo.id = op.order_id LEFT JOIN sys_payment_method spm ON spm.id = op.payment_method_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND op.payment_method_id = $source  AND DAYOFWEEK(oo.added) = $day_of_week_number AND DATE(oo.order_date) BETWEEN $start_date AND $end_date) as `$source`";
+        }
+        $sql .= " FROM dual";
+        $result = _db_get_query($sql,true);
+
+        return $result;
+    }
+    public function _pieChartPaymentOrders($params){
+        $start_date = $this->db->escape($params['filter_date_start']);
+        $end_date = $this->db->escape($params['filter_date_end']);
+        $day_of_week_number = $this->db->escape($params['day_of_week_number']);
+        $db_methods = $params['payment_methods'];
+        $methods = array_column($db_methods,'id');
+
+        $sql = "SELECT";
+        $first = true;
+        foreach($methods as $source) {
+            if(!$first) {
+                $sql .= ',';
+            }
+            $first=false;
+            $sql .= "(SELECT IFNULL(COUNT(oo.id),0) FROM ord_payment op LEFT JOIN ord_order oo ON oo.id = op.order_id LEFT JOIN sys_payment_method spm ON spm.id = op.payment_method_id WHERE oo.order_status NOT IN ('Draft','Cancelled','Confirmed','Refunded','Deleted') AND op.payment_method_id = $source  AND DAYOFWEEK(oo.added) = $day_of_week_number AND DATE(oo.order_date) BETWEEN $start_date AND $end_date) as `$source`";
+        }
+        $sql .= " FROM dual";
+        $result = _db_get_query($sql,true);
+
+        return $result;
+    }
     public function _pieChartEarnings($params){
         $start_date = $this->db->escape($params['filter_date_start']);
         $end_date = $this->db->escape($params['filter_date_end']);
@@ -203,6 +268,10 @@ class Crowd_reports extends MY_Controller {
             _enqueue_script('assets/plugins/vue-chartjs/chart.piece-label.js');
 			_enqueue_style('assets/plugins/vue2-daterange-picker/dist/vue2-daterange-picker.css');
            _enqueue_script('assets/plugins/vue2-daterange-picker/dist/vue2-daterange-picker.umd.min.js');
+
+
+           _enqueue_cdn_script('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js','header');
+           _enqueue_cdn_script('https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js','header');
         }
     }
 }

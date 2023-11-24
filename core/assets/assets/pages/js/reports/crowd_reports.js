@@ -160,7 +160,7 @@
 												ticks: {
 													suggestedMax: 20,
 													callback: function (value, index, values) {
-														return value + "%";
+														return value + " ";
 													},
 												},
 											},
@@ -169,7 +169,7 @@
 									tooltips: {
 										callbacks: {
 											label: function (e, t) {
-												return " "+ e.yLabel + " %";
+												return " "+ e.yLabel + " ";
 											},
 										},
 									},
@@ -238,6 +238,38 @@ Vue.mixin({
 		},
 	},
 });
+Vue.component("pie-chart-payment", {
+	extends: window.VueChartJs.Pie,
+	created: function () {
+		var self = this;
+		bus.$on("renderPieChartPayment", function (payload) {
+			var chartData = payload.chartData;
+			var options = payload.options;
+			self.renderChart(chartData, options);
+		});
+	},
+});
+Vue.component("pie-chart-payment-order", {
+	extends: window.VueChartJs.Pie,
+	created: function () {
+		var self = this;
+		bus.$on("renderPieChartPaymentOrder", function (payload) {
+			var chartData = payload.chartData;
+			var options = payload.options;
+			self.renderChart(chartData, options);
+		});
+	},
+});
+Vue.mixin({
+	methods: {
+		dtFormat: function (date) {
+			return moment(date).format("DD/MM/YYYY");
+		},
+		beautifyDate: function (value) {
+			return this.$options.filters.beautifyDate(value);
+		},
+	},
+});
 Vue.component("crowd-reports", {
 	template: "#crowd-reports-template",
 	data: function () {
@@ -264,8 +296,8 @@ Vue.component("crowd-reports", {
 					avgEarnings: 0,
 					totalEarnings: 0,
 				},
-				items: [],
-				mostVisitedCustomers:[],
+				items:_s('items'),
+				mostVisitedCustomers:_s('customers'),
 				lastOrders: [],
 				yearlyData: _s("yearlyData"),
 			},
@@ -299,9 +331,38 @@ Vue.component("crowd-reports", {
 				},
 				chartOptions: this.getChartOptions(),
 			},
+			pieChartPayments: {
+				chartData: {
+					labels: [],
+					datasets: [
+						{
+							borderWidth: 1,
+							borderColor: this.getBorderColor(),
+							backgroundColor: this.getBackgroundColor(),
+							data: [],
+						},
+					],
+				},
+				chartOptions: this.getChartOptions(),
+			},
+			pieChartPaymentOrders: {
+				chartData: {
+					labels: [],
+					datasets: [
+						{
+							borderWidth: 1,
+							borderColor: this.getBorderColor(),
+							backgroundColor: this.getBackgroundColor(),
+							data: [],
+						},
+					],
+				},
+				chartOptions: this.getChartOptions(),
+			},
 			baseUrl:_s('crowdReportsUrl'),
 			dbWeekDays:_s('dbWeekDays'),
 			weekDayId:_s('week_day_id'),
+			jsWeekDayId:_s('week_day_id'),
 		};
 	},
 	computed: {
@@ -401,6 +462,29 @@ Vue.component("crowd-reports", {
 		},
 	},
 	methods: {
+		generatePDF:function(){
+			// Get the div element
+			const content = document.getElementById('content');
+
+			// Use html2canvas to capture the content as an image
+			html2canvas(content).then(canvas => {
+				// Convert the canvas to data URL
+				const imgData = canvas.toDataURL('image/png');
+				// Initialize jsPDF
+				const pdf = new jsPDF({
+					orientation: 'p',
+					unit: 'px',
+					format: 'a4',
+					hotfixes: ['px_scaling'],
+				});
+	
+				// Add the image to the PDF
+				pdf.addImage(imgData, 'PNG', 140, 10);
+	
+				// Save the PDF as a file
+				pdf.save('output.pdf');
+			});
+		},
 		getBorderColor: function () {
 			return [
 				"rgba(255,99,132,1)",
@@ -451,6 +535,15 @@ Vue.component("crowd-reports", {
 			});
 			return source;
 		},
+		getPieChartPaymentLabels: function () {
+			var source = [];
+			this.paymentMethods.forEach(function (s) {
+				if (s.value !== "All") {
+					source.push(s.value);
+				}
+			});
+			return source;
+		},
 		filterOrderSource: async function () {
 			Codebase.blocks(".order-source-block", "state_loading");
 			var self = this;
@@ -483,33 +576,9 @@ Vue.component("crowd-reports", {
 				url += "?filterStartDate=" + startDate;
 			
 			url += "&filterEndDate=" + endDate;
-			url += "&weekDayId=" + this.weekDayId;
+			url += "&weekDayId=" + this.jsWeekDayId;
 
 			window.location = url;
-			/* var data = {
-				module: this.module,
-				method: "filter_list",
-				filterStartDate: startDate,
-				filterEndDate: endDate,
-				sourceId: this.sourceId,
-			};
-			var response = await submitRequest(data, "get");
-			if (response.status === "ok") {
-				self.displayDate.startDate = this.filteredDateRange.startDate;
-				self.displayDate.endDate = this.filteredDateRange.endDate;
-				self.dashData.summary = response.dashboard;
-				self.dashData.items = response.items;
-				self.dashData.lastOrders = response.lastOrders;
-				self.dashData.mostVisitedCustomers = response.mostVisitedCustomers;
-				self.pieChartOrders.chartData.datasets[0].data = Object.values(
-					response.pieChartOrders,
-				);
-				self.pieChartEarnings.chartData.datasets[0].data = Object.values(
-					response.pieChartEarnings,
-				);
-				this.updatePieChartOrder();
-				this.updatePieChartEarning();
-			} */
 			if (loader) {
 				Codebase.blocks(".crowd-reports-filter-block", "state_normal");
 			}
@@ -529,6 +598,20 @@ Vue.component("crowd-reports", {
 				options: this.pieChartEarnings.chartOptions,
 			});
 		},
+		updatePieChartPayment: function () {
+			this.pieChartPayments.chartData.labels = this.getPieChartPaymentLabels();
+			bus.$emit("renderPieChartPayment", {
+				chartData: this.pieChartPayments.chartData,
+				options: this.pieChartPayments.chartOptions,
+			});
+		},
+		updatePieChartPaymentOrder: function () {
+			this.pieChartPaymentOrders.chartData.labels = this.getPieChartPaymentLabels();
+			bus.$emit("renderPieChartPaymentOrder", {
+				chartData: this.pieChartPaymentOrders.chartData,
+				options: this.pieChartPaymentOrders.chartOptions,
+			});
+		},
 		setPieChartData:function(){
 			this.pieChartOrders.chartData.datasets[0].data = Object.values(
 				_s('pieChartOrders')
@@ -536,13 +619,22 @@ Vue.component("crowd-reports", {
 			this.pieChartEarnings.chartData.datasets[0].data = Object.values(
 				_s('pieChartEarnings')
 			);
+			this.pieChartPayments.chartData.datasets[0].data = Object.values(
+				_s('pieChartPayments')
+			);
+			this.pieChartPaymentOrders.chartData.datasets[0].data = Object.values(
+				_s('pieChartPaymentOrders')
+			);
 			this.updatePieChartOrder();
 			this.updatePieChartEarning();
+			this.updatePieChartPayment();
+			this.updatePieChartPaymentOrder();
 		}
 	},
 	mounted: function () {
 		//this.filterData(false);
 		this.orderSources = _s("orderSources");
+		this.paymentMethods = _s("paymentMethods");
 		this.setPieChartData();
 		
 	},

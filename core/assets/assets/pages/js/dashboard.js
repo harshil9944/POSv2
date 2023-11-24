@@ -402,6 +402,28 @@ Vue.component("pie-chart-earning", {
 		});
 	},
 });
+Vue.component("pie-chart-payment", {
+	extends: window.VueChartJs.Pie,
+	created: function () {
+		var self = this;
+		bus.$on("renderPieChartPayment", function (payload) {
+			var chartData = payload.chartData;
+			var options = payload.options;
+			self.renderChart(chartData, options);
+		});
+	},
+});
+Vue.component("pie-chart-payment-order", {
+	extends: window.VueChartJs.Pie,
+	created: function () {
+		var self = this;
+		bus.$on("renderPieChartPaymentOrder", function (payload) {
+			var chartData = payload.chartData;
+			var options = payload.options;
+			self.renderChart(chartData, options);
+		});
+	},
+});
 Vue.mixin({
 	methods: {
 		dtFormat: function (date) {
@@ -460,6 +482,34 @@ Vue.component("dashboard", {
 				chartOptions: this.getChartOptions(),
 			},
 			pieChartEarnings: {
+				chartData: {
+					labels: [],
+					datasets: [
+						{
+							borderWidth: 1,
+							borderColor: this.getBorderColor(),
+							backgroundColor: this.getBackgroundColor(),
+							data: [],
+						},
+					],
+				},
+				chartOptions: this.getChartOptions(),
+			},
+			pieChartPayments: {
+				chartData: {
+					labels: [],
+					datasets: [
+						{
+							borderWidth: 1,
+							borderColor: this.getBorderColor(),
+							backgroundColor: this.getBackgroundColor(),
+							data: [],
+						},
+					],
+				},
+				chartOptions: this.getChartOptions(),
+			},
+			pieChartPaymentOrders: {
 				chartData: {
 					labels: [],
 					datasets: [
@@ -615,6 +665,15 @@ Vue.component("dashboard", {
 			});
 			return source;
 		},
+		getPieChartPaymentLabels: function () {
+			var source = [];
+			this.paymentMethods.forEach(function (s) {
+				if (s.value !== "All") {
+					source.push(s.value);
+				}
+			});
+			return source;
+		},
 		filterOrderSource: async function () {
 			Codebase.blocks(".order-source-block", "state_loading");
 			var self = this;
@@ -664,8 +723,16 @@ Vue.component("dashboard", {
 				self.pieChartEarnings.chartData.datasets[0].data = Object.values(
 					response.pieChartEarnings,
 				);
+				this.pieChartPayments.chartData.datasets[0].data = Object.values(
+					response.pieChartPayments,
+				);
+				this.pieChartPaymentOrders.chartData.datasets[0].data = Object.values(
+					response.pieChartPaymentOrders,
+				);
 				this.updatePieChartOrder();
 				this.updatePieChartEarning();
+				this.updatePieChartPayment();
+				this.updatePieChartPaymentOrder();
 			}
 			if (loader) {
 				Codebase.blocks(".dashboard-filter-block", "state_normal");
@@ -686,10 +753,25 @@ Vue.component("dashboard", {
 				options: this.pieChartEarnings.chartOptions,
 			});
 		},
+		updatePieChartPayment: function () {
+			this.pieChartPayments.chartData.labels = this.getPieChartPaymentLabels();
+			bus.$emit("renderPieChartPayment", {
+				chartData: this.pieChartPayments.chartData,
+				options: this.pieChartPayments.chartOptions,
+			});
+		},
+		updatePieChartPaymentOrder: function () {
+			this.pieChartPaymentOrders.chartData.labels = this.getPieChartPaymentLabels();
+			bus.$emit("renderPieChartPaymentOrder", {
+				chartData: this.pieChartPaymentOrders.chartData,
+				options: this.pieChartPaymentOrders.chartOptions,
+			});
+		},
 	},
 	mounted: function () {
 		this.filterData(false);
 		this.orderSources = _s("orderSources");
+		this.paymentMethods = _s("paymentMethods");
 	},
 });
 Vue.component("dashboard-summary-box", {
