@@ -87,6 +87,40 @@
                 </div>
             </div>
         </div>
+        <div class="row invisible" data-toggle="appear">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="block block-fx-shadow block-bordered">
+                                        <div class="block-header block-header-default border-b">
+                                            <h3 class="block-title">
+                                            Orders By Payment<small class="pull-right">{{ dateRange }}</small>
+                                            </h3>
+                                        </div>
+                                        <div class="block-content block-content-full">
+                                            <pie-chart-payment-order />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="block block-fx-shadow block-bordered">
+                                        <div class="block-header block-header-default border-b">
+                                            <h3 class="block-title">
+                                            Payment<small class="pull-right">{{ dateRange }}</small>
+                                            </h3>
+                                        </div>
+                                        <div class="block-content block-content-full">
+                                            <pie-chart-payment />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <div class="row gutters-tiny mb-4">
             <div class="col-xl-4">
                 <div class="content-heading">

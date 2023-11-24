@@ -32,6 +32,15 @@ class Reports extends MY_Controller {
 
         $reports = [];
         $reports[] = [
+            'name'	    =>  'Crowd Reports',
+            'class'     =>  '',
+            'group'     =>  '',
+            'icon'      =>  'basket-loaded',
+            'path'      =>  'reports/crowd_reports',
+            'module'    =>  'reports/crowd_reports',
+            'children'  =>  []
+        ];
+        $reports[] = [
             'name'	    =>  'Shifts',
             'class'     =>  '',
             'group'     =>  '',
