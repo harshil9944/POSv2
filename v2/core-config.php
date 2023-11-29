@@ -19,7 +19,8 @@ defined('ORDER_SOURCE_PAYMENT_LINK')    OR  define('ORDER_SOURCE_PAYMENT_LINK', 
     ['print_label'=>'STD','source_id'=>4,'payment_method_id'=>5],
     ['print_label'=>'DD','source_id'=>5,'payment_method_id'=>6],
     ['print_label'=>'UBER','source_id'=>6,'payment_method_id'=>7],
-    ['print_label'=>'DIW','source_id'=>7,'payment_method_id'=>8],
+    ['print_label'=>'GIFTCARD','source_id'=>2,'payment_method_id'=>8],
+    ['print_label'=>'FOODDOOR','source_id'=>7,'payment_method_id'=>9],
 ]);
 
 defined('DEFAULT_CASHIER_PRINT')        OR  define('DEFAULT_CASHIER_PRINT',true);
