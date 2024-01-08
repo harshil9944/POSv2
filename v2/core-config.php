@@ -68,7 +68,7 @@ defined('NOTIFICATION_PRIVATE_KEY')     OR  define('NOTIFICATION_PRIVATE_KEY', '
 
 //Development Settings
 defined('DEV_BASE_URL')                 OR  define('DEV_BASE_URL', 'http://inntechpos2.ci/');
-defined('DEV_GLOBAL_UPLOAD_PATH')       OR  define('DEV_GLOBAL_UPLOAD_PATH', 'C:/Users/Sandip/Documents/projects/InnTechPOS-Master/stage.inntechpos.com/uploads/');
+defined('DEV_GLOBAL_UPLOAD_PATH')       OR  define('DEV_GLOBAL_UPLOAD_PATH', 'C:/Users/Sandip/Documents/projects/2022/I/InnTechPOS2-Master/v2/uploads/');
 defined('DEV_PRINT_SERVER_URL')         OR  define('DEV_PRINT_SERVER_URL', 'http://print-server.ci/');
 
 defined('DEV_DB_HOSTNAME')              OR  define('DEV_DB_HOSTNAME', 'localhost');

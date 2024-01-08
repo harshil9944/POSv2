@@ -155,8 +155,6 @@ class Api extends REST_Controller {
         $module = _get_config('api_item_module');
         $method =  _get_config('api_populate_items_method');
 
-
-
         $response = _get_module($module, $method, []);
         $response_code = $this->_get_response_code($response['type']);
         unset($response['type']);

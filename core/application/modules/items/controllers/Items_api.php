@@ -16,6 +16,7 @@ class Items_api extends API_Controller
 
     public function _api_populate_items($params=[]) {
         _helper('zebra');
+         $categoryId = _input('categoryId');
         if(!$categories = _get_cache('web_categories')) {
             $categories =$this->_get_categories(['order' => ['order_by' => 'sort_order', 'order' => 'ASC'], 'filter' => ['web_status' => 1], 'select_data' => true, 'include_select' => false]);
             $skip_categories = [];
@@ -34,7 +35,7 @@ class Items_api extends API_Controller
            
            // _set_cache('web_categories', $categories, 1800);
         }
-        if(!$items = _get_cache('web_items')) {
+        if(!$items = _get_cache('web_items')  && !$categoryId) {
 
             $skip_items = [];
             $skip_items[] = OPEN_ITEM_ID;
@@ -43,7 +44,12 @@ class Items_api extends API_Controller
                 'id'
             ];
 
-            $items = _db_get_query("SELECT " . implode(',', $fields) . " from itm_item where type='product' AND web_status=1 AND is_addon=0 AND id NOT IN (" . implode(',', $skip_items) . ")");
+            $sql = "SELECT " . implode(',', $fields) . " from itm_item where type='product' AND web_status=1 AND is_addon=0 AND id NOT IN (" . implode(',', $skip_items) . ")";
+            if($categoryId){
+                $sql.= "AND category_id=$categoryId";
+            }
+            //$items = _db_get_query("SELECT " . implode(',', $fields) . " from itm_item where type='product' AND web_status=1 AND is_addon=0 AND id NOT IN (" . implode(',', $skip_items) . ")");
+            $items = _db_get_query($sql);
             if ($items) {
 
                 $ids = array_column($items, 'id');
@@ -87,6 +93,7 @@ class Items_api extends API_Controller
     public function _api_menu_items() {
 
         $type = _input('type');
+        $categoryId = _input('category');
         $category_cache = $type ? "web_menu_categories_$type" : "web_menu_categories";
         $item_cache = $type ? "web_menu_items_$type" : "web_menu_items";
 
@@ -113,9 +120,12 @@ class Items_api extends API_Controller
             }
            // _set_cache($category_cache, $categories);
         }
-        if ( !$items = _get_cache($item_cache) ) {
+        if ( !$items = _get_cache($item_cache) && !$categoryId ) {
             $item_params = [];
             $item_params['filter'] = ['web_status' => 1, 'type' => 'product', 'parent' => 0];
+            if($categoryId) {
+                $item_params['filter']['category_id'] = $categoryId;
+            }
           
             $item_params['limit'] = 3000;
             $item_params['orders'] = [['order_by' => 'title', 'order' => 'ASC']];
@@ -160,7 +170,9 @@ class Items_api extends API_Controller
                 }
                
                 $items = $temp;
-                _set_cache($item_cache,$items);
+                if(!$categoryId) {
+                    _set_cache($item_cache,$items);
+                }
             }
         }
         _response_data('categories',$categories);

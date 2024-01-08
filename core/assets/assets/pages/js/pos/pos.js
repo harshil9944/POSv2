@@ -7114,8 +7114,8 @@ Vue.component("pos", {
 		},
 		checkEmployeeShiftOpen: function () {},
 	},
-	mounted: function () {
-		this.populateMeta();
+	mounted: async function () {
+		await this.populateMeta();
 	},
 	created: function () {
 		var self = this;
