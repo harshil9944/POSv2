@@ -200,8 +200,8 @@ $config['auth_library_function'] = FALSE;//'login';
 |            $config['auth_override_class_method_http']['deals']['*']['options'] = 'none';
 */
 $config['auth_override_class_method_http']['api']['*']['options'] = 'none';
-$config['auth_override_class_method_http']['api']['login']['post'] = 'none';
-$config['auth_override_class_method_http']['api']['register']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['customer_login']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['customer_register']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['forgot']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['retrieve']['post'] = 'none';
 
@@ -210,7 +210,7 @@ $config['auth_override_class_method_http']['api']['clear_print_queue']['post'] =
 $config['auth_override_class_method_http']['api']['populate_items']['get'] = 'none';
 $config['auth_override_class_method_http']['api']['validate_session']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['order']['post'] = 'none';
-$config['auth_override_class_method_http']['api']['logout']['post'] = 'none';
+$config['auth_override_class_method_http']['api']['customer_logout']['post'] = 'none';
 
 
 

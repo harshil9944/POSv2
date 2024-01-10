@@ -44,8 +44,9 @@ class Orders_api extends API_Controller
         $customerInfo['id'] = (@$customer['id'])??null;
         $customerInfo['phone'] = (@$customer['phone'])??null;
         $res_data['status'] = true;
-        $res_data['customer'] =$customerInfo;
-        $res_data['key'] =$token;
+        $res_data['customerInfo'] =$customerInfo;
+        $res_data['token'] =$token;
+         $res_data['loggedIn'] =$logged_in;
         $res_data['currencySign'] = _get_setting('currency_sign','');
         $res_data['allowOrders'] = $allow_online_orders == '1';
 
@@ -65,13 +66,11 @@ class Orders_api extends API_Controller
 
         $email = $params['email'];
         $password = $params['password'];
-        $customer = $this->customer;
 
         $filters = [];
         $filters['filter'] = ['email'=>$email];
         $obj = $this->customer->single($filters['filter']);
-
-        if($customer) {
+        if($obj) {
             if ($this->_is_activated($obj)) {
                 _helper('password');
                 if (trim(hash_password($password)) == trim($obj['password'])) {
@@ -82,14 +81,16 @@ class Orders_api extends API_Controller
                         $user = false;
                         $id = $obj['id'];
 
-                        $customerInfo['display_name'] = $obj['display_name'];
-                        $customerInfo['email'] = $obj['email'];
-                        $customerInfo['id'] = $obj['id'];
-                        $customerInfo['phone'] = $obj['phone'];
+                        $customerInfo = [
+                                            'display_name'=> $obj['display_name'],
+                                            'email'=> $obj['email'],
+                                            'id'=> $obj['id'],
+                                            'phone'=> $obj['phone']
+                                        ];
                         $data['status'] = true;
                         $data['existing']= true;
-                        $data['customer'] =$customerInfo;
-                        $data['key'] =$token;
+                        $data['customerInfo'] =$customerInfo;
+                        $data['token'] =$token;
 
                         $response = [
                             'status' => 'ok',
@@ -178,14 +179,16 @@ class Orders_api extends API_Controller
         }
         if($result) {
             $token = $this->_get_customer_token($customer['id']);
-            $customerInfo['display_name'] = $customer['display_name'];
-            $customerInfo['email'] = $customer['email'];
-            $customerInfo['id'] = $customer['id'];
-            $customerInfo['phone'] = $customer['phone'];
+            $customerInfo = [
+                'display_name'=> $customer['display_name'],
+                'email'=> $customer['email'],
+                'id'=> $customer['id'],
+                'phone'=> $customer['phone']
+            ];
             $res_data['status'] = true;
             $res_data['existing']= true;
-            $res_data['customer'] =$customerInfo;
-            $res_data['key'] =$token;
+            $res_data['customerInfo'] =$customerInfo;
+            $res_data['token'] =$token;
             $res_data['message'] = 'Registered Successfully';
             $response = [
                 'status' => 'ok',
@@ -225,8 +228,6 @@ class Orders_api extends API_Controller
     }
 
     public function _api_logout($token) {
-
-      
         if($token) {
             $data = $this->creatorjwt->decode_token($token);
             if ($data) {
@@ -243,7 +244,6 @@ class Orders_api extends API_Controller
                         'data'=>$res_data,
                         'message' => 'Logout was successful'
                     ];
-                    
                 }
             }else{
                 $response = [
@@ -287,12 +287,13 @@ class Orders_api extends API_Controller
                 }
             }
         }
-        $this->_manage_order($obj);
+        $order = $this->_manage_order($obj);
 
         $response = [
             'status' => 'ok',
             'type' => 'HTTP_CREATED',
             'expiresIn' => 86400,
+            'order' => $order,
             'message' => 'Order was successful'
         ];
         return $response;
@@ -372,14 +373,13 @@ class Orders_api extends API_Controller
             }
            // _get_module('notifications','_broadcast',$params);
 
-
         }
+        return $order;
       
 
     }
 
     private function _prep_order_obj(&$obj) {
-
         $order_keys = $this->order->keys;
 
         if(isset($obj['customer_id']) && $obj['customer_id']) {
@@ -397,20 +397,19 @@ class Orders_api extends API_Controller
             $obj['order_item_table'] = [];
             $obj['order_payment_table'] = [];
 
-            if (isset($obj['payment'])) {
-                $payments[] = $obj['payment'];
+            if (isset($obj['cart']['totals']['payments'])) {
+                $payments = $obj['cart']['totals']['payments'];
                 foreach ($payments as $payment) {
-
                     $payment_insert = [
                         'cash'              =>  false,
-                        'amount'            =>  (@$obj['grand_total'])?$obj['grand_total']:0,
+                        'amount'            =>  (@$obj['cart']['totals']['grandTotal'])?$obj['cart']['totals']['grandTotal']:0,
                         'notes'             =>  '',
                         'payment_method_id' =>  WEB_PAYPAL_PAYMENT_METHOD_ID,//(@$payment['paymentID'])?$payment['paymentID']:WEB_PAYPAL_PAYMENT_METHOD_ID,
                         'customer_id'       =>  $obj['customer_id']
                     ];
 
                     $payment_desc_insert = [
-                        'transaction_id'    =>  $payment['paymentID'],
+                        'transaction_id'    =>  $payment['id'],
                         'source_data'       =>  (is_array($payment))?json_encode($payment):''
                     ];
                     $payment_insert['description'] = $payment_desc_insert;
@@ -419,7 +418,10 @@ class Orders_api extends API_Controller
                 }
                 unset($obj['payment']);
             }
-
+            foreach ( $obj['cart']['totals'] as $key => $value ) {
+                $obj[$key] = $value;
+            }
+            unset( $obj['cart']['totals'] );
           
 
             foreach ($order_keys as $old => $new) {
@@ -431,13 +433,6 @@ class Orders_api extends API_Controller
             }
 
             $obj['order_table']['billing_name'] = $customer['display_name'];
-          /*   $obj['order_table']['address1'] = '';
-            $obj['order_table']['address2'] = '';
-            $obj['order_table']['city'] = '';
-            $obj['order_table']['state'] = '';
-            $obj['order_table']['zip_code'] = '';
-            $obj['order_table']['country'] = ''; */
-
            
 
             $obj['order_table']['order_status'] = 'Confirmed';
@@ -447,9 +442,7 @@ class Orders_api extends API_Controller
                 unset($obj['close']);
             }
 
-            if (!isset($obj['order_table']['source_id'])) {
-                $obj['order_table']['source_id'] = SO_SOURCE_WEB_ID;
-            }
+            $obj['order_table']['source_id'] = SO_SOURCE_WEB_ID;
 
             if (!isset($obj['order_table']['tax_rate'])) {
                 $obj['order_table']['tax_rate'] = 5;
@@ -466,22 +459,22 @@ class Orders_api extends API_Controller
             $freight = ((float)$obj['order_table']['freight_total']) ? (float)$obj['order_table']['freight_total'] : 0;
             $duty = ((float)$obj['order_table']['duty_total']) ? (float)$obj['order_table']['duty_total'] : 0;
 
-            foreach ($obj['items'] as $key => $item) {
+            foreach ($obj['cart']['items'] as $key => $item) {
                 $web_item = [
                     'type' => $item['type'],
-                    'title' =>  $item['type']==='product'?$item['title']:$item['title'].' - '.$item['variant_title'],
+                    'title' =>  $item['title'],
                     'quantity' => (float)$item['quantity'],
                     'notes' => (@$item['orderItemNotes'])??'',
                     'rate' => (float)$item['rate'],
-                    'item_id' => $item['itemId'],
+                    'item_id' => $item['id'],
                     'unit_id' => 2,
                     'rate' => (float)$item['rate'],
                     'has_spice_level' => $item['hasSpiceLevel'],
                     'spice_level' => $item['spiceLevel'],
-                    'amount'=> $item['amount'],
+                    'amount'=> $item['rate'] *$item['quantity'],
                 ];
                 $temp = $web_item;
-                $temp['addons'] = $item['addons'];
+                $temp['addons'] = [];
 
                 $temp['has_spice_level'] = ($temp['has_spice_level'] == 'true') ? 1 : 0;
                
