@@ -60,18 +60,16 @@ class Api extends REST_Controller {
 
 
     //Common Methods Start
-    public function login_post() {
-
+    public function customer_login_post() {
         $login_method = _get_config('api_login_method');
          $login_module = _get_config('api_order_module');
 
-        $obj = json_decode(file_get_contents('php://input'),true);
-        $email = $obj['email'];
-        $password = $obj['password'];
+        $email = _input('email');
+        $password = _input('password');
 
         if($email && $password) {
 
-            $response = _get_module($login_module, $login_method, $obj);
+            $response = _get_module($login_module, $login_method, ['email'=>$email,'password'=>$password]);
             $response_code = $this->_get_response_code($response['type']);
             unset($response['type']);
 
@@ -140,10 +138,8 @@ class Api extends REST_Controller {
         $validate_session_method = _get_config('api_validate_session_method');
         $order_module = _get_config('api_order_module');
 
-       $obj = json_decode(file_get_contents('php://input'),true);
-       $key = $obj['key'];
-
-       $response = _get_module($order_module, $validate_session_method, $key);
+       $token = _input('token');
+       $response = _get_module($order_module, $validate_session_method, $token);
        $response_code = $this->_get_response_code($response['type']);
        unset($response['type']);
 
@@ -170,27 +166,25 @@ class Api extends REST_Controller {
         $this->set_response($response,$response_code);
     }
 
-    public function logout_post() {
+    public function customer_logout_post() {
 
         $logout_module = _get_config('api_order_module');
         $logout_method = '_api_logout';
-        $data = json_decode(file_get_contents('php://input'),true);
-        $key = $data['key'];
-        $response = _get_module($logout_module, $logout_method, $key);
+        $token = _input('token');
+        $response = _get_module($logout_module, $logout_method, $token);
         $response_code = $this->_get_response_code($response['type']);
         unset($response['type']);
 
         $this->set_response($response,$response_code);
     }
 
-    public function register_post() {
+    public function customer_register_post() {
 
 
         $register_module = _get_config('api_order_module');
         $register_method = '_api_register';
 
-        $data = json_decode(file_get_contents('php://input'),true);
-        $obj = $data['obj'];
+        $obj = _input('obj');
 
         $response = _get_module($register_module, $register_method, $obj);
         $response_code = $this->_get_response_code($response['type']);
@@ -204,11 +198,10 @@ class Api extends REST_Controller {
         $register_module = _get_config('api_order_module');
         $register_method = '_api_order';
 
-        $data = json_decode(file_get_contents('php://input'),true);
+        $obj = _input('obj');
+        $token = _input('token');
 
-
-
-        $response = _get_module($register_module, $register_method, $data);
+        $response = _get_module($register_module, $register_method, ['token'=>$token,'obj'=>$obj]);
 
         $response_code = $this->_get_response_code($response['type']);
         unset($response['type']);
