@@ -59,7 +59,7 @@ class Orders_api extends API_Controller
         ];
 
         return $response;
-       
+
     }
 
     public function _api_login($params=[]) {
@@ -132,8 +132,8 @@ class Orders_api extends API_Controller
     }
 
     public function _api_register($obj = []) {
-        
-    
+
+
         $params = [
             'phone' =>  $obj['phone'],
             'email'=>   $obj['email'],
@@ -165,7 +165,7 @@ class Orders_api extends API_Controller
                     'message' => 'Customer already registered. Please try login or Forgot Password.'
                 ];
                 return $response;
-                
+
             }
         }else{
             $id = $this->customer->save($data);
@@ -375,7 +375,7 @@ class Orders_api extends API_Controller
 
         }
         return $order;
-      
+
 
     }
 
@@ -422,7 +422,7 @@ class Orders_api extends API_Controller
                 $obj[$key] = $value;
             }
             unset( $obj['cart']['totals'] );
-          
+
 
             foreach ($order_keys as $old => $new) {
                 change_array_key($old, $new, $obj);
@@ -433,7 +433,7 @@ class Orders_api extends API_Controller
             }
 
             $obj['order_table']['billing_name'] = $customer['display_name'];
-           
+
 
             $obj['order_table']['order_status'] = 'Confirmed';
 
@@ -466,9 +466,8 @@ class Orders_api extends API_Controller
                     'quantity' => (float)$item['quantity'],
                     'notes' => (@$item['orderItemNotes'])??'',
                     'rate' => (float)$item['rate'],
-                    'item_id' => $item['id'],
+                    'item_id' => $item['itemId'],
                     'unit_id' => 2,
-                    'rate' => (float)$item['rate'],
                     'has_spice_level' => $item['hasSpiceLevel'],
                     'spice_level' => $item['spiceLevel'],
                     'amount'=> $item['rate'] *$item['quantity'],
@@ -477,7 +476,7 @@ class Orders_api extends API_Controller
                 $temp['addons'] = [];
 
                 $temp['has_spice_level'] = ($temp['has_spice_level'] == 'true') ? 1 : 0;
-               
+
                 $obj['order_item_table'][] = $temp;
             }
             unset($obj['payment']);
@@ -652,6 +651,6 @@ class Orders_api extends API_Controller
 
     }
 
-  
+
 
 }

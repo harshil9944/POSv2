@@ -98,17 +98,16 @@ class Items_api extends API_Controller
         return $response;
     }
 
-    public function _api_menu_items()
+    public function _api_populate_menu_items()
     {
-
         $type = _input('type');
-        $categoryId = _input('category');
         $category_cache = $type ? "web_menu_categories_$type" : "web_menu_categories";
         $item_cache = $type ? "web_menu_items_$type" : "web_menu_items";
 
         _helper('zebra');
 
-        if (!$categories = _get_cache($category_cache)) {
+        $categories = _get_cache($category_cache);
+        if (!$categories) {
             $filters = ['web_status' => 1];
             if ($type != null) {
                 $filters['type'] = $type;
@@ -127,35 +126,40 @@ class Items_api extends API_Controller
                 }
                 $categories = $temp;
             }
-            // _set_cache($category_cache, $categories);
+            _set_cache($category_cache, $categories);
         }
-        if (!$items = _get_cache($item_cache) && !$categoryId) {
+        $items = _get_cache($item_cache);
+        if (!$items) {
             $item_params = [];
             $item_params['filter'] = ['web_status' => 1, 'type' => 'product', 'parent' => 0];
-            if ($categoryId) {
-                $item_params['filter']['category_id'] = $categoryId;
-            }
 
             $item_params['limit'] = 3000;
             $item_params['orders'] = [['order_by' => 'title', 'order' => 'ASC']];
             $item_params['exclude'] = true;
             $item_params['convert'] = true;
             $items = _get_module('items', '_search', $item_params);
+
             if ($items) {
                 $temp = [];
+
+                $variant_params = [
+                    'filter'  => [
+                        //'parent' => $item['id'],
+                        'type'   => ITEM_TYPE_VARIANT,
+                    ],
+                    'exclude' => true,
+                    'convert' => true,
+                ];
+
+                $itemVariations = _get_module('items', '_get_item_variations', $variant_params);
+
                 foreach ($items as $item) {
-
-                    $variant_params = [
-                        'filter'  => [
-                            'parent' => $item['id'],
-                            'type'   => ITEM_TYPE_VARIANT,
-                        ],
-                        'exclude' => true,
-                        'convert' => true,
-                    ];
-
-                    $variations = _get_module('items', '_get_item_variations', $variant_params);
                     $new_variations = [];
+
+                    $variations = array_values(array_filter($itemVariations, function ($single) use ($item) {
+                        return $item['id'] == $single['parent'];
+                    }));
+
                     if ($variations) {
                         $prices = array_column($variations, 'rate');
                         $min_price = min($prices);
@@ -179,14 +183,19 @@ class Items_api extends API_Controller
                 }
 
                 $items = $temp;
-                if (!$categoryId) {
-                    _set_cache($item_cache, $items);
-                }
+                _set_cache($item_cache, $items);
             }
         }
-        _response_data('categories', $categories);
+        return [
+            'status'     => 'ok',
+            'type'       => 'HTTP_CREATED',
+            'categories' => $categories,
+            'items'      => $items,
+            'message'    => 'Data fetch Successful'
+        ];
+        /*_response_data('categories', $categories);
         _response_data('items', $items);
-        return true;
+        return true;*/
 
     }
 

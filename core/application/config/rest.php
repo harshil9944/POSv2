@@ -208,6 +208,7 @@ $config['auth_override_class_method_http']['api']['retrieve']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['print_queue']['get'] = 'none';
 $config['auth_override_class_method_http']['api']['clear_print_queue']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['populate_items']['get'] = 'none';
+$config['auth_override_class_method_http']['api']['populate_menu_items']['get'] = 'none';
 $config['auth_override_class_method_http']['api']['validate_session']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['order']['post'] = 'none';
 $config['auth_override_class_method_http']['api']['customer_logout']['post'] = 'none';

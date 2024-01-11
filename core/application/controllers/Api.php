@@ -158,6 +158,8 @@ class Api extends REST_Controller {
     }
     public function populate_menu_items_get(){
 
+        $this->load->vars('key',rand(4567,97946));
+
         $module = _get_config('api_item_module');
         $method =  _get_config('api_populate_menu_items_method');
         $response = _get_module($module, $method, []);
