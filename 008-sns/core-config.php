@@ -103,6 +103,9 @@ defined('ALLOW_CUSTOMER_GROUP')         OR  define('ALLOW_CUSTOMER_GROUP', true)
 defined('ALLOW_CUSTOMER_NOTES')         OR  define('ALLOW_CUSTOMER_NOTES', true);
 defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',true);
 
+defined('ENABLE_SOURCE_SWITCH')         OR  define('ENABLE_SOURCE_SWITCH',true);
+defined('PLAY_SOUND_ON_NEW_ORDER')      OR  define('PLAY_SOUND_ON_NEW_ORDER',true);
+
 //Clover
 defined( 'ALLOW_CLOVER_PAYMENT' ) OR define( 'ALLOW_CLOVER_PAYMENT', false );
 defined( 'CLOVER_MERCHANT_ID' ) OR define( 'CLOVER_MERCHANT_ID', '70W8AGE61JKJ1' );
