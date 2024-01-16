@@ -1566,7 +1566,7 @@ class Pos extends MY_Controller {
             $result = _get_module( 'orders', '_single', ['id' => $id] );
             if ( $result ) {
                 $order = [];
-                $total_fields = ['subTotal', 'promotionTotal', 'tip', 'taxTotal', 'taxRate', 'discount', 'discountValue', 'discountType', 'change', 'grandTotal', 'adjustment', 'gratuityRate', 'gratuityTotal'];
+                $total_fields = ['subTotal', 'promotionTotal', 'tip', 'taxTotal', 'taxRate', 'discount', 'discountValue', 'discountType', 'change', 'grandTotal', 'adjustment', 'gratuityRate', 'gratuityTotal','freightTotal'];
                 foreach ( $result as $key => $value ) {
                     if ( in_array( $key, $total_fields ) ) {
                         $order['cart']['totals'][$key] = ( $key === 'discountValue' ) ? round( $value, 0 ) : $value;
@@ -1977,7 +1977,7 @@ class Pos extends MY_Controller {
                         $order['cancelOrder'] = true;
                     }
 
-                    $unset_array = ['change', 'tip', 'discount', 'adjustment', 'cancelled', 'notes', 'gratuityTotal', 'gratuityRate', 'seatUsed', 'subTotal', 'taxTotal', 'taxRate', 'promotionTotal', 'discountValue', 'discountType', 'freightTotal', 'dutyTotal', 'totalPaid'];
+                    $unset_array = ['change', 'tip', 'discount', 'adjustment', 'cancelled', 'notes', 'gratuityTotal', 'gratuityRate', 'seatUsed', 'subTotal', 'taxTotal', 'taxRate', 'promotionTotal', 'discountValue', 'discountType', 'dutyTotal', 'totalPaid'];
                     if ( $unset_array ) {
                         foreach ( $unset_array as $ua ) {
                             unset( $order[$ua] );

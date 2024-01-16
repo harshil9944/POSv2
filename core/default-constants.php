@@ -130,3 +130,8 @@ defined('DB_WEEKDAYS')        OR  define('DB_WEEKDAYS', [
     ['id'=>6,'value'=>'Friday'],
     ['id'=>7,'value'=>'Saturday']
 ]);
+
+//Email 
+defined('DEFAULT_EMAIL')        OR  define('DEFAULT_EMAIL', 'sanju@divaasolutions');
+defined('DEFAULT_EMAIL_NAME')        OR  define('DEFAULT_EMAIL_NAME', 'Admin');
+defined('DEFAULT_EMAIL_MESSAGE')        OR  define('DEFAULT_EMAIL_MESSAGE', 'Admin');
