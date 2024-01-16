@@ -11,7 +11,7 @@ class Orders_api extends API_Controller
 
     public function __construct() {
         parent::__construct();
-        _model(['order','web_session','customer','payment','order_item','order_item_note','payment_description','order_item_addon']);
+        _model(['order','web_session','customer','payment','order_item','order_item_note','payment_description','order_item_addon','order_address']);
         _library('creatorjwt');
         _helper('password');
     }
@@ -168,8 +168,14 @@ class Orders_api extends API_Controller
 
             }
         }else{
+            $data['customer_id'] =  _get_ref('cus',3,7);
+            $data['group_id'] = 1;
+            $data['deleted'] = 0;
+            $data['status'] = 1;
+            $data['added'] = sql_now_datetime();
             $id = $this->customer->save($data);
             if($id) {
+                 _update_ref('cus');
                 $params = [
                     'phone' => $data['phone']
                 ];
@@ -288,7 +294,8 @@ class Orders_api extends API_Controller
             }
         }
         $order = $this->_manage_order($obj);
-
+       // $this->_send_activation_email_to_admin();
+       // $this->_send_activation_email_to_customer();
         $response = [
             'status' => 'ok',
             'type' => 'HTTP_CREATED',
@@ -308,12 +315,16 @@ class Orders_api extends API_Controller
 
         $order_table = $obj['order_table'];
         $payment_table = $obj['order_payment_table'];
+        $address_table = $obj['order_address_table'];
 
         $order = $this->_add_order($order_table,$mode);
 
         if($order) {
 
             $order_id = $order['id'];
+            if(count($address_table) > 0){
+                $this->_add_order_address($order_id,$address_table);
+            }
 
             $items_table = $obj['order_item_table'];
             $order['items'] = [];
@@ -323,7 +334,6 @@ class Orders_api extends API_Controller
 
                 $item['order_id'] = $order_id;
                 $updated_item = $this->_add_order_item($item);
-
                 $ignore_items[] = $updated_item['id'];
 
                 $order['items'][] = $updated_item;
@@ -372,11 +382,20 @@ class Orders_api extends API_Controller
                 $params['message'] .= ' from ' . $obj['order_table']['billing_name'];
             }
            // _get_module('notifications','_broadcast',$params);
-
         }
         return $order;
+    }
 
+    private function _add_order_address($order_id,$address){
 
+        $obj = [
+            'order_id'=>$order_id,
+            'address1'=>$address['address1'],
+            'address2'=>$address['address2'],
+            'zip_code'=>$address['zip_code'],
+            'added'=>sql_now_datetime(),
+        ];
+        $this->order_address->save($obj);
     }
 
     private function _prep_order_obj(&$obj) {
@@ -396,6 +415,7 @@ class Orders_api extends API_Controller
             $obj['order_table'] = [];
             $obj['order_item_table'] = [];
             $obj['order_payment_table'] = [];
+            $obj['order_address_table'] = [];
 
             if (isset($obj['cart']['totals']['payments'])) {
                 $payments = $obj['cart']['totals']['payments'];
@@ -423,7 +443,11 @@ class Orders_api extends API_Controller
             }
             unset( $obj['cart']['totals'] );
 
-
+            if($obj['type'] ==='d'){
+                $obj['order_address_table'] = $obj['address'];
+                $obj['notes'] = implode(', ', $obj['address']);
+                unset($obj['address']);
+            }
             foreach ($order_keys as $old => $new) {
                 change_array_key($old, $new, $obj);
                 if (isset($obj[$new])) {
@@ -431,7 +455,6 @@ class Orders_api extends API_Controller
                     unset($obj[$new]);
                 }
             }
-
             $obj['order_table']['billing_name'] = $customer['display_name'];
 
 
@@ -467,10 +490,13 @@ class Orders_api extends API_Controller
                     'notes' => (@$item['orderItemNotes'])??'',
                     'rate' => (float)$item['rate'],
                     'item_id' => $item['itemId'],
+                    'parent_id' => $item['parentId'],
                     'unit_id' => 2,
                     'has_spice_level' => $item['hasSpiceLevel'],
                     'spice_level' => $item['spiceLevel'],
-                    'amount'=> $item['rate'] *$item['quantity'],
+                    'print_location'=> $item['printLocation'],
+                    'printed_qty'=> 0,
+                    'print_kitchen'=> 0,
                 ];
                 $temp = $web_item;
                 $temp['addons'] = [];
@@ -495,7 +521,6 @@ class Orders_api extends API_Controller
             $obj['session_id'] = $session_id;
             $obj['session_order_no'] = $this->_get_new_session_order_no($session_id);
             $obj['order_no'] = _get_ref(ORDER_REF);
-            $obj['notes'] = '';
             $obj['order_date'] = sql_now_datetime();
             $obj['added'] = sql_now_datetime();
             if (!isset($obj['order_status'])) {
@@ -509,6 +534,7 @@ class Orders_api extends API_Controller
                 $order_id = $this->order->insert_id();
                 _update_ref(ORDER_REF);
             }
+            
 
         }
 
@@ -650,7 +676,52 @@ class Orders_api extends API_Controller
         $this->payment->delete(['order_id'=>$order_id]);
 
     }
+    private function _send_activation_email_to_admin(  ) {
+        _helper( 'email' );
+        
+        $company_name = _get_setting( 'name', '', 'company' );
+        $name = DEFAULT_EMAIL_NAME;
+        $details = [
+            'full_name' => $name,
+            'company_name' => $company_name,
+            'default_message' => DEFAULT_EMAIL_MESSAGE,
+        ];
+        _vars( 'details', $details );
 
+        $to = ['email' => DEFAULT_EMAIL];
+        $subject = "Welcome to $company_name";
 
+        $text = $subject;
 
+        $html_data = _view( 'email_templates/admin/order_place' );
+
+        _ci_send( $to, $subject, $text, $html_data );
+    }
+    private function _send_activation_email_to_customer( $customer_id ) {
+        _helper( 'email' );
+
+        $customer = $this->customer->single(['id'=>$customer_id]);
+        if($customer){
+            $customerEmail = $customer['email'];
+        
+            $company_name = _get_setting( 'name', '', 'company' );
+            $name = DEFAULT_EMAIL_NAME;
+            $details = [
+                'full_name' => $customer['display_name'],
+                'company_name' => $company_name,
+                'default_message' => DEFAULT_EMAIL_MESSAGE,
+            ];
+            _vars( 'details', $details );
+
+            $to = ['email' => $customerEmail];
+            $subject = "Welcome to $company_name";
+
+            $text = $subject;
+
+            $html_data = _view( 'email_templates/customer/order_place' );
+
+            _ci_send( $to, $subject, $text, $html_data );
+        }
+        
+    }
 }
