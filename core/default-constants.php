@@ -132,6 +132,10 @@ defined('DB_WEEKDAYS')        OR  define('DB_WEEKDAYS', [
 ]);
 
 //Email 
-defined('DEFAULT_EMAIL')        OR  define('DEFAULT_EMAIL', 'sanju@divaasolutions');
-defined('DEFAULT_EMAIL_NAME')        OR  define('DEFAULT_EMAIL_NAME', 'Admin');
-defined('DEFAULT_EMAIL_MESSAGE')        OR  define('DEFAULT_EMAIL_MESSAGE', 'Admin');
+defined('DEFAULT_EMAIL')        OR  define('DEFAULT_EMAIL', 'no-reply@inntechfuture.com');
+defined('DEFAULT_EMAIL_NAME')        OR  define('DEFAULT_EMAIL_NAME', 'InnTechFuture Inc');
+
+defined('DEFAULT_REPLY_TO_EMAIL')        OR  define('DEFAULT_REPLY_TO_EMAIL', 'info@inntechfuture.com');
+defined('DEFAULT_REPLY_TO_NAME')        OR  define('DEFAULT_REPLY_TO_NAME', 'InnTechFuture Inc');
+
+defined('DEFAULT_EMAIL_MESSAGE')        OR  define('DEFAULT_EMAIL_MESSAGE', 'Thank you for ordering with us');

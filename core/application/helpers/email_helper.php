@@ -95,12 +95,14 @@ if ( !function_exists( '_ci_send' ) ) {
 
             $obj->email->smtp_crypto = _get_config( 'smtp_encryption' );
 
-            $obj->email->from( _get_setting( 'from_email', 'info@inntechPos.ca' ), _get_setting( 'from_name', 'Inntech' ) );
+            $obj->email->from( _get_setting( 'from_email', DEFAULT_EMAIL ), _get_setting( 'from_name', DEFAULT_EMAIL_NAME ) );
             $obj->email->to( $to['email'] );
 
-            if ( $_SERVER['CI_ENV'] == 'production' ) {
+            $obj->email->reply_to(DEFAULT_REPLY_TO_EMAIL,DEFAULT_REPLY_TO_NAME);
+
+            /*if ( $_SERVER['CI_ENV'] == 'production' ) {
                 $obj->email->bcc( 'divaa.customers@gmail.com' );
-            }
+            }*/
 
             $obj->email->subject( $subject );
             $obj->email->message( $html );
