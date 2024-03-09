@@ -294,8 +294,9 @@ class Orders_api extends API_Controller
             }
         }
         $order = $this->_manage_order($obj);
-       // $this->_send_activation_email_to_admin();
-       // $this->_send_activation_email_to_customer();
+        $order_id = $order['id'];
+        $this->_set_email_queue($order_id);
+       
         $response = [
             'status' => 'ok',
             'type' => 'HTTP_CREATED',
@@ -305,6 +306,61 @@ class Orders_api extends API_Controller
         ];
         return $response;
 
+    }
+
+    public function _set_email_queue($order_id){
+        _model('email_queue');
+        if($order_id){
+            $obj = [
+                'order_id'=>$order_id,
+                'added'=>sql_now_datetime()
+            ];
+            $this->email_queue->save($obj);
+        }
+    }
+
+    public function _send_mail(){
+        _model('email_queue');
+
+        $orders = $this->email_queue->search();
+        if($orders){
+            foreach($orders as $o){
+                $order_id = $o['order_id'];
+                $order = $this->_single($order_id);
+
+                $this->_send_order_email_to_admin($order);
+                $this->_send_order_email_to_customer($order);
+
+                $this->email_queue->delete(['order_id'=>$order_id]);
+            }
+        }
+        $response = [
+            'status' => 'ok',
+            'type' => 'HTTP_CREATED',
+            'expiresIn' => 86400,
+            'message' => 'Email Send successfully'
+        ];
+        return $response;
+       
+    }
+
+    public function _single($order_id){
+        $order = $this->order->single(['id'=>$order_id]);
+        if($order){
+            $order['items'] = $this->order_item->search(['order_id'=>$order_id]);
+            $order['address'] = $this->order_address->single(['order_id'=>$order_id]);
+             $items = $order['items'];
+            unset($order['items']);
+            $this->_exclude_keys($order,$this->order->exclude_keys);
+            $this->_sql_to_vue($order,$this->order->keys);
+            foreach ($items as $item) {
+                $this->_exclude_keys($item,$this->order_item->exclude_keys);
+                $this->_sql_to_vue($item,$this->order_item->keys);
+                $order['items'][] = $item;
+            }
+        }
+
+        return $order;
     }
 
     public function _manage_order($obj) {
@@ -322,8 +378,9 @@ class Orders_api extends API_Controller
         if($order) {
 
             $order_id = $order['id'];
+            $order['address'] = [];
             if(count($address_table) > 0){
-                $this->_add_order_address($order_id,$address_table);
+                $order['address'] = $this->_add_order_address($order_id,$address_table);
             }
 
             $items_table = $obj['order_item_table'];
@@ -387,7 +444,7 @@ class Orders_api extends API_Controller
     }
 
     private function _add_order_address($order_id,$address){
-
+        $order_address_id = false;
         $obj = [
             'order_id'=>$order_id,
             'address1'=>$address['address1'],
@@ -395,7 +452,17 @@ class Orders_api extends API_Controller
             'zip_code'=>$address['zip_code'],
             'added'=>sql_now_datetime(),
         ];
-        $this->order_address->save($obj);
+        if($this->order_address->save($obj)){
+         $order_address_id = $this->order_address->insert_id();
+
+        };
+          if($order_address_id) {
+            $order_address = $this->order_address->single(['id'=>$order_address_id]);
+            if($order_address) {
+                return $order_address;
+            }
+        }
+        return false;
     }
 
     private function _prep_order_obj(&$obj) {
@@ -489,6 +556,7 @@ class Orders_api extends API_Controller
                     'quantity' => (float)$item['quantity'],
                     'notes' => (@$item['orderItemNotes'])??'',
                     'rate' => (float)$item['rate'],
+                    'amount' => (float)$item['rate'] * (float)$item['quantity'],
                     'item_id' => $item['itemId'],
                     'parent_id' => $item['parentId'],
                     'unit_id' => 2,
@@ -676,20 +744,21 @@ class Orders_api extends API_Controller
         $this->payment->delete(['order_id'=>$order_id]);
 
     }
-    private function _send_activation_email_to_admin(  ) {
+    private function _send_order_email_to_admin( $order ) {
         _helper( 'email' );
-        
         $company_name = _get_setting( 'name', '', 'company' );
+        $customer_name = $order['billingName'];
         $name = DEFAULT_EMAIL_NAME;
         $details = [
             'full_name' => $name,
             'company_name' => $company_name,
             'default_message' => DEFAULT_EMAIL_MESSAGE,
+            'order'=>$order
         ];
         _vars( 'details', $details );
 
         $to = ['email' => DEFAULT_EMAIL];
-        $subject = "Welcome to $company_name";
+        $subject = "Online Order Received: $customer_name";
 
         $text = $subject;
 
@@ -697,24 +766,26 @@ class Orders_api extends API_Controller
 
         _ci_send( $to, $subject, $text, $html_data );
     }
-    private function _send_activation_email_to_customer( $customer_id ) {
+    private function _send_order_email_to_customer( $order  ) {
         _helper( 'email' );
+        $customer_id= $order['customerId'];
 
         $customer = $this->customer->single(['id'=>$customer_id]);
         if($customer){
             $customerEmail = $customer['email'];
         
             $company_name = _get_setting( 'name', '', 'company' );
-            $name = DEFAULT_EMAIL_NAME;
+           
             $details = [
                 'full_name' => $customer['display_name'],
                 'company_name' => $company_name,
                 'default_message' => DEFAULT_EMAIL_MESSAGE,
+                 'order'=>$order
             ];
             _vars( 'details', $details );
 
             $to = ['email' => $customerEmail];
-            $subject = "Welcome to $company_name";
+            $subject = "Order Confirmation: $company_name";
 
             $text = $subject;
 
