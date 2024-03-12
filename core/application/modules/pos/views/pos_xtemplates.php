@@ -1557,6 +1557,10 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                         <th class="text-right">Status</th>
                         <td>{{ order.orderStatus }}</td>
                     </tr>
+                    <tr>
+                        <th class="text-right">Type</th>
+                        <td>{{ order.type === 'p' ? 'Pickup': 'Delivery' }}</td>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -1601,19 +1605,60 @@ echo get_text( ['id' => $code . '-email', 'title' => 'Email', 'attribute' => $re
                 </tr>
                 </tbody>
             </table>
-            <table class="table table-bordered table-vcenter">
-                <thead>
-                    <tr>
-                        <th colspan="2">Payment Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <tr v-for="payment in order.cart.totals.payments">
-                    <td>{{ payment.paymentMethodName }}</td>
-                    <td class="text-right w-20">{{ payment.amount | beautifyCurrency }}</td>
-                </tr>
-                </tbody>
-            </table>
+            
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="table-responsive">
+                            <h6 class="mb-2">Payment History </h6>
+                            <table class="table table-sm table-bordered font-12">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th class="font-w600 text-left">Date</th>
+                                        <th class="font-w600 text-left">Payment Method</th>
+                                        <th class="font-w600 text-left">Payment # </th>
+                                        <th class="font-w600 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody v-if="order.cart.totals.payments">
+                                    <tr v-for="(single,index) in order.cart.totals.payments"  class="font-w600">
+                                        <td class="text-center">{{ Number(index) + 1 }}</td>
+                                        <td>{{ single.date | beautifyDate }}</td>
+                                        <td>{{ single.paymentMethodName }}</td>
+                                        <td>{{ single.orderNo }}</td>
+                                        <td class="text-right">{{ single.amount | beautifyCurrency }}</td>
+                                    </tr>
+                                </tbody>
+                                <tbody v-else>
+                                    <tr>
+                                        <td colspan="5" class="text-center font-w600">Payment Pending</td>
+                                    </tr>
+                                </tbody>
+                                <!-- <tfoot v-if="order.cart.totals.payments">
+                                    <tr class="font-w700 text-right">
+                                        <td colspan="4" >TOTAL</td>
+                                        <td>{{ getTotalPaid() | beautifyCurrency}}</td>
+                                    </tr>
+                                </tfoot> -->
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="mb-2">Order Notes</h6>
+                        <table class="table">
+                            <tbody>
+                                <tr v-if="order.notes" class="font-14-w600">
+                                    <td>{{ order.notes }}</td>
+                                </tr>
+                                <tr v-if="!order.notes">
+                                    <td class="text-center font-w600">No Notes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </script>

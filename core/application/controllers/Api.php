@@ -211,6 +211,19 @@ class Api extends REST_Controller {
         $this->set_response($response,$response_code);
     }
 
+     public function order_mail_get() {
+
+        $order_module = _get_config('api_order_module');
+        $order_method = '_send_mail';
+
+        $response = _get_module($order_module, $order_method, []);
+
+        $response_code = $this->_get_response_code($response['type']);
+        unset($response['type']);
+
+        $this->set_response($response,$response_code);
+    }
+
     public function password_post() {
 
         _helper('password');

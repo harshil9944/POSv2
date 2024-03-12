@@ -105,6 +105,7 @@ defined('PICKUP_CONTACT_MANDATORY')     OR  define('PICKUP_CONTACT_MANDATORY',tr
 
 defined('ENABLE_SOURCE_SWITCH')         OR  define('ENABLE_SOURCE_SWITCH',true);
 defined('PLAY_SOUND_ON_NEW_ORDER')      OR  define('PLAY_SOUND_ON_NEW_ORDER',true);
+defined('START_WEB_ORDERS_WITH_SESSION')OR  define('START_WEB_ORDERS_WITH_SESSION',true);
 
 //Clover
 defined( 'ALLOW_CLOVER_PAYMENT' ) OR define( 'ALLOW_CLOVER_PAYMENT', false );
