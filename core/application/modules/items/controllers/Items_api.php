@@ -167,7 +167,7 @@ class Items_api extends API_Controller
                         foreach ($variations as $v) {
                             $new_variations[] = [
                                 'title' => $v['title'],
-                                'isVeg' => $v['isVeg'],
+                                'isVeg' => (bool)$v['isVeg'],
                                 'rate'  => $v['rate']
                             ];
                         }
@@ -177,6 +177,7 @@ class Items_api extends API_Controller
                         'name'       => $item['title'],
                         'rate'       => $item['rate'],
                         'type'       => $item['type'],
+                        'isVeg'      => (bool)$item['isVeg'],
                         'variations' => $new_variations,
                         'categoryId' => $item['categoryId'],
                     ];
