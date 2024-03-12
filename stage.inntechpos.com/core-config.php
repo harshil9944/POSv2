@@ -135,3 +135,6 @@ defined('ALLOW_CONVERT_CHANGE_TO_TIP')  OR  define('ALLOW_CONVERT_CHANGE_TO_TIP'
 defined( 'ONLINE_ORDER_PAYMENT_IDS' ) OR define( 'ONLINE_ORDER_PAYMENT_IDS', [5,6] );
 defined( 'ALLOW_ORDER_EDIT' ) OR define( 'ALLOW_ORDER_EDIT', true );
 defined('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT')    OR  define('DEFAULT_KITCHEN_PRINT_IN_AUTO_DISCOUNT', true);
+
+//Admin Email
+defined('DEFAULT_ADMIN_EMAIL')        OR  define('DEFAULT_ADMIN_EMAIL', 'sanju@divaasolutions.com');

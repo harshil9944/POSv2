@@ -139,3 +139,6 @@ defined('DEFAULT_REPLY_TO_EMAIL')        OR  define('DEFAULT_REPLY_TO_EMAIL', 'i
 defined('DEFAULT_REPLY_TO_NAME')        OR  define('DEFAULT_REPLY_TO_NAME', 'InnTechFuture Inc');
 
 defined('DEFAULT_EMAIL_MESSAGE')        OR  define('DEFAULT_EMAIL_MESSAGE', 'Thank you for ordering with us');
+
+//Admin Email
+defined('DEFAULT_ADMIN_EMAIL')        OR  define('DEFAULT_ADMIN_EMAIL', null);

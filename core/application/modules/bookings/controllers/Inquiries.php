@@ -44,12 +44,11 @@ class Inquiries extends MY_Controller
         $filters['orders'] = [['order_by' => $table . '.added', 'order' => 'DESC']];
         $filters['offset'] = $offset;
         $filters['limit'] = true;
-        $results = $this->_search($filters);
-
+         $results = $this->{$this->model}->get_list($filters);
         $total_items = $this->{$this->model}->get_list_count($filters);
 
         $total_rows = ($total_items) ? $total_items['total_rows'] : 0;
-        $per_page = (int)_get_setting('global_limit', 50);
+        $per_page =  (int)_get_setting('global_limit', 50);
         $paginate_url = base_url($this->module);
 
         $can_edit = _can($this->module . '/edit', 'page');
@@ -264,7 +263,52 @@ class Inquiries extends MY_Controller
     }
 
     private function _send_inquiry_email( $obj ) {
-        _helper( 'email' );
+        if(DEFAULT_ADMIN_EMAIL){
+             _library('inquiry');
+            $company_name = _get_setting( 'name', '', 'company' );
+            $company = ['name'=>$company_name];
+            $recipient = ['name'=>$company_name,'email'=>DEFAULT_ADMIN_EMAIL];
+           // $recipient = ['name'=>$company_name,'email'=>'sanju@divaasolutions.com'];
+
+            //Fields: full_name, email, phone, message, event_date, event_start_time, event_end_time, event_address, event_type, event_location_type, event_budget, kind_of_decor
+
+            $items = [
+                ['label'=>'Full Name','value'=>$obj['booking_name']],
+                ['label'=>'Email','value'=>$obj['email']],
+                ['label'=>'Phone','value'=>$obj['phone']],
+                ['label'=>'Number Of Person','value'=>$obj['number_of_person']],
+                ['label'=>'Date','value'=>$obj['date']],
+                ['label'=>'Description','value'=>$obj['description']],
+            /*  ['label'=>'Menu','value'=>$obj['menu']],
+                ['label'=>'Remark','value'=> $obj['remark']], */
+            ];
+
+            $this->inquiry->setCompany($company);
+            $this->inquiry->setRecipient($recipient);
+            $this->inquiry->setItems($items);
+
+            try {
+                $this->inquiry->send();
+                $data = ['status'=>true,'message'=>'Your inquiry has been sent successfully.'];
+                $this->output
+                    ->set_status_header(200)
+                    ->set_content_type('application/json', 'utf-8')
+                    ->set_output(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+                    ->_display();
+                die();
+            } catch (Exception $e) {
+                $data = ['status'=>true,'message'=>$e->getMessage()];
+                $this->output
+                    ->set_status_header(200)
+                    ->set_content_type('application/json', 'utf-8')
+                    ->set_output(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+                    ->_display();
+                die();
+            }
+        }
+
+        
+       /*  _helper( 'email' );
         if ( $obj ) {
             $company_name = _get_setting( 'name', '', 'company' );
             $details = [
@@ -291,7 +335,7 @@ class Inquiries extends MY_Controller
 
         } else {
             log_message( 'error', "Error sending activation email to Customer" );
-        }
+        } */
 
     }
 
