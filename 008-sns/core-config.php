@@ -123,3 +123,6 @@ defined( 'CLOVER_TIP_SUGGESTIONS' ) OR define( 'CLOVER_TIP_SUGGESTIONS', [
     ['title' => 'Great', 'value' => 20],
     ['title' => 'Excellent', 'value' => 25],
 ] );
+
+//Admin Email
+defined('DEFAULT_ADMIN_EMAIL')        OR  define('DEFAULT_ADMIN_EMAIL', 'info@sugarandspice.kitchen');

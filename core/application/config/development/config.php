@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = DEV_BASE_URL;
+$config['base_url'] = 'http://bollywood.v2.inntechpos.ci/';
 $config['asset_url'] = DEV_ASSET_URL;
 
 /*

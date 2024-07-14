@@ -1,5 +1,5 @@
 <?php
-define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
+define('ENVIRONMENT', 'development');
 require_once 'core-config.php';
 require_once '../core/default-constants.php';
 $key = 'LIVE';

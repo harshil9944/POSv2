@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/psr/simple-cache" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/mpdf/mpdf" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/psr/http-message" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/psr/http-client" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/setasign/fpdi" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/maennchen/zipstream-php" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/psr/http-factory" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/fzaninotto/faker" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/starkbank/ecdsa" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/firebase/php-jwt" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/paragonie/random_compat" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-util-ecc" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-signature-algorithm-eddsa" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-key-mgmt" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/paragonie/sodium_compat" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-signature-algorithm-ecdsa" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/symfony/polyfill-mbstring" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-signature-algorithm-rsa" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/symfony/polyfill-php72" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-core" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/minishlink/web-push" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/symfony/polyfill-intl-idn" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/symfony/polyfill-intl-normalizer" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-signature-algorithm-none" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-signature" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/web-token/jwt-signature-algorithm-hmac" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/guzzlehttp/promises" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/myclabs/php-enum" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/spomky-labs/base64url" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpmailer/phpmailer" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/guzzlehttp/guzzle" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/guzzlehttp/psr7" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpoffice/phpspreadsheet" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/stefangabos/zebra_image" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/fgrosse/phpasn1" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sendgrid/sendgrid" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sendgrid/php-http-client" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/myclabs/deep-copy" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/ralouphie/getallheaders" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/markbaker/matrix" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/markbaker/complex" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

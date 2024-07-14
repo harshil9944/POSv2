@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => DEV_DB_HOSTNAME,
-	'username' => DEV_DB_USERNAME,
-	'password' => DEV_DB_PASSWORD,
-	'database' => DEV_DB_SCHEMA,
+	'hostname' => 'localhost',
+	'username' => 'root',
+	'password' => '',
+	'database' => 'inntectpos',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
